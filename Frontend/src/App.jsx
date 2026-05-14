@@ -121,6 +121,13 @@ function TopBar({ route, setRoute, cartCount }) {
           >
             Valores
           </NavLink>
+
+          <NavLink
+            active={route === "admin"}
+            onClick={() => setRoute("admin")}
+          >
+            Admin
+          </NavLink>
         </div>
 
         <div className="flex items-center gap-2">
@@ -139,7 +146,7 @@ function TopBar({ route, setRoute, cartCount }) {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pb-2 md:hidden">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           <MobileTab active={route === "home"} onClick={() => setRoute("home")}>
             Inicio
           </MobileTab>
@@ -154,6 +161,10 @@ function TopBar({ route, setRoute, cartCount }) {
           </MobileTab>
           <MobileTab active={route === "about"} onClick={() => setRoute("about")}>
             Valores
+          </MobileTab>
+          <MobileTab active={route === "admin"} onClick={() => setRoute("admin")}
+          >
+            Admin
           </MobileTab>
         </div>
       </div>
@@ -401,7 +412,7 @@ function Step({ n, title, desc }) {
   );
 }
 
-function Catalog({ products = [], onOpenProduct }) {
+function Catalog({ products = [], categories = [], onOpenProduct }) {
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
 
@@ -433,18 +444,15 @@ function Catalog({ products = [], onOpenProduct }) {
             >
               Todo
             </FilterChip>
-            <FilterChip
-              active={category === "Yeti"}
-              onClick={() => setCategory("Yeti")}
-            >
-              Yeti
-            </FilterChip>
-            <FilterChip
-              active={category === "Journals"}
-              onClick={() => setCategory("Journals")}
-            >
-              Journals
-            </FilterChip>
+            {categories.map((c) => (
+              <FilterChip
+                key={c}
+                active={category === c}
+                onClick={() => setCategory(c)}
+              >
+                {c}
+              </FilterChip>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
@@ -1017,6 +1025,373 @@ function About() {
   );
 }
 
+function AdminPanel({ products = [], setProducts, categories = [], setCategories }) {
+  const fallbackCategory = categories[0] ?? "Yeti";
+
+  const [newCategory, setNewCategory] = useState("");
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    category: fallbackCategory,
+    price: "",
+    short: "",
+    description: "",
+    image: "",
+  });
+
+  function handleAddCategory(e) {
+    e.preventDefault();
+
+    const candidate = newCategory.trim();
+    if (!candidate) return;
+
+    const exists = categories.some(
+      (c) => c.trim().toLowerCase() === candidate.toLowerCase()
+    );
+    if (exists) {
+      setNewCategory("");
+      return;
+    }
+
+    setCategories((prev) => [...prev, candidate]);
+
+    // If there were no categories yet, make sure the product form uses this one.
+    if (categories.length === 0) {
+      setNewProduct((prev) => ({ ...prev, category: candidate }));
+    }
+
+    setNewCategory("");
+  }
+
+  function handleDeleteCategory(categoryToDelete) {
+    if (categories.length <= 1) return;
+
+    const nextCategories = categories.filter((c) => c !== categoryToDelete);
+    const nextFallback = nextCategories[0] ?? "Yeti";
+
+    setCategories(nextCategories);
+
+    // Re-assign any products using the deleted category.
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.category === categoryToDelete ? { ...p, category: nextFallback } : p
+      )
+    );
+
+    // Keep the form in a valid category.
+    setNewProduct((prev) => ({
+      ...prev,
+      category: prev.category === categoryToDelete ? nextFallback : prev.category,
+    }));
+  }
+
+  function handleNewProductChange(e) {
+    const { name, value } = e.target;
+
+    setNewProduct((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  function handleAddProduct(e) {
+    e.preventDefault();
+
+    const productToAdd = {
+      id: crypto.randomUUID(),
+      category: newProduct.category,
+      name: newProduct.name,
+      price: Number(newProduct.price),
+      short: newProduct.short,
+      description: newProduct.description,
+      image:
+        newProduct.image ||
+        "https://images.unsplash.com/photo-1544717305-996b815c338c?auto=format&fit=crop&w=1200&q=80",
+      tags: ["Nuevo", "Personalizable"],
+    };
+
+    setProducts((prev) => [...prev, productToAdd]);
+
+    setNewProduct({
+      name: "",
+      category: categories[0] ?? "Yeti",
+      price: "",
+      short: "",
+      description: "",
+      image: "",
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+        <SectionTitle
+          title="Admin Panel"
+          subtitle="Gestiona visualmente los productos de la tienda."
+        />
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-[24px] bg-zinc-50 p-5">
+            <div className="text-sm font-bold text-zinc-900">
+              Productos
+            </div>
+
+            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
+              {products.length}
+            </div>
+
+            <p className="mt-1 text-sm text-zinc-600">
+              Artículos activos en catálogo.
+            </p>
+          </div>
+
+          <div className="rounded-[24px] bg-zinc-50 p-5">
+            <div className="text-sm font-bold text-zinc-900">
+              Modo
+            </div>
+
+            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
+              MVP
+            </div>
+
+            <p className="mt-1 text-sm text-zinc-600">
+              Datos simulados en frontend.
+            </p>
+          </div>
+
+          <div className="rounded-[24px] bg-zinc-50 p-5">
+            <div className="text-sm font-bold text-zinc-900">
+              Gestión
+            </div>
+
+            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
+              CRUD
+            </div>
+
+            <p className="mt-1 text-sm text-zinc-600">
+              Próximo: añadir, editar y eliminar productos.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+          <SectionTitle
+            title="Categorías"
+            subtitle="Crea o elimina categorías disponibles para los productos."
+          />
+
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <span
+                key={c}
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-800"
+              >
+                {c}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteCategory(c)}
+                  disabled={categories.length <= 1}
+                  className="rounded-full px-2 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label={`Eliminar categoría ${c}`}
+                  title={categories.length <= 1 ? "Debes tener al menos 1 categoría" : "Eliminar"}
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+
+          <form onSubmit={handleAddCategory} className="mt-4 flex flex-col gap-2 md:flex-row md:items-end">
+            <div className="flex-1">
+              <label className="text-sm font-semibold text-zinc-900">
+                Nueva categoría
+              </label>
+              <input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                placeholder="Ej: Biblias"
+                className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+            <Button variant="secondary" className="md:mb-[2px]">
+              Añadir categoría
+            </Button>
+          </form>
+        </div>
+
+        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+          <SectionTitle
+            title="Añadir producto"
+            subtitle="Crea un nuevo producto visualmente en el catálogo."
+          />
+
+          <form onSubmit={handleAddProduct} className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  Nombre
+                </label>
+                <input
+                  name="name"
+                  value={newProduct.name}
+                  onChange={handleNewProductChange}
+                  placeholder="Ej: Yeti personalizado 30oz"
+                  required
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  Categoría
+                </label>
+                <select
+                  name="category"
+                  value={newProduct.category}
+                  onChange={handleNewProductChange}
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                >
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  Precio
+                </label>
+                <input
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProduct.price}
+                  onChange={handleNewProductChange}
+                  placeholder="Ej: 35"
+                  required
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  Imagen URL
+                </label>
+                <input
+                  name="image"
+                  value={newProduct.image}
+                  onChange={handleNewProductChange}
+                  placeholder="https://..."
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-zinc-900">
+                Descripción corta
+              </label>
+              <input
+                name="short"
+                value={newProduct.short}
+                onChange={handleNewProductChange}
+                placeholder="Ej: Vaso premium con mensaje de fe."
+                required
+                className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-zinc-900">
+                Descripción completa
+              </label>
+              <textarea
+                name="description"
+                value={newProduct.description}
+                onChange={handleNewProductChange}
+                placeholder="Describe el producto, su propósito y detalles importantes."
+                rows={4}
+                required
+                className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="primary">
+                Añadir producto
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        <div className="mt-8">
+          <SectionTitle
+            title="Productos actuales"
+            subtitle="Vista administrativa del catálogo."
+          />
+
+          <div className="grid gap-3">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="rounded-[24px] border border-zinc-200 p-5"
+              >
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="h-16 w-16 rounded-2xl object-cover"
+                    />
+
+                    <div>
+                      <div className="text-xs font-semibold text-zinc-500">
+                        {product.category}
+                      </div>
+
+                      <div className="text-sm font-bold text-zinc-900">
+                        {product.name}
+                      </div>
+
+                      <div className="mt-1 text-sm text-zinc-600">
+                        {product.short}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-left md:text-right">
+                    <div className="text-sm font-bold text-zinc-900">
+                      {money(product.price)}
+                    </div>
+
+                    <div className="mt-2 flex gap-2 md:justify-end">
+                      <Button variant="secondary">
+                        Editar
+                      </Button>
+
+                      <Button variant="secondary">
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
+
 function Footer() {
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
@@ -1042,6 +1417,8 @@ function Footer() {
 
 export default function App() {
   const [route, setRoute] = useState("home");
+
+  const [categories, setCategories] = useState(["Yeti", "Journals"]);
 
   const [products, setProducts] = useState([
     {
@@ -1127,9 +1504,10 @@ export default function App() {
       {route === "catalog" ? (
         <Catalog
           products={products}
+          categories={categories}
           onOpenProduct={openProduct}
         />
-      ): null}
+      ) : null}
 
       {route === "product" && selected ? (
         <ProductDetail
@@ -1161,6 +1539,14 @@ export default function App() {
 
       {route === "blog" ? <Blog /> : null}
       {route === "about" ? <About /> : null}
+      {route === "admin" ? (
+        <AdminPanel
+          products={products}
+          setProducts={setProducts}
+          categories={categories}
+          setCategories={setCategories}
+        />
+      ) : null}
 
       <div className="pb-10" />
     </div>
