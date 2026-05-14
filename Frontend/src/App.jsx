@@ -401,7 +401,7 @@ function Step({ n, title, desc }) {
   );
 }
 
-function Catalog({ products, onOpenProduct }) {
+function Catalog({ products = [], onOpenProduct }) {
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
 
