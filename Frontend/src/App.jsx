@@ -4,33 +4,6 @@ import React, { useMemo, useState } from "react";
 // - Home, Catalog, Product Detail (with personalization), Cart, Checkout
 // - Pure client-side state for visualization
 
-const PRODUCTS = [
-  {
-    id: "yeti-20",
-    category: "Yeti",
-    name: "Yeti Rambler 20oz",
-    price: 40,
-    short: "Vaso premium para regalos con propósito.",
-    description:
-      "Un vaso resistente para el día a día. Personalízalo con nombre, frase o versículo y conviértelo en un regalo memorable.",
-    image:
-      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
-    tags: ["Regalo", "Premium", "Personalizable"],
-  },
-  {
-    id: "journal-1",
-    category: "Journals",
-    name: "Libreta Journal (A5)",
-    price: 26,
-    short: "Journaling y devocional diario.",
-    description:
-      "Una libreta para escribir, orar y reflexionar. Perfecta para rutinas de fe, metas y gratitud.",
-    image:
-      "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80",
-    tags: ["Devocional", "Hábitos", "Regalo"],
-  },
-];
-
 const COLLECTIONS = [
   {
     id: "identidad",
@@ -339,7 +312,13 @@ function ProductCard({ p, onOpen }) {
   );
 }
 
-function Home({ onGoCatalog, onOpenProduct, onPickCollection }) {
+function Home({
+  products,
+  onGoCatalog,
+  onOpenProduct,
+  onPickCollection,
+}) {
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <Hero onPrimary={onGoCatalog} onSecondary={onGoCatalog} />
@@ -358,7 +337,7 @@ function Home({ onGoCatalog, onOpenProduct, onPickCollection }) {
           subtitle="Arranca con dos líneas claras: Yeti y Journals."
         />
         <div className="grid gap-3 md:grid-cols-2">
-          {PRODUCTS.map((p) => (
+          {products.map((p) => (
             <ProductCard key={p.id} p={p} onOpen={onOpenProduct} />
           ))}
         </div>
@@ -422,12 +401,12 @@ function Step({ n, title, desc }) {
   );
 }
 
-function Catalog({ onOpenProduct }) {
+function Catalog({ products, onOpenProduct }) {
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return products.filter((p) => {
       const byCat = category === "All" ? true : p.category === category;
       const byQ =
         q.trim().length === 0
@@ -437,7 +416,7 @@ function Catalog({ onOpenProduct }) {
               .includes(q.trim().toLowerCase());
       return byCat && byQ;
     });
-  }, [category, q]);
+  }, [category, q, products]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -1063,6 +1042,34 @@ function Footer() {
 
 export default function App() {
   const [route, setRoute] = useState("home");
+
+  const [products, setProducts] = useState([
+    {
+      id: "yeti-20",
+      category: "Yeti",
+      name: "Yeti Rambler 20oz",
+      price: 40,
+      short: "Vaso premium para regalos con propósito.",
+      description:
+        "Un vaso resistente para el día a día. Personalízalo con nombre, frase o versículo y conviértelo en un regalo memorable.",
+      image:
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
+      tags: ["Regalo", "Premium", "Personalizable"],
+    },
+    {
+      id: "journal-1",
+      category: "Journals",
+      name: "Libreta Journal (A5)",
+      price: 26,
+      short: "Journaling y devocional diario.",
+      description:
+        "Una libreta para escribir, orar y reflexionar. Perfecta para rutinas de fe, metas y gratitud.",
+      image:
+        "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80",
+      tags: ["Devocional", "Hábitos", "Regalo"],
+    },
+  ]);
+
   const [selected, setSelected] = useState(null);
   const [cart, setCart] = useState([]);
 
@@ -1110,13 +1117,19 @@ export default function App() {
 
       {route === "home" ? (
         <Home
+          products={products}
           onGoCatalog={() => setRoute("catalog")}
           onOpenProduct={openProduct}
           onPickCollection={pickCollection}
         />
       ) : null}
 
-      {route === "catalog" ? <Catalog onOpenProduct={openProduct} /> : null}
+      {route === "catalog" ? (
+        <Catalog
+          products={products}
+          onOpenProduct={openProduct}
+        />
+      ): null}
 
       {route === "product" && selected ? (
         <ProductDetail
