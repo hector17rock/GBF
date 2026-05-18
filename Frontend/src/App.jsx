@@ -7,18 +7,27 @@ import React, { useMemo, useState } from "react";
 const COLLECTIONS = [
   {
     id: "identidad",
-    name: "Identidad",
-    desc: "Recordar quién eres en Cristo en tu rutina diaria.",
+    name: { es: "Identidad", en: "Identity" },
+    desc: {
+      es: "Recordar quién eres en Cristo en tu rutina diaria.",
+      en: "Remember who you are in Christ in your daily routine.",
+    },
   },
   {
     id: "paz",
-    name: "Paz",
-    desc: "Calma para el corazón: frases y versículos de descanso.",
+    name: { es: "Paz", en: "Peace" },
+    desc: {
+      es: "Calma para el corazón: frases y versículos de descanso.",
+      en: "Calm for the heart: phrases and verses for rest.",
+    },
   },
   {
     id: "gratitud",
-    name: "Gratitud",
-    desc: "Un hábito simple que transforma el día.",
+    name: { es: "Gratitud", en: "Gratitude" },
+    desc: {
+      es: "Un hábito simple que transforma el día.",
+      en: "A simple habit that transforms your day.",
+    },
   },
 ];
 
@@ -31,21 +40,379 @@ const VERSES = [
 ];
 
 const FONTS = [
-  { id: "sans", label: "Moderna", className: "font-sans" },
-  { id: "serif", label: "Clásica", className: "font-serif" },
-  { id: "mono", label: "Minimal", className: "font-mono" },
+  {
+    id: "sans",
+    label: { es: "Moderna", en: "Modern" },
+    className: "font-sans",
+  },
+  {
+    id: "serif",
+    label: { es: "Clásica", en: "Classic" },
+    className: "font-serif",
+  },
+  {
+    id: "mono",
+    label: { es: "Minimal", en: "Minimal" },
+    className: "font-mono",
+  },
 ];
 
 const COLORS = [
-  { id: "ink", label: "Tinta", swatch: "bg-zinc-900" },
-  { id: "gold", label: "Dorado", swatch: "bg-amber-500" },
-  { id: "sage", label: "Sage", swatch: "bg-emerald-600" },
-  { id: "sky", label: "Sky", swatch: "bg-sky-600" },
-  { id: "rose", label: "Rose", swatch: "bg-rose-600" },
+  { id: "ink", label: { es: "Tinta", en: "Ink" }, swatch: "bg-zinc-900" },
+  { id: "gold", label: { es: "Dorado", en: "Gold" }, swatch: "bg-amber-500" },
+  {
+    id: "sage",
+    label: { es: "Sage", en: "Sage" },
+    swatch: "bg-emerald-600",
+  },
+  { id: "sky", label: { es: "Cielo", en: "Sky" }, swatch: "bg-sky-600" },
+  { id: "rose", label: { es: "Rosa", en: "Rose" }, swatch: "bg-rose-600" },
 ];
 
-function money(n) {
-  return new Intl.NumberFormat("en-US", {
+const translations = {
+  es: {
+    tagline: "Productos con propósito",
+
+    navHome: "Inicio",
+    navCatalog: "Catálogo",
+    navBlog: "Blog",
+    navValues: "Valores",
+    navAdmin: "Admin",
+
+    explore: "Explorar",
+    cart: "Carrito",
+
+    heroPill: "Evangelio para todos",
+    heroTitleOne: "Productos con propósito,",
+    heroTitleTwo: "fe que transforma.",
+    heroText:
+      "Una tienda cristiana moderna para regalos y hábitos espirituales. Personaliza tu Yeti o tu Journal con nombre, frase o versículo.",
+    heroPrimary: "Personalizar ahora",
+    heroSecondary: "Ver colección",
+
+    heroFeature1Title: "Personalización",
+    heroFeature1Body: "Texto, tipografía, color y versículo.",
+    heroFeature2Title: "Listo para regalar",
+    heroFeature2Body: "Diseños limpios y mensajes claros.",
+
+    collectionsTitle: "Colecciones temáticas",
+    collectionsSubtitle:
+      "Temas actuales y desafíos espirituales para conectar con el corazón.",
+    viewProducts: "Ver productos",
+
+    featuredTitle: "Productos destacados",
+    featuredSubtitle: "Arranca con dos líneas claras: Yeti y Journals.",
+
+    stepsTitle: "Personaliza en 3 pasos",
+    stepsSubtitle: "Un flujo simple que se siente como app.",
+    step1Title: "Elige el producto",
+    step1Desc: "Yeti o Journal según ocasión y estilo.",
+    step2Title: "Personaliza",
+    step2Desc: "Nombre, frase, tipografía, color y versículo.",
+    step3Title: "Envía tu pedido",
+    step3Desc: "Carrito + checkout. Puedes cerrar por WhatsApp.",
+
+    mottoTitle: "Lema",
+    mottoQuote: "\"Productos con propósito, fe que transforma.\"",
+
+    quickCtaTitle: "CTA rápido",
+    quickCtaBody:
+      "Lanza con pre-orden y cierra por WhatsApp mientras validas demanda.",
+
+    catalogTitle: "Catálogo",
+    catalogSubtitle: "Explora por categoría y entra a personalizar.",
+    all: "Todo",
+    searchPlaceholder: "Buscar",
+
+    back: "Volver",
+    preview: "Vista previa",
+    previewFallbackText: "Tu frase o nombre aquí",
+
+    personalizationTitle: "Personalización",
+    personalizationSubtitle:
+      "Ajusta texto, tipografía y color. Esto es el corazón del MVP.",
+
+    labelText: "Texto",
+    textPlaceholder: "Ej: Hogar de la familia Rodríguez",
+    textRecommendation: "Recomendación: 20–35 caracteres.",
+
+    labelVerse: "Versículo",
+    labelFont: "Tipografía",
+    labelColor: "Color",
+
+    summary: "Resumen",
+    summaryText: "Texto:",
+    summaryVerse: "Versículo:",
+    summaryFont: "Tipografía:",
+    summaryColor: "Color:",
+
+    addToCart: "Añadir al carrito",
+    continueExploring: "Seguir explorando",
+    mvpNote:
+      "Este MVP es solo frontend: el pedido se puede cerrar luego por WhatsApp o un formulario.",
+
+    cartTitle: "Carrito",
+    cartSubtitle: "Revisa tu pedido antes del checkout.",
+    continueShopping: "Seguir comprando",
+    emptyCart: "Tu carrito está vacío.",
+    remove: "Eliminar",
+    qty: "Cant.",
+    total: "Total",
+    estimatedTotal: "Este total es estimado para el MVP.",
+    goToCheckout: "Ir a checkout",
+
+    checkoutTitle: "Checkout",
+    checkoutSubtitle: "Sin backend: cierre por WhatsApp o cotización.",
+    yourDetails: "Tus datos",
+    namePlaceholder: "Nombre",
+    phonePlaceholder: "Teléfono",
+    notesPlaceholder: "Notas (ej: para regalo, fecha, etc.)",
+    sendWhatsApp: "Enviar por WhatsApp",
+    backToCart: "Volver al carrito",
+    nextStep:
+      "Siguiente paso (luego): integrar pagos y órdenes reales.",
+    finish: "Finalizar",
+
+    waGreeting: "Hola, quiero hacer un pedido:",
+    waTotalEstimated: "Total estimado:",
+    waName: "Nombre:",
+    waPhone: "Teléfono:",
+    waNotes: "Notas:",
+    waText: "Texto:",
+    waVerse: "Versículo:",
+    waFont: "Tipografía:",
+    waColor: "Color:",
+
+    blogTitle: "Blog",
+    blogSubtitle:
+      "Contenido de lectura corta para enganchar y nutrir a la audiencia.",
+    read: "Leer",
+
+    valuesTitle: "Valores",
+    valuesSubtitle: "Nuestro fundamento",
+    missionTitle: "Misión",
+    missionText:
+      "Compartir el amor de Cristo a través de cada producto. Que cada artículo sea una herramienta de evangelismo, esperanza y fe.",
+
+    adminTitle: "Panel de administración",
+    adminSubtitle: "Gestiona visualmente los productos de la tienda.",
+    adminStatProducts: "Productos",
+    adminStatProductsBody: "Artículos activos en catálogo.",
+    adminStatMode: "Modo",
+    adminStatModeBody: "Datos simulados en frontend.",
+    adminStatManagement: "Gestión",
+    adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
+
+    categoriesTitle: "Categorías",
+    categoriesSubtitle:
+      "Crea o elimina categorías disponibles para los productos.",
+    deleteCategoryAria: (c) => `Eliminar categoría ${c}`,
+    deleteCategoryTitleMinOne: "Debes tener al menos 1 categoría",
+    deleteCategoryTitle: "Eliminar",
+    newCategoryLabel: "Nueva categoría",
+    newCategoryPlaceholder: "Ej: Biblias",
+    addCategory: "Añadir categoría",
+
+    addProductTitle: "Añadir producto",
+    addProductSubtitle: "Crea un nuevo producto visualmente en el catálogo.",
+    productNameLabel: "Nombre",
+    productNamePlaceholder: "Ej: Yeti personalizado 30oz",
+    productCategoryLabel: "Categoría",
+    productPriceLabel: "Precio",
+    productImageLabel: "Imagen URL",
+    productImagePlaceholder: "https://...",
+    productShortLabel: "Descripción corta",
+    productShortPlaceholder: "Ej: Vaso premium con mensaje de fe.",
+    productDescriptionLabel: "Descripción completa",
+    productDescriptionPlaceholder:
+      "Describe el producto, su propósito y detalles importantes.",
+    addProduct: "Añadir producto",
+
+    currentProductsTitle: "Productos actuales",
+    currentProductsSubtitle: "Vista administrativa del catálogo.",
+    edit: "Editar",
+    delete: "Eliminar",
+
+    footerNote: "MVP visual (solo frontend) para validar interés.",
+    footerWhatsAppCheckout: "Checkout WhatsApp",
+  },
+  en: {
+    tagline: "Products with purpose",
+
+    navHome: "Home",
+    navCatalog: "Catalog",
+    navBlog: "Blog",
+    navValues: "Values",
+    navAdmin: "Admin",
+
+    explore: "Explore",
+    cart: "Cart",
+
+    heroPill: "Gospel for everyone",
+    heroTitleOne: "Products with purpose,",
+    heroTitleTwo: "faith that transforms.",
+    heroText:
+      "A modern Christian store for meaningful gifts and spiritual habits. Customize your Yeti or Journal with a name, phrase, or verse.",
+    heroPrimary: "Customize now",
+    heroSecondary: "View collection",
+
+    heroFeature1Title: "Customization",
+    heroFeature1Body: "Text, typography, color, and verse.",
+    heroFeature2Title: "Ready to gift",
+    heroFeature2Body: "Clean designs and clear messages.",
+
+    collectionsTitle: "Themed collections",
+    collectionsSubtitle:
+      "Current themes and spiritual challenges that connect with the heart.",
+    viewProducts: "View products",
+
+    featuredTitle: "Featured products",
+    featuredSubtitle: "Start with two clear lines: Yeti and Journals.",
+
+    stepsTitle: "Customize in 3 steps",
+    stepsSubtitle: "A simple flow that feels like an app.",
+    step1Title: "Choose the product",
+    step1Desc: "Pick a Yeti or Journal based on the occasion and style.",
+    step2Title: "Customize",
+    step2Desc: "Name, phrase, typography, color, and verse.",
+    step3Title: "Place your order",
+    step3Desc: "Cart + checkout. You can finalize via WhatsApp.",
+
+    mottoTitle: "Motto",
+    mottoQuote: "\"Products with purpose, faith that transforms.\"",
+
+    quickCtaTitle: "Quick CTA",
+    quickCtaBody:
+      "Launch with pre-orders and close via WhatsApp while validating demand.",
+
+    catalogTitle: "Catalog",
+    catalogSubtitle: "Browse by category and jump into customization.",
+    all: "All",
+    searchPlaceholder: "Search",
+
+    back: "Back",
+    preview: "Preview",
+    previewFallbackText: "Your phrase or name here",
+
+    personalizationTitle: "Customization",
+    personalizationSubtitle:
+      "Adjust text, typography, and color. This is the heart of the MVP.",
+
+    labelText: "Text",
+    textPlaceholder: "e.g. The Rodriguez family home",
+    textRecommendation: "Recommendation: 20–35 characters.",
+
+    labelVerse: "Verse",
+    labelFont: "Typography",
+    labelColor: "Color",
+
+    summary: "Summary",
+    summaryText: "Text:",
+    summaryVerse: "Verse:",
+    summaryFont: "Typography:",
+    summaryColor: "Color:",
+
+    addToCart: "Add to cart",
+    continueExploring: "Keep browsing",
+    mvpNote:
+      "This MVP is frontend-only: the order can be finalized later via WhatsApp or a form.",
+
+    cartTitle: "Cart",
+    cartSubtitle: "Review your order before checkout.",
+    continueShopping: "Continue shopping",
+    emptyCart: "Your cart is empty.",
+    remove: "Remove",
+    qty: "Qty",
+    total: "Total",
+    estimatedTotal: "This total is estimated for the MVP.",
+    goToCheckout: "Go to checkout",
+
+    checkoutTitle: "Checkout",
+    checkoutSubtitle: "No backend: finalize via WhatsApp or quote.",
+    yourDetails: "Your details",
+    namePlaceholder: "Name",
+    phonePlaceholder: "Phone",
+    notesPlaceholder: "Notes (e.g. gift, date, etc.)",
+    sendWhatsApp: "Send via WhatsApp",
+    backToCart: "Back to cart",
+    nextStep: "Next step (later): integrate payments and real orders.",
+    finish: "Finish",
+
+    waGreeting: "Hi, I'd like to place an order:",
+    waTotalEstimated: "Estimated total:",
+    waName: "Name:",
+    waPhone: "Phone:",
+    waNotes: "Notes:",
+    waText: "Text:",
+    waVerse: "Verse:",
+    waFont: "Typography:",
+    waColor: "Color:",
+
+    blogTitle: "Blog",
+    blogSubtitle: "Short reads to attract and nurture your audience.",
+    read: "Read",
+
+    valuesTitle: "Values",
+    valuesSubtitle: "Our foundation",
+    missionTitle: "Mission",
+    missionText:
+      "Share the love of Christ through every product. May each item be a tool for evangelism, hope, and faith.",
+
+    adminTitle: "Admin panel",
+    adminSubtitle: "Visually manage the store's products.",
+    adminStatProducts: "Products",
+    adminStatProductsBody: "Active items in the catalog.",
+    adminStatMode: "Mode",
+    adminStatModeBody: "Frontend-only mock data.",
+    adminStatManagement: "Management",
+    adminStatManagementBody: "Next: add, edit, and delete products.",
+
+    categoriesTitle: "Categories",
+    categoriesSubtitle: "Create or remove available product categories.",
+    deleteCategoryAria: (c) => `Delete category ${c}`,
+    deleteCategoryTitleMinOne: "You must keep at least 1 category",
+    deleteCategoryTitle: "Delete",
+    newCategoryLabel: "New category",
+    newCategoryPlaceholder: "e.g. Bibles",
+    addCategory: "Add category",
+
+    addProductTitle: "Add product",
+    addProductSubtitle: "Create a new product visually in the catalog.",
+    productNameLabel: "Name",
+    productNamePlaceholder: "e.g. Custom 30oz Yeti",
+    productCategoryLabel: "Category",
+    productPriceLabel: "Price",
+    productImageLabel: "Image URL",
+    productImagePlaceholder: "https://...",
+    productShortLabel: "Short description",
+    productShortPlaceholder: "e.g. Premium tumbler with a faith message.",
+    productDescriptionLabel: "Full description",
+    productDescriptionPlaceholder:
+      "Describe the product, its purpose, and important details.",
+    addProduct: "Add product",
+
+    currentProductsTitle: "Current products",
+    currentProductsSubtitle: "Administrative view of the catalog.",
+    edit: "Edit",
+    delete: "Delete",
+
+    footerNote: "Visual MVP (frontend-only) to validate interest.",
+    footerWhatsAppCheckout: "WhatsApp Checkout",
+  },
+};
+
+function l10n(value, language) {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  if (typeof value === "object") return value[language] ?? value.es ?? "";
+  return String(value);
+}
+
+
+function money(n, language = "en") {
+  const locale = language === "es" ? "es-US" : "en-US";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "USD",
   }).format(n);
@@ -86,7 +453,15 @@ function SectionTitle({ title, subtitle }) {
   );
 }
 
-function TopBar({ route, setRoute, cartCount }) {
+function TopBar({
+  route,
+  setRoute,
+  cartCount,
+  t,
+  language,
+  setLanguage,
+}) {
+
   return (
     <div className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -98,44 +473,50 @@ function TopBar({ route, setRoute, cartCount }) {
             <div className="text-sm font-bold text-zinc-900">
               Grow by Faith
             </div>
-            <div className="text-xs text-zinc-500">Productos con propósito</div>
+            <div className="text-xs text-zinc-500">{t.tagline}</div>
           </div>
         </div>
 
         <div className="hidden items-center gap-1 md:flex">
           <NavLink active={route === "home"} onClick={() => setRoute("home")}>
-            Inicio
+            {t.navHome}
           </NavLink>
           <NavLink
             active={route === "catalog"}
             onClick={() => setRoute("catalog")}
           >
-            Catálogo
+            {t.navCatalog}
           </NavLink>
           <NavLink active={route === "blog"} onClick={() => setRoute("blog")}>
-            Blog
+            {t.navBlog}
           </NavLink>
           <NavLink
             active={route === "about"}
             onClick={() => setRoute("about")}
           >
-            Valores
+            {t.navValues}
           </NavLink>
 
           <NavLink
             active={route === "admin"}
             onClick={() => setRoute("admin")}
           >
-            Admin
+            {t.navAdmin}
           </NavLink>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="secondary" onClick={() => setRoute("catalog")}>
-            Explorar
+            {t.explore}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setLanguage(language === "es" ? "en" : "es")}
+          >
+            {language === "es" ? "EN" : "ES"}
           </Button>
           <Button variant="primary" onClick={() => setRoute("cart")}>
-            Carrito
+            {t.cart}
             {cartCount > 0 ? (
               <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1 text-xs">
                 {cartCount}
@@ -148,23 +529,22 @@ function TopBar({ route, setRoute, cartCount }) {
       <div className="mx-auto max-w-6xl px-4 pb-2 md:hidden">
         <div className="grid grid-cols-5 gap-2">
           <MobileTab active={route === "home"} onClick={() => setRoute("home")}>
-            Inicio
+            {t.navHome}
           </MobileTab>
           <MobileTab
             active={route === "catalog"}
             onClick={() => setRoute("catalog")}
           >
-            Catálogo
+            {t.navCatalog}
           </MobileTab>
           <MobileTab active={route === "blog"} onClick={() => setRoute("blog")}>
-            Blog
+            {t.navBlog}
           </MobileTab>
           <MobileTab active={route === "about"} onClick={() => setRoute("about")}>
-            Valores
+            {t.navValues}
           </MobileTab>
-          <MobileTab active={route === "admin"} onClick={() => setRoute("admin")}
-          >
-            Admin
+          <MobileTab active={route === "admin"} onClick={() => setRoute("admin")}>
+            {t.navAdmin}
           </MobileTab>
         </div>
       </div>
@@ -200,7 +580,32 @@ function MobileTab({ active, onClick, children }) {
   );
 }
 
-function Hero({ onPrimary, onSecondary }) {
+
+function CollectionCards({ onPick, language, t }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-3">
+      {COLLECTIONS.map((c) => (
+        <button
+          key={c.id}
+          onClick={() => onPick(c)}
+          className="rounded-[24px] border border-zinc-200 bg-white p-5 text-left transition hover:bg-zinc-50"
+        >
+          <div className="text-sm font-bold text-zinc-900">
+            {l10n(c.name, language)}
+          </div>
+          <div className="mt-2 text-sm leading-6 text-zinc-600">
+            {l10n(c.desc, language)}
+          </div>
+          <div className="mt-4">
+            <Pill>{t.viewProducts}</Pill>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Hero({ onPrimary, onSecondary, t }) {
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-zinc-200 bg-white">
       <div className="absolute inset-0">
@@ -210,33 +615,36 @@ function Hero({ onPrimary, onSecondary }) {
 
       <div className="relative grid gap-6 p-6 md:grid-cols-2 md:p-10">
         <div>
-          <Pill>Evangelio para todos</Pill>
+          <Pill>{t.heroPill}</Pill>
+
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
-            Productos con propósito,
-            <span className="block">fe que transforma.</span>
+            {t.heroTitleOne}
+            <span className="block">{t.heroTitleTwo}</span>
           </h1>
+
           <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
-            Una tienda cristiana moderna para regalos y hábitos espirituales.
-            Personaliza tu Yeti o tu Journal con nombre, frase o versículo.
+            {t.heroText}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2">
             <Button onClick={onPrimary} variant="primary">
-              Personalizar ahora
+              {t.heroPrimary}
             </Button>
+
             <Button onClick={onSecondary} variant="secondary">
-              Ver colección
+              {t.heroSecondary}
             </Button>
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-zinc-600 md:max-w-md">
             <div className="rounded-2xl bg-zinc-50 p-3">
-              <div className="font-semibold text-zinc-900">Personalización</div>
-              <div className="mt-1">Texto, tipografía, color y versículo.</div>
+              <div className="font-semibold text-zinc-900">{t.heroFeature1Title}</div>
+              <div className="mt-1">{t.heroFeature1Body}</div>
             </div>
+
             <div className="rounded-2xl bg-zinc-50 p-3">
-              <div className="font-semibold text-zinc-900">Listo para regalar</div>
-              <div className="mt-1">Diseños limpios y mensajes claros.</div>
+              <div className="font-semibold text-zinc-900">{t.heroFeature2Title}</div>
+              <div className="mt-1">{t.heroFeature2Body}</div>
             </div>
           </div>
         </div>
@@ -249,6 +657,7 @@ function Hero({ onPrimary, onSecondary }) {
               className="h-44 w-full object-cover md:h-52"
             />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="overflow-hidden rounded-[24px] border border-zinc-200">
               <img
@@ -257,6 +666,7 @@ function Hero({ onPrimary, onSecondary }) {
                 className="h-36 w-full object-cover"
               />
             </div>
+
             <div className="overflow-hidden rounded-[24px] border border-zinc-200">
               <img
                 alt="product"
@@ -271,27 +681,10 @@ function Hero({ onPrimary, onSecondary }) {
   );
 }
 
-function CollectionCards({ onPick }) {
-  return (
-    <div className="grid gap-3 md:grid-cols-3">
-      {COLLECTIONS.map((c) => (
-        <button
-          key={c.id}
-          onClick={() => onPick(c)}
-          className="rounded-[24px] border border-zinc-200 bg-white p-5 text-left transition hover:bg-zinc-50"
-        >
-          <div className="text-sm font-bold text-zinc-900">{c.name}</div>
-          <div className="mt-2 text-sm leading-6 text-zinc-600">{c.desc}</div>
-          <div className="mt-4">
-            <Pill>Ver productos</Pill>
-          </div>
-        </button>
-      ))}
-    </div>
-  );
-}
+function ProductCard({ p, onOpen, language }) {
+  const name = l10n(p.name, language);
+  const short = l10n(p.short, language);
 
-function ProductCard({ p, onOpen }) {
   return (
     <button
       onClick={() => onOpen(p)}
@@ -299,7 +692,7 @@ function ProductCard({ p, onOpen }) {
     >
       <div className="overflow-hidden">
         <img
-          alt={p.name}
+          alt={name}
           src={p.image}
           className="h-40 w-full object-cover transition group-hover:scale-[1.03]"
         />
@@ -308,15 +701,16 @@ function ProductCard({ p, onOpen }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs font-semibold text-zinc-500">{p.category}</div>
-            <div className="mt-1 text-sm font-bold text-zinc-900">{p.name}</div>
+            <div className="mt-1 text-sm font-bold text-zinc-900">{name}</div>
           </div>
-          <div className="text-sm font-bold text-zinc-900">{money(p.price)}</div>
+          <div className="text-sm font-bold text-zinc-900">{money(p.price, language)}</div>
         </div>
-        <div className="mt-2 text-sm text-zinc-600">{p.short}</div>
+        <div className="mt-2 text-sm text-zinc-600">{short}</div>
         <div className="mt-4 flex flex-wrap gap-2">
-          {p.tags.map((t) => (
-            <Pill key={t}>{t}</Pill>
-          ))}
+          {p.tags.map((tag, idx) => {
+            const key = `${l10n(tag, "en") || l10n(tag, "es") || "tag"}-${idx}`;
+            return <Pill key={key}>{l10n(tag, language)}</Pill>;
+          })}
         </div>
       </div>
     </button>
@@ -328,72 +722,49 @@ function Home({
   onGoCatalog,
   onOpenProduct,
   onPickCollection,
+  t,
+  language,
 }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <Hero onPrimary={onGoCatalog} onSecondary={onGoCatalog} />
+      <Hero onPrimary={onGoCatalog} onSecondary={onGoCatalog} t={t} />
 
       <div className="mt-8">
-        <SectionTitle
-          title="Colecciones temáticas"
-          subtitle="Temas actuales y desafíos espirituales para conectar con el corazón."
-        />
-        <CollectionCards onPick={onPickCollection} />
+        <SectionTitle title={t.collectionsTitle} subtitle={t.collectionsSubtitle} />
+        <CollectionCards onPick={onPickCollection} t={t} language={language} />
       </div>
 
       <div className="mt-10">
-        <SectionTitle
-          title="Productos destacados"
-          subtitle="Arranca con dos líneas claras: Yeti y Journals."
-        />
+        <SectionTitle title={t.featuredTitle} subtitle={t.featuredSubtitle} />
         <div className="grid gap-3 md:grid-cols-2">
           {products.map((p) => (
-            <ProductCard key={p.id} p={p} onOpen={onOpenProduct} />
+            <ProductCard key={p.id} p={p} onOpen={onOpenProduct} language={language} />
           ))}
         </div>
       </div>
 
       <div className="mt-10 rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
-        <SectionTitle
-          title="Personaliza en 3 pasos"
-          subtitle="Un flujo simple que se siente como app."
-        />
+        <SectionTitle title={t.stepsTitle} subtitle={t.stepsSubtitle} />
         <div className="grid gap-4 md:grid-cols-3">
-          <Step
-            n="1"
-            title="Elige el producto"
-            desc="Yeti o Journal según ocasión y estilo."
-          />
-          <Step
-            n="2"
-            title="Personaliza"
-            desc="Nombre, frase, tipografía, color y versículo."
-          />
-          <Step
-            n="3"
-            title="Envía tu pedido"
-            desc="Carrito + checkout. Puedes cerrar por WhatsApp."
-          />
+          <Step n="1" title={t.step1Title} desc={t.step1Desc} />
+          <Step n="2" title={t.step2Title} desc={t.step2Desc} />
+          <Step n="3" title={t.step3Title} desc={t.step3Desc} />
         </div>
       </div>
 
       <div className="mt-10 grid gap-3 md:grid-cols-2">
         <div className="rounded-[28px] border border-zinc-200 bg-white p-6">
-          <div className="text-sm font-bold text-zinc-900">Lema</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            "Productos con propósito, fe que transforma."
-          </p>
+          <div className="text-sm font-bold text-zinc-900">{t.mottoTitle}</div>
+          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.mottoQuote}</p>
         </div>
         <div className="rounded-[28px] border border-zinc-200 bg-white p-6">
-          <div className="text-sm font-bold text-zinc-900">CTA rápido</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Lanza con pre-orden y cierra por WhatsApp mientras validas demanda.
-          </p>
+          <div className="text-sm font-bold text-zinc-900">{t.quickCtaTitle}</div>
+          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.quickCtaBody}</p>
         </div>
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
@@ -412,37 +783,37 @@ function Step({ n, title, desc }) {
   );
 }
 
-function Catalog({ products = [], categories = [], onOpenProduct }) {
+function Catalog({
+  products = [],
+  categories = [],
+  onOpenProduct,
+  t,
+  language,
+}) {
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
       const byCat = category === "All" ? true : p.category === category;
+      const haystack = `${l10n(p.name, language)} ${l10n(p.short, language)}`.toLowerCase();
       const byQ =
-        q.trim().length === 0
-          ? true
-          : (p.name + " " + p.short)
-              .toLowerCase()
-              .includes(q.trim().toLowerCase());
+        q.trim().length === 0 ? true : haystack.includes(q.trim().toLowerCase());
       return byCat && byQ;
     });
-  }, [category, q, products]);
+  }, [category, q, products, language]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
-        <SectionTitle
-          title="Catálogo"
-          subtitle="Explora por categoría y entra a personalizar."
-        />
+        <SectionTitle title={t.catalogTitle} subtitle={t.catalogSubtitle} />
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
             <FilterChip
               active={category === "All"}
               onClick={() => setCategory("All")}
             >
-              Todo
+              {t.all}
             </FilterChip>
             {categories.map((c) => (
               <FilterChip
@@ -459,7 +830,7 @@ function Catalog({ products = [], categories = [], onOpenProduct }) {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar"
+              placeholder={t.searchPlaceholder}
               className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400 md:w-72"
             />
           </div>
@@ -468,11 +839,11 @@ function Catalog({ products = [], categories = [], onOpenProduct }) {
 
       <div className="mt-6 grid gap-3 md:grid-cols-2">
         {filtered.map((p) => (
-          <ProductCard key={p.id} p={p} onOpen={onOpenProduct} />
+          <ProductCard key={p.id} p={p} onOpen={onOpenProduct} language={language} />
         ))}
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
@@ -490,7 +861,7 @@ function FilterChip({ active, onClick, children }) {
   );
 }
 
-function ProductDetail({ product, onBack, onAddToCart }) {
+function ProductDetail({ product, onBack, onAddToCart, t, language }) {
   const [text, setText] = useState("");
   const [verse, setVerse] = useState(VERSES[1]);
   const [font, setFont] = useState(FONTS[0].id);
@@ -525,15 +896,15 @@ function ProductDetail({ product, onBack, onAddToCart }) {
               {product.category}
             </div>
             <div className="mt-1 text-2xl font-extrabold text-zinc-900">
-              {product.name}
+              {l10n(product.name, language)}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onBack}>
-              Volver
+              {t.back}
             </Button>
             <div className="text-lg font-bold text-zinc-900">
-              {money(product.price)}
+              {money(product.price, language)}
             </div>
           </div>
         </div>
@@ -542,7 +913,7 @@ function ProductDetail({ product, onBack, onAddToCart }) {
           <div className="overflow-hidden rounded-[28px] border border-zinc-200">
             <div className="relative">
               <img
-                alt={product.name}
+                alt={l10n(product.name, language)}
                 src={product.image}
                 className="h-80 w-full object-cover"
               />
@@ -551,14 +922,14 @@ function ProductDetail({ product, onBack, onAddToCart }) {
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="rounded-[22px] bg-white/90 p-4 backdrop-blur">
                   <div className="text-xs font-semibold text-zinc-500">
-                    Preview
+                    {t.preview}
                   </div>
                   <div
                     className={`mt-1 text-base font-bold ${fontClass} ${colorClass}`}
                   >
                     {personalization.text.length > 0
                       ? personalization.text
-                      : "Tu frase o nombre aquí"}
+                      : t.previewFallbackText}
                   </div>
                   <div className="mt-1 text-xs text-zinc-600">
                     {personalization.verse}
@@ -570,29 +941,27 @@ function ProductDetail({ product, onBack, onAddToCart }) {
 
           <div>
             <SectionTitle
-              title="Personalización"
-              subtitle="Ajusta texto, tipografía y color. Esto es el corazón del MVP."
+              title={t.personalizationTitle}
+              subtitle={t.personalizationSubtitle}
             />
 
             <div className="grid gap-4">
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Texto
+                  {t.labelText}
                 </label>
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Ej: Hogar de la familia Rodríguez"
+                  placeholder={t.textPlaceholder}
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
-                <div className="mt-1 text-xs text-zinc-500">
-                  Recomendación: 20–35 caracteres.
-                </div>
+                <div className="mt-1 text-xs text-zinc-500">{t.textRecommendation}</div>
               </div>
 
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Versículo
+                  {t.labelVerse}
                 </label>
                 <select
                   value={verse}
@@ -609,7 +978,7 @@ function ProductDetail({ product, onBack, onAddToCart }) {
 
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Tipografía
+                  {t.labelFont}
                 </label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {FONTS.map((f) => (
@@ -622,7 +991,7 @@ function ProductDetail({ product, onBack, onAddToCart }) {
                           : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                       }`}
                     >
-                      {f.label}
+                      {l10n(f.label, language)}
                     </button>
                   ))}
                 </div>
@@ -630,7 +999,7 @@ function ProductDetail({ product, onBack, onAddToCart }) {
 
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Color
+                  {t.labelColor}
                 </label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {COLORS.map((c) => (
@@ -646,29 +1015,29 @@ function ProductDetail({ product, onBack, onAddToCart }) {
                       <span
                         className={`h-3 w-3 rounded-full ${c.swatch}`}
                       />
-                      {c.label}
+                      {l10n(c.label, language)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="rounded-[24px] bg-zinc-50 p-5">
-                <div className="text-sm font-bold text-zinc-900">Resumen</div>
+                <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
                 <div className="mt-2 text-sm text-zinc-700">
                   <div>
-                    <span className="font-semibold">Texto:</span>{" "}
+                    <span className="font-semibold">{t.summaryText}</span>{" "}
                     {personalization.text.length ? personalization.text : "—"}
                   </div>
                   <div>
-                    <span className="font-semibold">Versículo:</span> {verse}
+                    <span className="font-semibold">{t.summaryVerse}</span> {verse}
                   </div>
                   <div>
-                    <span className="font-semibold">Tipografía:</span>{" "}
-                    {FONTS.find((f) => f.id === font)?.label}
+                    <span className="font-semibold">{t.summaryFont}</span>{" "}
+                    {l10n(FONTS.find((f) => f.id === font)?.label, language)}
                   </div>
                   <div>
-                    <span className="font-semibold">Color:</span>{" "}
-                    {COLORS.find((c) => c.id === color)?.label}
+                    <span className="font-semibold">{t.summaryColor}</span>{" "}
+                    {l10n(COLORS.find((c) => c.id === color)?.label, language)}
                   </div>
                 </div>
               </div>
@@ -679,49 +1048,43 @@ function ProductDetail({ product, onBack, onAddToCart }) {
                   onClick={() => onAddToCart(product, personalization)}
                   className="w-full md:w-auto"
                 >
-                  Añadir al carrito
+                  {t.addToCart}
                 </Button>
                 <Button variant="secondary" onClick={onBack}>
-                  Seguir explorando
+                  {t.continueExploring}
                 </Button>
               </div>
 
-              <div className="text-xs leading-5 text-zinc-500">
-                Este MVP es solo frontend: el pedido se puede cerrar luego por
-                WhatsApp o un formulario.
-              </div>
+              <div className="text-xs leading-5 text-zinc-500">{t.mvpNote}</div>
             </div>
           </div>
         </div>
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
 
-function Cart({ cart, onRemove, onCheckout, onBack }) {
+function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
   const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <SectionTitle
-            title="Carrito"
-            subtitle="Revisa tu pedido antes del checkout."
-          />
+          <SectionTitle title={t.cartTitle} subtitle={t.cartSubtitle} />
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onBack}>
-              Seguir comprando
+              {t.continueShopping}
             </Button>
-            <div className="text-lg font-bold text-zinc-900">{money(total)}</div>
+            <div className="text-lg font-bold text-zinc-900">{money(total, language)}</div>
           </div>
         </div>
 
         {cart.length === 0 ? (
           <div className="rounded-[24px] bg-zinc-50 p-6 text-sm text-zinc-600">
-            Tu carrito está vacío.
+            {t.emptyCart}
           </div>
         ) : (
           <div className="grid gap-3">
@@ -736,34 +1099,36 @@ function Cart({ cart, onRemove, onCheckout, onBack }) {
                       {it.category}
                     </div>
                     <div className="mt-1 text-sm font-bold text-zinc-900">
-                      {it.name}
+                      {l10n(it.name, language)}
                     </div>
                     <div className="mt-2 text-sm text-zinc-600">
                       {it.personalization.text ? (
                         <>
-                          <span className="font-semibold">Texto:</span>{" "}
+                          <span className="font-semibold">{t.summaryText}</span>{" "}
                           {it.personalization.text}
                         </>
                       ) : (
                         <>
-                          <span className="font-semibold">Texto:</span> —
+                          <span className="font-semibold">{t.summaryText}</span> —
                         </>
                       )}
                     </div>
                     <div className="mt-1 text-sm text-zinc-600">
-                      <span className="font-semibold">Versículo:</span>{" "}
+                      <span className="font-semibold">{t.summaryVerse}</span>{" "}
                       {it.personalization.verse}
                     </div>
                   </div>
 
                   <div className="text-right">
                     <div className="text-sm font-bold text-zinc-900">
-                      {money(it.price)}
+                      {money(it.price, language)}
                     </div>
-                    <div className="mt-2 text-xs text-zinc-500">Qty: {it.qty}</div>
+                    <div className="mt-2 text-xs text-zinc-500">
+                      {t.qty}: {it.qty}
+                    </div>
                     <div className="mt-3">
                       <Button variant="secondary" onClick={() => onRemove(it.key)}>
-                        Eliminar
+                        {t.remove}
                       </Button>
                     </div>
                   </div>
@@ -773,17 +1138,15 @@ function Cart({ cart, onRemove, onCheckout, onBack }) {
 
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-zinc-50 p-5">
               <div>
-                <div className="text-sm font-bold text-zinc-900">Total</div>
-                <div className="text-sm text-zinc-600">
-                  Este total es estimado para el MVP.
-                </div>
+                <div className="text-sm font-bold text-zinc-900">{t.total}</div>
+                <div className="text-sm text-zinc-600">{t.estimatedTotal}</div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-lg font-extrabold text-zinc-900">
-                  {money(total)}
+                  {money(total, language)}
                 </div>
                 <Button variant="primary" onClick={onCheckout}>
-                  Ir a checkout
+                  {t.goToCheckout}
                 </Button>
               </div>
             </div>
@@ -791,12 +1154,12 @@ function Cart({ cart, onRemove, onCheckout, onBack }) {
         )}
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
 
-function Checkout({ cart, onBack, onDone }) {
+function Checkout({ cart, onBack, onDone, t, language }) {
   const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
   const [name, setName] = useState("");
@@ -805,22 +1168,22 @@ function Checkout({ cart, onBack, onDone }) {
 
   const whatsappText = useMemo(() => {
     const lines = [];
-    lines.push("Hola, quiero hacer un pedido:");
+    lines.push(t.waGreeting);
     cart.forEach((it, idx) => {
       lines.push(
-        `${idx + 1}. ${it.name} (${it.category}) x${it.qty} - ${money(it.price)}`
+        `${idx + 1}. ${l10n(it.name, language)} (${it.category}) x${it.qty} - ${money(it.price, language)}`
       );
-      lines.push(`   Texto: ${it.personalization.text || "—"}`);
-      lines.push(`   Versículo: ${it.personalization.verse}`);
-      lines.push(`   Tipografía: ${it.personalization.font}`);
-      lines.push(`   Color: ${it.personalization.color}`);
+      lines.push(`   ${t.waText} ${it.personalization.text || "—"}`);
+      lines.push(`   ${t.waVerse} ${it.personalization.verse}`);
+      lines.push(`   ${t.waFont} ${it.personalization.font}`);
+      lines.push(`   ${t.waColor} ${it.personalization.color}`);
     });
-    lines.push(`Total estimado: ${money(total)}`);
-    if (name.trim()) lines.push(`Nombre: ${name.trim()}`);
-    if (phone.trim()) lines.push(`Teléfono: ${phone.trim()}`);
-    if (notes.trim()) lines.push(`Notas: ${notes.trim()}`);
+    lines.push(`${t.waTotalEstimated} ${money(total, language)}`);
+    if (name.trim()) lines.push(`${t.waName} ${name.trim()}`);
+    if (phone.trim()) lines.push(`${t.waPhone} ${phone.trim()}`);
+    if (notes.trim()) lines.push(`${t.waNotes} ${notes.trim()}`);
     return encodeURIComponent(lines.join("\n"));
-  }, [cart, total, name, phone, notes]);
+  }, [cart, total, name, phone, notes, t, language]);
 
   const whatsappHref = `https://wa.me/?text=${whatsappText}`;
 
@@ -828,33 +1191,30 @@ function Checkout({ cart, onBack, onDone }) {
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <SectionTitle
-            title="Checkout"
-            subtitle="Sin backend: cierre por WhatsApp o cotización."
-          />
-          <div className="text-lg font-bold text-zinc-900">{money(total)}</div>
+          <SectionTitle title={t.checkoutTitle} subtitle={t.checkoutSubtitle} />
+          <div className="text-lg font-bold text-zinc-900">{money(total, language)}</div>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="rounded-[24px] bg-zinc-50 p-6">
-            <div className="text-sm font-bold text-zinc-900">Tus datos</div>
+            <div className="text-sm font-bold text-zinc-900">{t.yourDetails}</div>
             <div className="mt-4 grid gap-3">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nombre"
+                placeholder={t.namePlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Teléfono"
+                placeholder={t.phonePlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Notas (ej: para regalo, fecha, etc.)"
+                placeholder={t.notesPlaceholder}
                 rows={4}
                 className="w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
@@ -867,21 +1227,19 @@ function Checkout({ cart, onBack, onDone }) {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
               >
-                Enviar por WhatsApp
+                {t.sendWhatsApp}
               </a>
               <Button variant="secondary" onClick={onBack}>
-                Volver al carrito
+                {t.backToCart}
               </Button>
             </div>
 
-            <div className="mt-3 text-xs leading-5 text-zinc-500">
-              Siguiente paso (luego): integrar pagos y órdenes reales.
-            </div>
+            <div className="mt-3 text-xs leading-5 text-zinc-500">{t.nextStep}</div>
           </div>
 
           <div>
             <div className="rounded-[24px] border border-zinc-200 p-6">
-              <div className="text-sm font-bold text-zinc-900">Resumen</div>
+              <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
               <div className="mt-4 grid gap-3">
                 {cart.map((it) => (
                   <div key={it.key} className="rounded-2xl bg-zinc-50 p-4">
@@ -891,17 +1249,17 @@ function Checkout({ cart, onBack, onDone }) {
                           {it.category}
                         </div>
                         <div className="mt-1 text-sm font-bold text-zinc-900">
-                          {it.name}
+                          {l10n(it.name, language)}
                         </div>
                         <div className="mt-2 text-xs text-zinc-600">
-                          Texto: {it.personalization.text || "—"}
+                          {t.summaryText} {it.personalization.text || "—"}
                         </div>
                         <div className="mt-1 text-xs text-zinc-600">
-                          Versículo: {it.personalization.verse}
+                          {t.summaryVerse} {it.personalization.verse}
                         </div>
                       </div>
                       <div className="text-sm font-bold text-zinc-900">
-                        {money(it.price)}
+                        {money(it.price, language)}
                       </div>
                     </div>
                   </div>
@@ -909,15 +1267,15 @@ function Checkout({ cart, onBack, onDone }) {
               </div>
 
               <div className="mt-4 flex items-center justify-between rounded-2xl bg-zinc-50 p-4">
-                <div className="text-sm font-bold text-zinc-900">Total</div>
+                <div className="text-sm font-bold text-zinc-900">{t.total}</div>
                 <div className="text-base font-extrabold text-zinc-900">
-                  {money(total)}
+                  {money(total, language)}
                 </div>
               </div>
 
               <div className="mt-4">
                 <Button variant="primary" onClick={onDone}>
-                  Finalizar
+                  {t.finish}
                 </Button>
               </div>
             </div>
@@ -925,107 +1283,149 @@ function Checkout({ cart, onBack, onDone }) {
         </div>
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
 
-function Blog() {
+function Blog({ t, language }) {
   const posts = [
     {
-      title: "Cómo empezar un journal de oración",
-      excerpt:
-        "Una estructura simple de 10 minutos al día para crecer en fe y constancia.",
+      title: {
+        es: "Cómo empezar un journal de oración",
+        en: "How to start a prayer journal",
+      },
+      excerpt: {
+        es: "Una estructura simple de 10 minutos al día para crecer en fe y constancia.",
+        en: "A simple 10-minute daily structure to grow in faith and consistency.",
+      },
     },
     {
-      title: "3 maneras de regalar con propósito",
-      excerpt:
-        "Ideas para personalizar un Yeti o un journal y bendecir a alguien.",
+      title: {
+        es: "3 maneras de regalar con propósito",
+        en: "3 ways to gift with purpose",
+      },
+      excerpt: {
+        es: "Ideas para personalizar un Yeti o un journal y bendecir a alguien.",
+        en: "Ideas to customize a Yeti or a journal and bless someone.",
+      },
     },
     {
-      title: "Identidad: cuando te sientes inestable",
-      excerpt:
-        "Una lectura corta para recordar quién eres y cómo volver a la calma.",
+      title: {
+        es: "Identidad: cuando te sientes inestable",
+        en: "Identity: when you feel unstable",
+      },
+      excerpt: {
+        es: "Una lectura corta para recordar quién eres y cómo volver a la calma.",
+        en: "A short read to remember who you are and how to return to calm.",
+      },
     },
   ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
-        <SectionTitle
-          title="Blog"
-          subtitle="Contenido de lectura corta para enganchar y nutrir a la audiencia."
-        />
+        <SectionTitle title={t.blogTitle} subtitle={t.blogSubtitle} />
         <div className="grid gap-3 md:grid-cols-3">
-          {posts.map((p) => (
+          {posts.map((p, idx) => (
             <div
-              key={p.title}
+              key={`${l10n(p.title, "en") || l10n(p.title, "es")}-${idx}`}
               className="rounded-[24px] border border-zinc-200 bg-white p-5"
             >
-              <div className="text-sm font-bold text-zinc-900">{p.title}</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-600">{p.excerpt}</div>
+              <div className="text-sm font-bold text-zinc-900">
+                {l10n(p.title, language)}
+              </div>
+              <div className="mt-2 text-sm leading-6 text-zinc-600">
+                {l10n(p.excerpt, language)}
+              </div>
               <div className="mt-4">
-                <Pill>Leer</Pill>
+                <Pill>{t.read}</Pill>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
 
-function About() {
+function About({ t, language }) {
   const values = [
-    { title: "Fe", desc: "Todo lo que hacemos está fundamentado en la Palabra." },
     {
-      title: "Integridad",
-      desc: "Operamos con transparencia, honestidad y responsabilidad.",
-    },
-    { title: "Servicio", desc: "Servimos con amor y excelencia." },
-    {
-      title: "Esperanza",
-      desc: "Promovemos mensajes que edifican y transforman vidas.",
+      title: { es: "Fe", en: "Faith" },
+      desc: {
+        es: "Todo lo que hacemos está fundamentado en la Palabra.",
+        en: "Everything we do is grounded in the Word.",
+      },
     },
     {
-      title: "Comunidad",
-      desc: "Fomentamos unidad entre creyentes y quienes buscan.",
+      title: { es: "Integridad", en: "Integrity" },
+      desc: {
+        es: "Operamos con transparencia, honestidad y responsabilidad.",
+        en: "We operate with transparency, honesty, and accountability.",
+      },
+    },
+    {
+      title: { es: "Servicio", en: "Service" },
+      desc: { es: "Servimos con amor y excelencia.", en: "We serve with love and excellence." },
+    },
+    {
+      title: { es: "Esperanza", en: "Hope" },
+      desc: {
+        es: "Promovemos mensajes que edifican y transforman vidas.",
+        en: "We promote messages that build up and transform lives.",
+      },
+    },
+    {
+      title: { es: "Comunidad", en: "Community" },
+      desc: {
+        es: "Fomentamos unidad entre creyentes y quienes buscan.",
+        en: "We foster unity among believers and seekers.",
+      },
     },
   ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
-        <SectionTitle title="Valores" subtitle="Nuestro fundamento" />
+        <SectionTitle title={t.valuesTitle} subtitle={t.valuesSubtitle} />
         <div className="grid gap-3 md:grid-cols-2">
-          {values.map((v) => (
+          {values.map((v, idx) => (
             <div
-              key={v.title}
+              key={`${l10n(v.title, "en") || l10n(v.title, "es")}-${idx}`}
               className="rounded-[24px] border border-zinc-200 bg-white p-5"
             >
-              <div className="text-sm font-bold text-zinc-900">{v.title}</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-600">{v.desc}</div>
+              <div className="text-sm font-bold text-zinc-900">
+                {l10n(v.title, language)}
+              </div>
+              <div className="mt-2 text-sm leading-6 text-zinc-600">
+                {l10n(v.desc, language)}
+              </div>
             </div>
           ))}
         </div>
 
         <div className="mt-6 rounded-[24px] bg-zinc-50 p-6">
-          <div className="text-sm font-bold text-zinc-900">Misión</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Compartir el amor de Cristo a través de cada producto. Que cada
-            artículo sea una herramienta de evangelismo, esperanza y fe.
-          </p>
+          <div className="text-sm font-bold text-zinc-900">{t.missionTitle}</div>
+          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.missionText}</p>
         </div>
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
 
-function AdminPanel({ products = [], setProducts, categories = [], setCategories }) {
+function AdminPanel({
+  products = [],
+  setProducts,
+  categories = [],
+  setCategories,
+  t,
+  language,
+}) {
   const fallbackCategory = categories[0] ?? "Yeti";
 
   const [newCategory, setNewCategory] = useState("");
@@ -1099,14 +1499,17 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
     const productToAdd = {
       id: crypto.randomUUID(),
       category: newProduct.category,
-      name: newProduct.name,
+      name: { es: newProduct.name, en: newProduct.name },
       price: Number(newProduct.price),
-      short: newProduct.short,
-      description: newProduct.description,
+      short: { es: newProduct.short, en: newProduct.short },
+      description: { es: newProduct.description, en: newProduct.description },
       image:
         newProduct.image ||
         "https://images.unsplash.com/photo-1544717305-996b815c338c?auto=format&fit=crop&w=1200&q=80",
-      tags: ["Nuevo", "Personalizable"],
+      tags: [
+        { es: "Nuevo", en: "New" },
+        { es: "Personalizable", en: "Customizable" },
+      ],
     };
 
     setProducts((prev) => [...prev, productToAdd]);
@@ -1124,60 +1527,42 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
-        <SectionTitle
-          title="Admin Panel"
-          subtitle="Gestiona visualmente los productos de la tienda."
-        />
+        <SectionTitle title={t.adminTitle} subtitle={t.adminSubtitle} />
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-[24px] bg-zinc-50 p-5">
-            <div className="text-sm font-bold text-zinc-900">
-              Productos
-            </div>
+            <div className="text-sm font-bold text-zinc-900">{t.adminStatProducts}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
               {products.length}
             </div>
 
-            <p className="mt-1 text-sm text-zinc-600">
-              Artículos activos en catálogo.
-            </p>
+            <p className="mt-1 text-sm text-zinc-600">{t.adminStatProductsBody}</p>
           </div>
 
           <div className="rounded-[24px] bg-zinc-50 p-5">
-            <div className="text-sm font-bold text-zinc-900">
-              Modo
-            </div>
+            <div className="text-sm font-bold text-zinc-900">{t.adminStatMode}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
               MVP
             </div>
 
-            <p className="mt-1 text-sm text-zinc-600">
-              Datos simulados en frontend.
-            </p>
+            <p className="mt-1 text-sm text-zinc-600">{t.adminStatModeBody}</p>
           </div>
 
           <div className="rounded-[24px] bg-zinc-50 p-5">
-            <div className="text-sm font-bold text-zinc-900">
-              Gestión
-            </div>
+            <div className="text-sm font-bold text-zinc-900">{t.adminStatManagement}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
               CRUD
             </div>
 
-            <p className="mt-1 text-sm text-zinc-600">
-              Próximo: añadir, editar y eliminar productos.
-            </p>
+            <p className="mt-1 text-sm text-zinc-600">{t.adminStatManagementBody}</p>
           </div>
         </div>
 
         <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
-          <SectionTitle
-            title="Categorías"
-            subtitle="Crea o elimina categorías disponibles para los productos."
-          />
+          <SectionTitle title={t.categoriesTitle} subtitle={t.categoriesSubtitle} />
 
           <div className="flex flex-wrap gap-2">
             {categories.map((c) => (
@@ -1191,8 +1576,12 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
                   onClick={() => handleDeleteCategory(c)}
                   disabled={categories.length <= 1}
                   className="rounded-full px-2 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label={`Eliminar categoría ${c}`}
-                  title={categories.length <= 1 ? "Debes tener al menos 1 categoría" : "Eliminar"}
+                  aria-label={t.deleteCategoryAria(c)}
+                  title={
+                    categories.length <= 1
+                      ? t.deleteCategoryTitleMinOne
+                      : t.deleteCategoryTitle
+                  }
                 >
                   ✕
                 </button>
@@ -1203,38 +1592,35 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
           <form onSubmit={handleAddCategory} className="mt-4 flex flex-col gap-2 md:flex-row md:items-end">
             <div className="flex-1">
               <label className="text-sm font-semibold text-zinc-900">
-                Nueva categoría
+                {t.newCategoryLabel}
               </label>
               <input
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Ej: Biblias"
+                placeholder={t.newCategoryPlaceholder}
                 className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
             </div>
             <Button variant="secondary" className="md:mb-[2px]">
-              Añadir categoría
+              {t.addCategory}
             </Button>
           </form>
         </div>
 
         <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
-          <SectionTitle
-            title="Añadir producto"
-            subtitle="Crea un nuevo producto visualmente en el catálogo."
-          />
+          <SectionTitle title={t.addProductTitle} subtitle={t.addProductSubtitle} />
 
           <form onSubmit={handleAddProduct} className="grid gap-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Nombre
+                  {t.productNameLabel}
                 </label>
                 <input
                   name="name"
                   value={newProduct.name}
                   onChange={handleNewProductChange}
-                  placeholder="Ej: Yeti personalizado 30oz"
+                  placeholder={t.productNamePlaceholder}
                   required
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
@@ -1242,7 +1628,7 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
 
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Categoría
+                  {t.productCategoryLabel}
                 </label>
                 <select
                   name="category"
@@ -1262,7 +1648,7 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Precio
+                  {t.productPriceLabel}
                 </label>
                 <input
                   name="price"
@@ -1271,7 +1657,7 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
                   step="0.01"
                   value={newProduct.price}
                   onChange={handleNewProductChange}
-                  placeholder="Ej: 35"
+                  placeholder={language === "es" ? "Ej: 35" : "e.g. 35"}
                   required
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
@@ -1279,13 +1665,13 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
 
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
-                  Imagen URL
+                  {t.productImageLabel}
                 </label>
                 <input
                   name="image"
                   value={newProduct.image}
                   onChange={handleNewProductChange}
-                  placeholder="https://..."
+                  placeholder={t.productImagePlaceholder}
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
               </div>
@@ -1293,13 +1679,13 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
 
             <div>
               <label className="text-sm font-semibold text-zinc-900">
-                Descripción corta
+                {t.productShortLabel}
               </label>
               <input
                 name="short"
                 value={newProduct.short}
                 onChange={handleNewProductChange}
-                placeholder="Ej: Vaso premium con mensaje de fe."
+                placeholder={t.productShortPlaceholder}
                 required
                 className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
@@ -1307,13 +1693,13 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
 
             <div>
               <label className="text-sm font-semibold text-zinc-900">
-                Descripción completa
+                {t.productDescriptionLabel}
               </label>
               <textarea
                 name="description"
                 value={newProduct.description}
                 onChange={handleNewProductChange}
-                placeholder="Describe el producto, su propósito y detalles importantes."
+                placeholder={t.productDescriptionPlaceholder}
                 rows={4}
                 required
                 className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1322,7 +1708,7 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
 
             <div className="flex justify-end">
               <Button variant="primary">
-                Añadir producto
+                {t.addProduct}
               </Button>
             </div>
           </form>
@@ -1330,8 +1716,8 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
 
         <div className="mt-8">
           <SectionTitle
-            title="Productos actuales"
-            subtitle="Vista administrativa del catálogo."
+            title={t.currentProductsTitle}
+            subtitle={t.currentProductsSubtitle}
           />
 
           <div className="grid gap-3">
@@ -1345,7 +1731,7 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
                   <div className="flex items-center gap-4">
                     <img
                       src={product.image}
-                      alt={product.name}
+                      alt={l10n(product.name, language)}
                       className="h-16 w-16 rounded-2xl object-cover"
                     />
 
@@ -1355,28 +1741,26 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
                       </div>
 
                       <div className="text-sm font-bold text-zinc-900">
-                        {product.name}
+                        {l10n(product.name, language)}
                       </div>
 
                       <div className="mt-1 text-sm text-zinc-600">
-                        {product.short}
+                        {l10n(product.short, language)}
                       </div>
                     </div>
                   </div>
 
                   <div className="text-left md:text-right">
                     <div className="text-sm font-bold text-zinc-900">
-                      {money(product.price)}
+                      {money(product.price, language)}
                     </div>
 
                     <div className="mt-2 flex gap-2 md:justify-end">
                       <Button variant="secondary">
-                        Editar
+                        {t.edit}
                       </Button>
 
-                      <Button variant="secondary">
-                        Eliminar
-                      </Button>
+                      <Button variant="secondary">{t.delete}</Button>
                     </div>
                   </div>
 
@@ -1387,27 +1771,25 @@ function AdminPanel({ products = [], setProducts, categories = [], setCategories
         </div>
       </div>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
 
-function Footer() {
+function Footer({ t }) {
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
       <div className="rounded-[28px] border border-zinc-200 bg-white p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="text-sm font-bold text-zinc-900">Grow by Faith</div>
-            <div className="mt-1 text-xs text-zinc-500">
-              MVP visual (solo frontend) para validar interés.
-            </div>
+            <div className="mt-1 text-xs text-zinc-500">{t.footerNote}</div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Pill>IG</Pill>
             <Pill>TikTok</Pill>
             <Pill>Blog</Pill>
-            <Pill>WhatsApp Checkout</Pill>
+            <Pill>{t.footerWhatsAppCheckout}</Pill>
           </div>
         </div>
       </div>
@@ -1418,32 +1800,51 @@ function Footer() {
 export default function App() {
   const [route, setRoute] = useState("home");
 
+  const [language, setLanguage] = useState("es");
+
+  const t = translations[language];
+
   const [categories, setCategories] = useState(["Yeti", "Journals"]);
 
   const [products, setProducts] = useState([
     {
       id: "yeti-20",
       category: "Yeti",
-      name: "Yeti Rambler 20oz",
+      name: { es: "Yeti Rambler 20oz", en: "Yeti Rambler 20oz" },
       price: 40,
-      short: "Vaso premium para regalos con propósito.",
-      description:
-        "Un vaso resistente para el día a día. Personalízalo con nombre, frase o versículo y conviértelo en un regalo memorable.",
+      short: {
+        es: "Vaso premium para regalos con propósito.",
+        en: "Premium tumbler for meaningful gifts.",
+      },
+      description: {
+        es: "Un vaso resistente para el día a día. Personalízalo con nombre, frase o versículo y conviértelo en un regalo memorable.",
+        en: "A durable tumbler for everyday life. Customize it with a name, phrase, or verse and turn it into a memorable gift.",
+      },
       image:
         "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
-      tags: ["Regalo", "Premium", "Personalizable"],
+      tags: [
+        { es: "Regalo", en: "Gift" },
+        { es: "Premium", en: "Premium" },
+        { es: "Personalizable", en: "Customizable" },
+      ],
     },
     {
       id: "journal-1",
       category: "Journals",
-      name: "Libreta Journal (A5)",
+      name: { es: "Libreta Journal (A5)", en: "Journal notebook (A5)" },
       price: 26,
-      short: "Journaling y devocional diario.",
-      description:
-        "Una libreta para escribir, orar y reflexionar. Perfecta para rutinas de fe, metas y gratitud.",
+      short: { es: "Journaling y devocional diario.", en: "Journaling and daily devotional." },
+      description: {
+        es: "Una libreta para escribir, orar y reflexionar. Perfecta para rutinas de fe, metas y gratitud.",
+        en: "A notebook to write, pray, and reflect. Perfect for faith routines, goals, and gratitude.",
+      },
       image:
         "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80",
-      tags: ["Devocional", "Hábitos", "Regalo"],
+      tags: [
+        { es: "Devocional", en: "Devotional" },
+        { es: "Hábitos", en: "Habits" },
+        { es: "Regalo", en: "Gift" },
+      ],
     },
   ]);
 
@@ -1490,11 +1891,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <TopBar route={route} setRoute={setRoute} cartCount={cartCount} />
+      <TopBar
+        route={route}
+        setRoute={setRoute}
+        cartCount={cartCount}
+        t={t}
+        language={language}
+        setLanguage={setLanguage}
+      />
 
       {route === "home" ? (
         <Home
           products={products}
+          t={t}
+          language={language}
           onGoCatalog={() => setRoute("catalog")}
           onOpenProduct={openProduct}
           onPickCollection={pickCollection}
@@ -1506,6 +1916,8 @@ export default function App() {
           products={products}
           categories={categories}
           onOpenProduct={openProduct}
+          t={t}
+          language={language}
         />
       ) : null}
 
@@ -1514,6 +1926,8 @@ export default function App() {
           product={selected}
           onBack={() => setRoute("catalog")}
           onAddToCart={addToCart}
+          t={t}
+          language={language}
         />
       ) : null}
 
@@ -1523,6 +1937,8 @@ export default function App() {
           onRemove={removeFromCart}
           onCheckout={() => setRoute("checkout")}
           onBack={() => setRoute("catalog")}
+          t={t}
+          language={language}
         />
       ) : null}
 
@@ -1534,17 +1950,21 @@ export default function App() {
             setCart([]);
             setRoute("home");
           }}
+          t={t}
+          language={language}
         />
       ) : null}
 
-      {route === "blog" ? <Blog /> : null}
-      {route === "about" ? <About /> : null}
+      {route === "blog" ? <Blog t={t} language={language} /> : null}
+      {route === "about" ? <About t={t} language={language} /> : null}
       {route === "admin" ? (
         <AdminPanel
           products={products}
           setProducts={setProducts}
           categories={categories}
           setCategories={setCategories}
+          t={t}
+          language={language}
         />
       ) : null}
 
