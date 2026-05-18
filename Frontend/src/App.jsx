@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 // MVP Frontend Mock (no backend)
 // - Home, Catalog, Product Detail (with personalization), Cart, Checkout
@@ -203,6 +203,23 @@ const translations = {
     adminStatManagement: "Gestión",
     adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
 
+    heroAdminTitle: "Promoción del Home",
+    heroAdminSubtitle:
+      "Edita el recuadro principal del inicio para promociones sin programador.",
+    heroAdminEnabled: "Activar promoción",
+    heroAdminReset: "Restablecer",
+    heroAdminEs: "Español (ES)",
+    heroAdminEn: "Inglés (EN)",
+    heroAdminPill: "Etiqueta (pill)",
+    heroAdminTitleOne: "Título línea 1",
+    heroAdminTitleTwo: "Título línea 2",
+    heroAdminText: "Texto",
+    heroAdminPrimary: "Botón principal",
+    heroAdminSecondary: "Botón secundario",
+    heroAdminHeroImage: "Imagen principal",
+    heroAdminImage1: "Imagen 1",
+    heroAdminImage2: "Imagen 2",
+
     categoriesTitle: "Categorías",
     categoriesSubtitle:
       "Crea o elimina categorías disponibles para los productos.",
@@ -367,6 +384,23 @@ const translations = {
     adminStatManagement: "Management",
     adminStatManagementBody: "Next: add, edit, and delete products.",
 
+    heroAdminTitle: "Homepage promotion",
+    heroAdminSubtitle:
+      "Edit the main homepage hero for promotions without needing a developer.",
+    heroAdminEnabled: "Enable promotion",
+    heroAdminReset: "Reset",
+    heroAdminEs: "Spanish (ES)",
+    heroAdminEn: "English (EN)",
+    heroAdminPill: "Badge (pill)",
+    heroAdminTitleOne: "Title line 1",
+    heroAdminTitleTwo: "Title line 2",
+    heroAdminText: "Text",
+    heroAdminPrimary: "Primary button",
+    heroAdminSecondary: "Secondary button",
+    heroAdminHeroImage: "Main image",
+    heroAdminImage1: "Image 1",
+    heroAdminImage2: "Image 2",
+
     categoriesTitle: "Categories",
     categoriesSubtitle: "Create or remove available product categories.",
     deleteCategoryAria: (c) => `Delete category ${c}`,
@@ -400,6 +434,48 @@ const translations = {
     footerWhatsAppCheckout: "WhatsApp Checkout",
   },
 };
+
+const HERO_STORAGE_KEY = "gbf.homeHero.v1";
+
+const DEFAULT_HERO_IMAGES = {
+  hero: "https://images.unsplash.com/photo-1517685352821-92cf88aee5a5?auto=format&fit=crop&w=1400&q=80",
+  product1:
+    "https://images.unsplash.com/photo-1544717305-996b815c338c?auto=format&fit=crop&w=1200&q=80",
+  product2:
+    "https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80",
+};
+
+function buildDefaultHeroConfig() {
+  return {
+    enabled: false,
+    pill: { es: translations.es.heroPill, en: translations.en.heroPill },
+    titleOne: { es: translations.es.heroTitleOne, en: translations.en.heroTitleOne },
+    titleTwo: { es: translations.es.heroTitleTwo, en: translations.en.heroTitleTwo },
+    text: { es: translations.es.heroText, en: translations.en.heroText },
+    primary: { es: translations.es.heroPrimary, en: translations.en.heroPrimary },
+    secondary: {
+      es: translations.es.heroSecondary,
+      en: translations.en.heroSecondary,
+    },
+    images: { ...DEFAULT_HERO_IMAGES },
+  };
+}
+
+function normalizeHeroConfig(input) {
+  const base = buildDefaultHeroConfig();
+  const cfg = input && typeof input === "object" ? input : {};
+  return {
+    ...base,
+    ...cfg,
+    pill: { ...base.pill, ...(cfg.pill || {}) },
+    titleOne: { ...base.titleOne, ...(cfg.titleOne || {}) },
+    titleTwo: { ...base.titleTwo, ...(cfg.titleTwo || {}) },
+    text: { ...base.text, ...(cfg.text || {}) },
+    primary: { ...base.primary, ...(cfg.primary || {}) },
+    secondary: { ...base.secondary, ...(cfg.secondary || {}) },
+    images: { ...base.images, ...(cfg.images || {}) },
+  };
+}
 
 function l10n(value, language) {
   if (value == null) return "";
@@ -605,7 +681,51 @@ function CollectionCards({ onPick, language, t }) {
   );
 }
 
-function Hero({ onPrimary, onSecondary, t }) {
+ // El Hero (Home) usando heroConfig (override + fallback) //
+function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
+  const enabled = Boolean(heroConfig?.enabled);
+
+  const pillOverride = enabled ? l10n(heroConfig?.pill, language).trim() : "";
+  const titleOneOverride = enabled
+    ? l10n(heroConfig?.titleOne, language).trim()
+    : "";
+  const titleTwoOverride = enabled
+    ? l10n(heroConfig?.titleTwo, language).trim()
+    : "";
+  const textOverride = enabled ? l10n(heroConfig?.text, language).trim() : "";
+  const primaryOverride = enabled
+    ? l10n(heroConfig?.primary, language).trim()
+    : "";
+  const secondaryOverride = enabled
+    ? l10n(heroConfig?.secondary, language).trim()
+    : "";
+
+  const pillText = pillOverride || t.heroPill;
+  const titleOne = titleOneOverride || t.heroTitleOne;
+  const titleTwo = titleTwoOverride || t.heroTitleTwo;
+  const heroText = textOverride || t.heroText;
+  const primaryLabel = primaryOverride || t.heroPrimary;
+  const secondaryLabel = secondaryOverride || t.heroSecondary;
+
+  const heroImage =
+    enabled && typeof heroConfig?.images?.hero === "string" && heroConfig.images.hero.trim()
+      ? heroConfig.images.hero.trim()
+      : DEFAULT_HERO_IMAGES.hero;
+
+  const image1 =
+    enabled &&
+    typeof heroConfig?.images?.product1 === "string" &&
+    heroConfig.images.product1.trim()
+      ? heroConfig.images.product1.trim()
+      : DEFAULT_HERO_IMAGES.product1;
+
+  const image2 =
+    enabled &&
+    typeof heroConfig?.images?.product2 === "string" &&
+    heroConfig.images.product2.trim()
+      ? heroConfig.images.product2.trim()
+      : DEFAULT_HERO_IMAGES.product2;
+
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-zinc-200 bg-white">
       <div className="absolute inset-0">
@@ -615,24 +735,24 @@ function Hero({ onPrimary, onSecondary, t }) {
 
       <div className="relative grid gap-6 p-6 md:grid-cols-2 md:p-10">
         <div>
-          <Pill>{t.heroPill}</Pill>
+          <Pill>{pillText}</Pill>
 
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
-            {t.heroTitleOne}
-            <span className="block">{t.heroTitleTwo}</span>
+            {titleOne}
+            <span className="block">{titleTwo}</span>
           </h1>
 
           <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
-            {t.heroText}
+            {heroText}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2">
             <Button onClick={onPrimary} variant="primary">
-              {t.heroPrimary}
+              {primaryLabel}
             </Button>
 
             <Button onClick={onSecondary} variant="secondary">
-              {t.heroSecondary}
+              {secondaryLabel}
             </Button>
           </div>
 
@@ -653,7 +773,7 @@ function Hero({ onPrimary, onSecondary, t }) {
           <div className="overflow-hidden rounded-[24px] border border-zinc-200">
             <img
               alt="hero"
-              src="https://images.unsplash.com/photo-1517685352821-92cf88aee5a5?auto=format&fit=crop&w=1400&q=80"
+              src={heroImage}
               className="h-44 w-full object-cover md:h-52"
             />
           </div>
@@ -662,7 +782,7 @@ function Hero({ onPrimary, onSecondary, t }) {
             <div className="overflow-hidden rounded-[24px] border border-zinc-200">
               <img
                 alt="product"
-                src="https://images.unsplash.com/photo-1544717305-996b815c338c?auto=format&fit=crop&w=1200&q=80"
+                src={image1}
                 className="h-36 w-full object-cover"
               />
             </div>
@@ -670,7 +790,7 @@ function Hero({ onPrimary, onSecondary, t }) {
             <div className="overflow-hidden rounded-[24px] border border-zinc-200">
               <img
                 alt="product"
-                src="https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80"
+                src={image2}
                 className="h-36 w-full object-cover"
               />
             </div>
@@ -724,11 +844,18 @@ function Home({
   onPickCollection,
   t,
   language,
+  heroConfig,
 }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <Hero onPrimary={onGoCatalog} onSecondary={onGoCatalog} t={t} />
+      <Hero
+        onPrimary={onGoCatalog}
+        onSecondary={onGoCatalog}
+        t={t}
+        heroConfig={heroConfig}
+        language={language}
+      />
 
       <div className="mt-8">
         <SectionTitle title={t.collectionsTitle} subtitle={t.collectionsSubtitle} />
@@ -1418,17 +1545,49 @@ function About({ t, language }) {
   );
 }
 
+ // La sección nueva del Admin (inputs que modifican heroConfig) //
 function AdminPanel({
   products = [],
   setProducts,
   categories = [],
   setCategories,
+  heroConfig,
+  setHeroConfig,
   t,
   language,
 }) {
   const fallbackCategory = categories[0] ?? "Yeti";
 
   const [newCategory, setNewCategory] = useState("");
+  
+  function setHeroEnabled(enabled) {
+    setHeroConfig((prev) => ({ ...normalizeHeroConfig(prev), enabled }));
+  }
+
+  function setHeroTextField(field, lang, value) {
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      [field]: {
+        ...(prev?.[field] || {}),
+        [lang]: value,
+      },
+    }));
+  }
+
+  function setHeroImageField(field, value) {
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      images: {
+        ...(prev?.images || {}),
+        [field]: value,
+      },
+    }));
+  }
+
+  function resetHero() {
+    setHeroConfig(buildDefaultHeroConfig());
+  }
+
   const [newProduct, setNewProduct] = useState({
     name: "",
     category: fallbackCategory,
@@ -1558,6 +1717,220 @@ function AdminPanel({
             </div>
 
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatManagementBody}</p>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+          <SectionTitle title={t.heroAdminTitle} subtitle={t.heroAdminSubtitle} />
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+              <input
+                type="checkbox"
+                checked={Boolean(heroConfig?.enabled)}
+                onChange={(e) => setHeroEnabled(e.target.checked)}
+                className="h-4 w-4 rounded border-zinc-300"
+              />
+              {t.heroAdminEnabled}
+            </label>
+
+            <Button variant="secondary" onClick={resetHero}>
+              {t.heroAdminReset}
+            </Button>
+          </div>
+
+          <div className="mt-5 grid gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminPill} — {t.heroAdminEs}
+                </label>
+                <input
+                  value={heroConfig?.pill?.es ?? ""}
+                  onChange={(e) => setHeroTextField("pill", "es", e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminPill} — {t.heroAdminEn}
+                </label>
+                <input
+                  value={heroConfig?.pill?.en ?? ""}
+                  onChange={(e) => setHeroTextField("pill", "en", e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminTitleOne} — {t.heroAdminEs}
+                </label>
+                <input
+                  value={heroConfig?.titleOne?.es ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("titleOne", "es", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminTitleOne} — {t.heroAdminEn}
+                </label>
+                <input
+                  value={heroConfig?.titleOne?.en ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("titleOne", "en", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminTitleTwo} — {t.heroAdminEs}
+                </label>
+                <input
+                  value={heroConfig?.titleTwo?.es ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("titleTwo", "es", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminTitleTwo} — {t.heroAdminEn}
+                </label>
+                <input
+                  value={heroConfig?.titleTwo?.en ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("titleTwo", "en", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminText} — {t.heroAdminEs}
+                </label>
+                <textarea
+                  value={heroConfig?.text?.es ?? ""}
+                  onChange={(e) => setHeroTextField("text", "es", e.target.value)}
+                  rows={3}
+                  className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminText} — {t.heroAdminEn}
+                </label>
+                <textarea
+                  value={heroConfig?.text?.en ?? ""}
+                  onChange={(e) => setHeroTextField("text", "en", e.target.value)}
+                  rows={3}
+                  className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminPrimary} — {t.heroAdminEs}
+                </label>
+                <input
+                  value={heroConfig?.primary?.es ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("primary", "es", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminPrimary} — {t.heroAdminEn}
+                </label>
+                <input
+                  value={heroConfig?.primary?.en ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("primary", "en", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminSecondary} — {t.heroAdminEs}
+                </label>
+                <input
+                  value={heroConfig?.secondary?.es ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("secondary", "es", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminSecondary} — {t.heroAdminEn}
+                </label>
+                <input
+                  value={heroConfig?.secondary?.en ?? ""}
+                  onChange={(e) =>
+                    setHeroTextField("secondary", "en", e.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminHeroImage}
+                </label>
+                <input
+                  value={heroConfig?.images?.hero ?? ""}
+                  onChange={(e) => setHeroImageField("hero", e.target.value)}
+                  placeholder="https://..."
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminImage1}
+                </label>
+                <input
+                  value={heroConfig?.images?.product1 ?? ""}
+                  onChange={(e) => setHeroImageField("product1", e.target.value)}
+                  placeholder="https://..."
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminImage2}
+                </label>
+                <input
+                  value={heroConfig?.images?.product2 ?? ""}
+                  onChange={(e) => setHeroImageField("product2", e.target.value)}
+                  placeholder="https://..."
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1797,12 +2170,33 @@ function Footer({ t }) {
   );
 }
 
+ // Persistencia en localStorage + pasar props a Home/Admin //
 export default function App() {
   const [route, setRoute] = useState("home");
 
   const [language, setLanguage] = useState("es");
 
   const t = translations[language];
+
+  const [heroConfig, setHeroConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultHeroConfig();
+    try {
+      const raw = window.localStorage.getItem(HERO_STORAGE_KEY);
+      if (!raw) return buildDefaultHeroConfig();
+      return normalizeHeroConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultHeroConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(heroConfig));
+    } catch {
+      // ignore storage errors
+    }
+  }, [heroConfig]);
 
   const [categories, setCategories] = useState(["Yeti", "Journals"]);
 
@@ -1905,6 +2299,7 @@ export default function App() {
           products={products}
           t={t}
           language={language}
+          heroConfig={heroConfig}
           onGoCatalog={() => setRoute("catalog")}
           onOpenProduct={openProduct}
           onPickCollection={pickCollection}
@@ -1963,6 +2358,8 @@ export default function App() {
           setProducts={setProducts}
           categories={categories}
           setCategories={setCategories}
+          heroConfig={heroConfig}
+          setHeroConfig={setHeroConfig}
           t={t}
           language={language}
         />
