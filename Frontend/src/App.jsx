@@ -189,6 +189,8 @@ const translations = {
     cardRequired: "Completa todos los campos de tarjeta.",
     cardNotReady:
       "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
+    checkoutCompleteHint:
+      "Para completar tu orden, llena la tarjeta y presiona “Pagar ahora”.",
 
     shippingTitle: "Dirección de envío",
     shippingSubtitle: "Para calcular envío y completar la orden.",
@@ -242,6 +244,30 @@ const translations = {
     adminStatModeBody: "Datos simulados en frontend.",
     adminStatManagement: "Gestión",
     adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
+
+    inventoryTitle: "Inventario",
+    inventorySubtitle:
+      "Mantén el conteo de stock por producto y el costo para calcular márgenes.",
+    inventoryInStock: "En stock",
+    inventoryUnitCost: "Costo unitario",
+    inventoryAdjustMinus: "-1",
+    inventoryAdjustPlus: "+1",
+
+    profitTitle: "Ganancias / Pérdidas",
+    profitSubtitle:
+      "Análisis por día, semana o mes basado en ventas registradas (demo frontend).",
+    profitPeriodLabel: "Periodo",
+    profitDay: "Día",
+    profitWeek: "Semana",
+    profitMonth: "Mes",
+    profitDateLabel: "Fecha",
+    profitRevenue: "Ingresos",
+    profitCogs: "Costo (COGS)",
+    profitGrossProfit: "Ganancia bruta",
+    profitMargin: "Margen",
+    profitUnits: "Unidades vendidas",
+    profitNoSales: "No hay ventas registradas en este periodo.",
+    profitTopProducts: "Top productos",
 
     heroAdminTitle: "Promoción del Home",
     heroAdminSubtitle:
@@ -412,6 +438,8 @@ const translations = {
     cardRequired: "Please fill in all card fields.",
     cardNotReady:
       "Card payments will be available once the backend is connected to Stripe.",
+    checkoutCompleteHint:
+      "To complete your order, fill the card form and press “Pay now”.",
 
     shippingTitle: "Shipping address",
     shippingSubtitle: "For shipping estimates and order completion.",
@@ -463,6 +491,30 @@ const translations = {
     adminStatModeBody: "Frontend-only mock data.",
     adminStatManagement: "Management",
     adminStatManagementBody: "Next: add, edit, and delete products.",
+
+    inventoryTitle: "Inventory",
+    inventorySubtitle:
+      "Track stock counts per product and unit costs to calculate margins.",
+    inventoryInStock: "In stock",
+    inventoryUnitCost: "Unit cost",
+    inventoryAdjustMinus: "-1",
+    inventoryAdjustPlus: "+1",
+
+    profitTitle: "Profit / Loss",
+    profitSubtitle:
+      "Analyze by day, week, or month based on recorded sales (frontend demo).",
+    profitPeriodLabel: "Period",
+    profitDay: "Day",
+    profitWeek: "Week",
+    profitMonth: "Month",
+    profitDateLabel: "Date",
+    profitRevenue: "Revenue",
+    profitCogs: "COGS",
+    profitGrossProfit: "Gross profit",
+    profitMargin: "Margin",
+    profitUnits: "Units sold",
+    profitNoSales: "No sales recorded for this period.",
+    profitTopProducts: "Top products",
 
     heroAdminTitle: "Homepage promotion",
     heroAdminSubtitle:
@@ -516,6 +568,9 @@ const translations = {
 };
 
 const HERO_STORAGE_KEY = "gbf.homeHero.v1";
+const INVENTORY_STORAGE_KEY = "gbf.inventory.v1";
+const PRODUCT_COSTS_STORAGE_KEY = "gbf.productCosts.v1";
+const SALES_STORAGE_KEY = "gbf.sales.v1";
 
 const DEFAULT_HERO_IMAGES = {
   hero: "https://images.unsplash.com/photo-1517685352821-92cf88aee5a5?auto=format&fit=crop&w=1400&q=80",
@@ -605,6 +660,15 @@ function SectionTitle({ title, subtitle }) {
       {subtitle ? (
         <p className="mt-1 text-sm text-zinc-600">{subtitle}</p>
       ) : null}
+    </div>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-white p-4">
+      <div className="text-xs font-semibold text-zinc-500">{label}</div>
+      <div className="mt-2 text-base font-extrabold text-zinc-900">{value}</div>
     </div>
   );
 }
@@ -1366,7 +1430,7 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
   );
 }
 
-function Checkout({ cart, onBack, onDone, t, language }) {
+function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
   const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
   const [name, setName] = useState("");
@@ -1404,7 +1468,25 @@ function Checkout({ cart, onBack, onDone, t, language }) {
       return;
     }
 
-    setCardMessage(t.cardNotReady);
+    if (typeof onPlaceOrder === "function") {
+      onPlaceOrder({
+        customer: {
+          name: name.trim(),
+          phone: phone.trim(),
+          notes: notes.trim(),
+        },
+        shipping: {
+          addressLine1: addressLine1.trim(),
+          addressLine2: addressLine2.trim(),
+          city: city.trim(),
+          stateRegion: stateRegion.trim(),
+          postalCode: postalCode.trim(),
+          country: country.trim(),
+        },
+      });
+    } else if (typeof onDone === "function") {
+      onDone();
+    }
   }
 
 
@@ -1668,10 +1750,8 @@ function Checkout({ cart, onBack, onDone, t, language }) {
                 </div>
               </div>
 
-              <div className="mt-4">
-                <Button variant="primary" onClick={onDone}>
-                  {t.finish}
-                </Button>
+              <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-zinc-600">
+                {t.checkoutCompleteHint}
               </div>
             </div>
           </div>
@@ -1821,12 +1901,143 @@ function AdminPanel({
   setCategories,
   heroConfig,
   setHeroConfig,
+  inventory,
+  setInventory,
+  productCosts,
+  setProductCosts,
+  sales,
   t,
   language,
 }) {
   const fallbackCategory = categories[0] ?? "Yeti";
 
   const [newCategory, setNewCategory] = useState("");
+
+  const [profitPeriod, setProfitPeriod] = useState("week");
+  const [profitDate, setProfitDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate()
+    ).padStart(2, "0")}`;
+  });
+
+  const profitRange = useMemo(() => {
+    const base = new Date(`${profitDate}T00:00:00`);
+    if (Number.isNaN(base.getTime())) {
+      const now = new Date();
+      return { startMs: now.getTime(), endMs: now.getTime() };
+    }
+
+    if (profitPeriod === "day") {
+      const start = new Date(base);
+      const end = new Date(base);
+      end.setDate(end.getDate() + 1);
+      return { startMs: start.getTime(), endMs: end.getTime() };
+    }
+
+    if (profitPeriod === "month") {
+      const start = new Date(base.getFullYear(), base.getMonth(), 1);
+      const end = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+      return { startMs: start.getTime(), endMs: end.getTime() };
+    }
+
+    // week (Mon-Sun)
+    const day = base.getDay(); // 0 Sun ... 6 Sat
+    const diffToMonday = (day + 6) % 7;
+    const start = new Date(base);
+    start.setDate(start.getDate() - diffToMonday);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return { startMs: start.getTime(), endMs: end.getTime() };
+  }, [profitDate, profitPeriod]);
+
+  const profitStats = useMemo(() => {
+    const rows = Array.isArray(sales) ? sales : [];
+    const inRange = rows.filter(
+      (s) =>
+        typeof s?.createdAt === "number" &&
+        s.createdAt >= profitRange.startMs &&
+        s.createdAt < profitRange.endMs
+    );
+
+    let revenue = 0;
+    let cogs = 0;
+    let units = 0;
+
+    const byProduct = new Map();
+
+    for (const s of inRange) {
+      const qty = Number(s.qty) || 0;
+      const unitPrice = Number(s.unitPrice) || 0;
+      const unitCost = Number(s.unitCost) || 0;
+      const productId = String(s.productId ?? "");
+
+      units += qty;
+      revenue += qty * unitPrice;
+      cogs += qty * unitCost;
+
+      if (!byProduct.has(productId)) {
+        byProduct.set(productId, {
+          productId,
+          units: 0,
+          revenue: 0,
+          profit: 0,
+        });
+      }
+
+      const agg = byProduct.get(productId);
+      agg.units += qty;
+      agg.revenue += qty * unitPrice;
+      agg.profit += qty * (unitPrice - unitCost);
+    }
+
+    const grossProfit = revenue - cogs;
+    const margin = revenue > 0 ? grossProfit / revenue : 0;
+
+    const topProducts = Array.from(byProduct.values())
+      .filter((x) => x.productId)
+      .sort((a, b) => b.profit - a.profit)
+      .slice(0, 5)
+      .map((x) => {
+        const product = products.find((p) => p.id === x.productId);
+        return {
+          ...x,
+          name: product ? l10n(product.name, language) : x.productId,
+        };
+      });
+
+    return { inRange, revenue, cogs, grossProfit, margin, units, topProducts };
+  }, [sales, profitRange, products, language]);
+
+  function getInventoryCount(productId) {
+    const n = Number(inventory?.[productId]);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function setInventoryCount(productId, value) {
+    const n = Number(value);
+    setInventory((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [productId]: Number.isFinite(n) ? n : 0,
+    }));
+  }
+
+  function adjustInventory(productId, delta) {
+    setInventoryCount(productId, getInventoryCount(productId) + delta);
+  }
+
+  function getUnitCost(productId) {
+    const n = Number(productCosts?.[productId]);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function setUnitCost(productId, value) {
+    const n = Number(value);
+    setProductCosts((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [productId]: Number.isFinite(n) ? n : 0,
+    }));
+  }
   
   function setHeroEnabled(enabled) {
     setHeroConfig((prev) => ({ ...normalizeHeroConfig(prev), enabled }));
@@ -1985,6 +2196,164 @@ function AdminPanel({
             </div>
 
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatManagementBody}</p>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+          <SectionTitle title={t.inventoryTitle} subtitle={t.inventorySubtitle} />
+
+          <div className="grid gap-3">
+            {products.map((p) => (
+              <div
+                key={p.id}
+                className="flex flex-col gap-4 rounded-[24px] border border-zinc-200 bg-white p-4 md:flex-row md:items-center md:justify-between"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={p.image}
+                    alt={l10n(p.name, language)}
+                    className="h-14 w-14 rounded-2xl object-cover"
+                  />
+                  <div>
+                    <div className="text-xs font-semibold text-zinc-500">{p.category}</div>
+                    <div className="mt-1 text-sm font-bold text-zinc-900">
+                      {l10n(p.name, language)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2 md:items-end">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.inventoryInStock}
+                    </label>
+                    <input
+                      type="number"
+                      value={getInventoryCount(p.id)}
+                      onChange={(e) => setInventoryCount(p.id, e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        variant="secondary"
+                        onClick={() => adjustInventory(p.id, -1)}
+                        className="w-full"
+                      >
+                        {t.inventoryAdjustMinus}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => adjustInventory(p.id, 1)}
+                        className="w-full"
+                      >
+                        {t.inventoryAdjustPlus}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.inventoryUnitCost}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={getUnitCost(p.id)}
+                      onChange={(e) => setUnitCost(p.id, e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+          <SectionTitle title={t.profitTitle} subtitle={t.profitSubtitle} />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl bg-zinc-50 p-4">
+              <div className="grid gap-3">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.profitPeriodLabel}
+                    </label>
+                    <select
+                      value={profitPeriod}
+                      onChange={(e) => setProfitPeriod(e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      <option value="day">{t.profitDay}</option>
+                      <option value="week">{t.profitWeek}</option>
+                      <option value="month">{t.profitMonth}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.profitDateLabel}
+                    </label>
+                    <input
+                      type="date"
+                      value={profitDate}
+                      onChange={(e) => setProfitDate(e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Stat label={t.profitRevenue} value={money(profitStats.revenue, language)} />
+                  <Stat label={t.profitCogs} value={money(profitStats.cogs, language)} />
+                  <Stat
+                    label={t.profitGrossProfit}
+                    value={money(profitStats.grossProfit, language)}
+                  />
+                  <Stat
+                    label={t.profitMargin}
+                    value={`${(profitStats.margin * 100).toFixed(1)}%`}
+                  />
+                  <Stat label={t.profitUnits} value={String(profitStats.units)} />
+                </div>
+
+                {profitStats.inRange.length === 0 ? (
+                  <div className="text-sm text-zinc-600">{t.profitNoSales}</div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+              <div className="text-sm font-bold text-zinc-900">{t.profitTopProducts}</div>
+              <div className="mt-3 grid gap-2">
+                {profitStats.topProducts.length === 0 ? (
+                  <div className="text-sm text-zinc-600">{t.profitNoSales}</div>
+                ) : (
+                  profitStats.topProducts.map((x) => (
+                    <div
+                      key={x.productId}
+                      className="flex items-center justify-between rounded-2xl bg-zinc-50 px-4 py-3"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-zinc-900">{x.name}</div>
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {t.profitUnits}: {x.units}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-zinc-900">
+                          {money(x.profit, language)}
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {money(x.revenue, language)}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2466,6 +2835,69 @@ export default function App() {
     }
   }, [heroConfig]);
 
+  const [inventory, setInventory] = useState(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(INVENTORY_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(inventory));
+    } catch {
+      // ignore storage errors
+    }
+  }, [inventory]);
+
+  const [productCosts, setProductCosts] = useState(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(PRODUCT_COSTS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        PRODUCT_COSTS_STORAGE_KEY,
+        JSON.stringify(productCosts)
+      );
+    } catch {
+      // ignore storage errors
+    }
+  }, [productCosts]);
+
+  const [sales, setSales] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(SALES_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(sales));
+    } catch {
+      // ignore storage errors
+    }
+  }, [sales]);
+
   const [categories, setCategories] = useState(["Yeti", "Journals"]);
 
   const [products, setProducts] = useState([
@@ -2551,6 +2983,50 @@ export default function App() {
     setRoute("catalog");
   }
 
+  function placeOrder({ customer, shipping }) {
+    if (!Array.isArray(cart) || cart.length === 0) return;
+
+    const createdAt = Date.now();
+
+    const saleItems = cart.map((it) => {
+      const productId = String(it.id);
+      const unitCost = Number(productCosts?.[productId] ?? 0) || 0;
+
+      return {
+        id: crypto.randomUUID(),
+        createdAt,
+        productId,
+        qty: it.qty,
+        unitPrice: it.price,
+        unitCost,
+        name: it.name,
+        category: it.category,
+        personalization: it.personalization,
+        customer,
+        shipping,
+      };
+    });
+
+    setSales((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      const next = [...saleItems, ...base];
+      return next.slice(0, 5000);
+    });
+
+    setInventory((prev) => {
+      const next = { ...(prev && typeof prev === "object" ? prev : {}) };
+      for (const it of cart) {
+        const productId = String(it.id);
+        const current = Number(next[productId] ?? 0) || 0;
+        next[productId] = current - (Number(it.qty) || 0);
+      }
+      return next;
+    });
+
+    setCart([]);
+    setRoute("home");
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50">
       <TopBar
@@ -2613,6 +3089,7 @@ export default function App() {
             setCart([]);
             setRoute("home");
           }}
+          onPlaceOrder={placeOrder}
           t={t}
           language={language}
         />
@@ -2628,6 +3105,11 @@ export default function App() {
           setCategories={setCategories}
           heroConfig={heroConfig}
           setHeroConfig={setHeroConfig}
+          inventory={inventory}
+          setInventory={setInventory}
+          productCosts={productCosts}
+          setProductCosts={setProductCosts}
+          sales={sales}
           t={t}
           language={language}
         />
