@@ -190,6 +190,23 @@ const translations = {
     cardNotReady:
       "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
 
+    shippingTitle: "Dirección de envío",
+    shippingSubtitle: "Para calcular envío y completar la orden.",
+    addressLine1Label: "Dirección (línea 1)",
+    addressLine1Placeholder: "Calle, número, apartamento, etc.",
+    addressLine2Label: "Dirección (línea 2)",
+    addressLine2Placeholder: "Opcional",
+    cityLabel: "Ciudad",
+    cityPlaceholder: "Ej: San Juan",
+    stateLabel: "Estado / Provincia",
+    statePlaceholder: "Ej: PR",
+    postalLabel: "ZIP / Postal",
+    postalPlaceholder: "Ej: 00901",
+    countryLabel: "País",
+    countryPlaceholder: "Ej: Puerto Rico / USA",
+
+    waShippingAddress: "Dirección de envío:",
+
     sendWhatsApp: "Enviar por WhatsApp",
     backToCart: "Volver al carrito",
     nextStep:
@@ -395,6 +412,23 @@ const translations = {
     cardRequired: "Please fill in all card fields.",
     cardNotReady:
       "Card payments will be available once the backend is connected to Stripe.",
+
+    shippingTitle: "Shipping address",
+    shippingSubtitle: "For shipping estimates and order completion.",
+    addressLine1Label: "Address (line 1)",
+    addressLine1Placeholder: "Street, number, apartment, etc.",
+    addressLine2Label: "Address (line 2)",
+    addressLine2Placeholder: "Optional",
+    cityLabel: "City",
+    cityPlaceholder: "e.g. San Juan",
+    stateLabel: "State / Province",
+    statePlaceholder: "e.g. PR",
+    postalLabel: "ZIP / Postal",
+    postalPlaceholder: "e.g. 00901",
+    countryLabel: "Country",
+    countryPlaceholder: "e.g. Puerto Rico / USA",
+
+    waShippingAddress: "Shipping address:",
 
     sendWhatsApp: "Send via WhatsApp",
     backToCart: "Back to cart",
@@ -1341,6 +1375,13 @@ function Checkout({ cart, onBack, onDone, t, language }) {
 
   const [paymentMethod, setPaymentMethod] = useState("whatsapp");
 
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [stateRegion, setStateRegion] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("");
+
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
@@ -1384,6 +1425,27 @@ function Checkout({ cart, onBack, onDone, t, language }) {
     if (name.trim()) lines.push(`${t.waName} ${name.trim()}`);
     if (phone.trim()) lines.push(`${t.waPhone} ${phone.trim()}`);
     if (notes.trim()) lines.push(`${t.waNotes} ${notes.trim()}`);
+
+    const hasShipping =
+      addressLine1.trim() ||
+      addressLine2.trim() ||
+      city.trim() ||
+      stateRegion.trim() ||
+      postalCode.trim() ||
+      country.trim();
+
+    if (hasShipping) {
+      lines.push(t.waShippingAddress);
+      if (addressLine1.trim()) lines.push(`   ${addressLine1.trim()}`);
+      if (addressLine2.trim()) lines.push(`   ${addressLine2.trim()}`);
+
+      const cityLine = [city.trim(), stateRegion.trim(), postalCode.trim()]
+        .filter(Boolean)
+        .join(", ");
+      if (cityLine) lines.push(`   ${cityLine}`);
+      if (country.trim()) lines.push(`   ${country.trim()}`);
+    }
+
     return encodeURIComponent(lines.join("\n"));
   }, [cart, total, name, phone, notes, t, language]);
 
@@ -1420,6 +1482,96 @@ function Checkout({ cart, onBack, onDone, t, language }) {
                 rows={4}
                 className="w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
+              <div className="text-sm font-bold text-zinc-900">{t.shippingTitle}</div>
+              <div className="mt-1 text-xs leading-5 text-zinc-600">{t.shippingSubtitle}</div>
+
+              <div className="mt-4 grid gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.addressLine1Label}
+                  </label>
+                  <input
+                    value={addressLine1}
+                    onChange={(e) => setAddressLine1(e.target.value)}
+                    placeholder={t.addressLine1Placeholder}
+                    autoComplete="shipping address-line1"
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.addressLine2Label}
+                  </label>
+                  <input
+                    value={addressLine2}
+                    onChange={(e) => setAddressLine2(e.target.value)}
+                    placeholder={t.addressLine2Placeholder}
+                    autoComplete="shipping address-line2"
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.cityLabel}
+                    </label>
+                    <input
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder={t.cityPlaceholder}
+                      autoComplete="shipping address-level2"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.stateLabel}
+                    </label>
+                    <input
+                      value={stateRegion}
+                      onChange={(e) => setStateRegion(e.target.value)}
+                      placeholder={t.statePlaceholder}
+                      autoComplete="shipping address-level1"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.postalLabel}
+                    </label>
+                    <input
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      placeholder={t.postalPlaceholder}
+                      inputMode="numeric"
+                      autoComplete="shipping postal-code"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.countryLabel}
+                    </label>
+                    <input
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder={t.countryPlaceholder}
+                      autoComplete="shipping country"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
