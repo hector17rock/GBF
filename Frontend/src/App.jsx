@@ -110,14 +110,14 @@ const translations = {
     step2Title: "Personaliza",
     step2Desc: "Nombre, frase, tipografía, color y versículo.",
     step3Title: "Envía tu pedido",
-    step3Desc: "Carrito + checkout. Puedes cerrar por WhatsApp.",
+    step3Desc: "Carrito + checkout con tarjeta.",
 
     mottoTitle: "Lema",
     mottoQuote: "\"Productos con propósito, fe que transforma.\"",
 
     quickCtaTitle: "CTA rápido",
     quickCtaBody:
-      "Lanza con pre-orden y cierra por WhatsApp mientras validas demanda.",
+      "Lanza con pre-orden y cobra con tarjeta mientras validas demanda.",
 
     catalogTitle: "Catálogo",
     catalogSubtitle: "Explora por categoría y entra a personalizar.",
@@ -149,7 +149,7 @@ const translations = {
     addToCart: "Añadir al carrito",
     continueExploring: "Seguir explorando",
     mvpNote:
-      "Este MVP es solo frontend: el pedido se puede cerrar luego por WhatsApp o un formulario.",
+      "Este MVP es solo frontend: luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
 
     cartTitle: "Carrito",
     cartSubtitle: "Revisa tu pedido antes del checkout.",
@@ -162,7 +162,7 @@ const translations = {
     goToCheckout: "Ir a checkout",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Sin backend: cierre por WhatsApp o cotización.",
+    checkoutSubtitle: "Pago con tarjeta (Stripe) — demo frontend, sin backend todavía.",
     yourDetails: "Tus datos",
     namePlaceholder: "Nombre",
     phonePlaceholder: "Teléfono",
@@ -170,7 +170,7 @@ const translations = {
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
-      "Pronto: pagos con tarjeta (Stripe). Por ahora, puedes finalizar por WhatsApp.",
+      "Pronto: pagos con tarjeta (Stripe). Demo UI por ahora.",
     paymentMethod: "Método de pago",
     payByWhatsApp: "WhatsApp",
     payByCard: "Tarjeta (Stripe)",
@@ -291,7 +291,7 @@ const translations = {
     delete: "Eliminar",
 
     footerNote: "MVP visual (solo frontend) para validar interés.",
-    footerWhatsAppCheckout: "Checkout WhatsApp",
+    footerWhatsAppCheckout: "Pago con tarjeta",
   },
   en: {
     tagline: "Products with purpose",
@@ -333,14 +333,14 @@ const translations = {
     step2Title: "Customize",
     step2Desc: "Name, phrase, typography, color, and verse.",
     step3Title: "Place your order",
-    step3Desc: "Cart + checkout. You can finalize via WhatsApp.",
+    step3Desc: "Cart + card checkout.",
 
     mottoTitle: "Motto",
     mottoQuote: "\"Products with purpose, faith that transforms.\"",
 
     quickCtaTitle: "Quick CTA",
     quickCtaBody:
-      "Launch with pre-orders and close via WhatsApp while validating demand.",
+      "Launch with pre-orders and charge cards while validating demand.",
 
     catalogTitle: "Catalog",
     catalogSubtitle: "Browse by category and jump into customization.",
@@ -372,7 +372,7 @@ const translations = {
     addToCart: "Add to cart",
     continueExploring: "Keep browsing",
     mvpNote:
-      "This MVP is frontend-only: the order can be finalized later via WhatsApp or a form.",
+      "This MVP is frontend-only: later we'll add card payments (Stripe) and real orders.",
 
     cartTitle: "Cart",
     cartSubtitle: "Review your order before checkout.",
@@ -385,7 +385,7 @@ const translations = {
     goToCheckout: "Go to checkout",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "No backend: finalize via WhatsApp or quote.",
+    checkoutSubtitle: "Card payment (Stripe) — frontend demo, no backend yet.",
     yourDetails: "Your details",
     namePlaceholder: "Name",
     phonePlaceholder: "Phone",
@@ -393,7 +393,7 @@ const translations = {
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
-      "Coming soon: credit card payments (Stripe). For now, you can finalize via WhatsApp.",
+      "Coming soon: credit card payments (Stripe). UI demo for now.",
     paymentMethod: "Payment method",
     payByWhatsApp: "WhatsApp",
     payByCard: "Card (Stripe)",
@@ -511,7 +511,7 @@ const translations = {
     delete: "Delete",
 
     footerNote: "Visual MVP (frontend-only) to validate interest.",
-    footerWhatsAppCheckout: "WhatsApp Checkout",
+    footerWhatsAppCheckout: "Card checkout",
   },
 };
 
@@ -1373,8 +1373,6 @@ function Checkout({ cart, onBack, onDone, t, language }) {
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [paymentMethod, setPaymentMethod] = useState("whatsapp");
-
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
   const [city, setCity] = useState("");
@@ -1409,47 +1407,6 @@ function Checkout({ cart, onBack, onDone, t, language }) {
     setCardMessage(t.cardNotReady);
   }
 
-  const whatsappText = useMemo(() => {
-    const lines = [];
-    lines.push(t.waGreeting);
-    cart.forEach((it, idx) => {
-      lines.push(
-        `${idx + 1}. ${l10n(it.name, language)} (${it.category}) x${it.qty} - ${money(it.price, language)}`
-      );
-      lines.push(`   ${t.waText} ${it.personalization.text || "—"}`);
-      lines.push(`   ${t.waVerse} ${it.personalization.verse}`);
-      lines.push(`   ${t.waFont} ${it.personalization.font}`);
-      lines.push(`   ${t.waColor} ${it.personalization.color}`);
-    });
-    lines.push(`${t.waTotalEstimated} ${money(total, language)}`);
-    if (name.trim()) lines.push(`${t.waName} ${name.trim()}`);
-    if (phone.trim()) lines.push(`${t.waPhone} ${phone.trim()}`);
-    if (notes.trim()) lines.push(`${t.waNotes} ${notes.trim()}`);
-
-    const hasShipping =
-      addressLine1.trim() ||
-      addressLine2.trim() ||
-      city.trim() ||
-      stateRegion.trim() ||
-      postalCode.trim() ||
-      country.trim();
-
-    if (hasShipping) {
-      lines.push(t.waShippingAddress);
-      if (addressLine1.trim()) lines.push(`   ${addressLine1.trim()}`);
-      if (addressLine2.trim()) lines.push(`   ${addressLine2.trim()}`);
-
-      const cityLine = [city.trim(), stateRegion.trim(), postalCode.trim()]
-        .filter(Boolean)
-        .join(", ");
-      if (cityLine) lines.push(`   ${cityLine}`);
-      if (country.trim()) lines.push(`   ${country.trim()}`);
-    }
-
-    return encodeURIComponent(lines.join("\n"));
-  }, [cart, total, name, phone, notes, t, language]);
-
-  const whatsappHref = `https://wa.me/?text=${whatsappText}`;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -1580,135 +1537,93 @@ function Checkout({ cart, onBack, onDone, t, language }) {
                 {t.checkoutPaymentSubtitle}
               </div>
 
-              <div className="mt-4">
-                <div className="text-xs font-semibold text-zinc-700">{t.paymentMethod}</div>
-                <div className="mt-2 grid gap-2">
-                  <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="whatsapp"
-                      checked={paymentMethod === "whatsapp"}
-                      onChange={() => setPaymentMethod("whatsapp")}
-                      className="h-4 w-4"
-                    />
-                    {t.payByWhatsApp}
+              <form onSubmit={handleCardPay} className="mt-4 grid gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.cardNameLabel}
                   </label>
-
-                  <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="card"
-                      checked={paymentMethod === "card"}
-                      onChange={() => setPaymentMethod("card")}
-                      className="h-4 w-4"
-                    />
-                    {t.payByCard}
-                  </label>
+                  <input
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    placeholder={t.cardNamePlaceholder}
+                    autoComplete="cc-name"
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
                 </div>
-              </div>
 
-              {paymentMethod === "card" ? (
-                <form onSubmit={handleCardPay} className="mt-4 grid gap-3">
-                  <div>
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.cardNumberLabel}
+                  </label>
+                  <input
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    placeholder={t.cardNumberPlaceholder}
+                    inputMode="numeric"
+                    autoComplete="cc-number"
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="md:col-span-1">
                     <label className="text-xs font-semibold text-zinc-700">
-                      {t.cardNameLabel}
+                      {t.cardExpiryLabel}
                     </label>
                     <input
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      placeholder={t.cardNamePlaceholder}
-                      autoComplete="cc-name"
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.cardNumberLabel}
-                    </label>
-                    <input
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      placeholder={t.cardNumberPlaceholder}
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                      placeholder={t.cardExpiryPlaceholder}
                       inputMode="numeric"
-                      autoComplete="cc-number"
+                      autoComplete="cc-exp"
                       className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                     />
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <div className="md:col-span-1">
-                      <label className="text-xs font-semibold text-zinc-700">
-                        {t.cardExpiryLabel}
-                      </label>
-                      <input
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                        placeholder={t.cardExpiryPlaceholder}
-                        inputMode="numeric"
-                        autoComplete="cc-exp"
-                        className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                      />
-                    </div>
-
-                    <div className="md:col-span-1">
-                      <label className="text-xs font-semibold text-zinc-700">
-                        {t.cardCvcLabel}
-                      </label>
-                      <input
-                        value={cardCvc}
-                        onChange={(e) => setCardCvc(e.target.value)}
-                        placeholder={t.cardCvcPlaceholder}
-                        inputMode="numeric"
-                        autoComplete="cc-csc"
-                        className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                      />
-                    </div>
-
-                    <div className="md:col-span-1">
-                      <label className="text-xs font-semibold text-zinc-700">
-                        {t.cardZipLabel}
-                      </label>
-                      <input
-                        value={cardZip}
-                        onChange={(e) => setCardZip(e.target.value)}
-                        placeholder={t.cardZipPlaceholder}
-                        inputMode="numeric"
-                        autoComplete="postal-code"
-                        className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                      />
-                    </div>
+                  <div className="md:col-span-1">
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.cardCvcLabel}
+                    </label>
+                    <input
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value)}
+                      placeholder={t.cardCvcPlaceholder}
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
                   </div>
 
-                  <Button variant="primary" className="w-full">
-                    {t.payNow}
-                  </Button>
+                  <div className="md:col-span-1">
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.cardZipLabel}
+                    </label>
+                    <input
+                      value={cardZip}
+                      onChange={(e) => setCardZip(e.target.value)}
+                      placeholder={t.cardZipPlaceholder}
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
 
-                  <div className="text-xs leading-5 text-zinc-500">{t.cardDisclaimer}</div>
+                <Button variant="primary" className="w-full">
+                  {t.payNow}
+                </Button>
 
-                  {cardMessage ? (
-                    <div className="text-xs font-semibold text-amber-700">
-                      {cardMessage}
-                    </div>
-                  ) : null}
-                </form>
-              ) : null}
+                <div className="text-xs leading-5 text-zinc-500">{t.cardDisclaimer}</div>
+
+                {cardMessage ? (
+                  <div className="text-xs font-semibold text-amber-700">
+                    {cardMessage}
+                  </div>
+                ) : null}
+              </form>
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              {paymentMethod === "whatsapp" ? (
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
-                >
-                  {t.sendWhatsApp}
-                </a>
-              ) : null}
-
               <Button variant="secondary" onClick={onBack}>
                 {t.backToCart}
               </Button>
