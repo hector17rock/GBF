@@ -1,9 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-// MVP Frontend Mock (no backend)
-// - Home, Catalog, Product Detail (with personalization), Cart, Checkout
-// - Pure client-side state for visualization
+// =====================================================
+// App.jsx (single-file MVP) — Sections & Functions Index
+// =====================================================
+// Data/constants: COLLECTIONS, VERSES, FONTS, COLORS
+// i18n: translations (es/en)
+// localStorage: *_STORAGE_KEY
+// Helpers: buildDefaultHeroConfig, normalizeHeroConfig, l10n, money
+// UI components: Button, Pill, SectionTitle, Stat, TopBar, NavLink, MobileTab
+// Home components: CollectionCards, Hero, ProductCard, Step
+// Pages: Home, Catalog, ProductDetail, Cart, Checkout, Blog, About, AdminPanel
+// Root: App
 
+// -----------------------------
+// Data: COLLECTIONS / VERSES / FONTS / COLORS
+// -----------------------------
 const COLLECTIONS = [
   {
     id: "identidad",
@@ -69,6 +80,9 @@ const COLORS = [
   { id: "rose", label: { es: "Rosa", en: "Rose" }, swatch: "bg-rose-600" },
 ];
 
+// -----------------------------
+// i18n: translations (ES/EN)
+// -----------------------------
 const translations = {
   es: {
     tagline: "Productos con propósito",
@@ -567,11 +581,17 @@ const translations = {
   },
 };
 
+// -----------------------------
+// localStorage Keys
+// -----------------------------
 const HERO_STORAGE_KEY = "gbf.homeHero.v1";
 const INVENTORY_STORAGE_KEY = "gbf.inventory.v1";
 const PRODUCT_COSTS_STORAGE_KEY = "gbf.productCosts.v1";
 const SALES_STORAGE_KEY = "gbf.sales.v1";
 
+// -----------------------------
+// Hero promo defaults (used by Home + Admin)
+// -----------------------------
 const DEFAULT_HERO_IMAGES = {
   hero: "https://images.unsplash.com/photo-1517685352821-92cf88aee5a5?auto=format&fit=crop&w=1400&q=80",
   product1:
@@ -580,6 +600,7 @@ const DEFAULT_HERO_IMAGES = {
     "https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80",
 };
 
+// Helper: buildDefaultHeroConfig
 function buildDefaultHeroConfig() {
   return {
     enabled: false,
@@ -596,6 +617,7 @@ function buildDefaultHeroConfig() {
   };
 }
 
+// Helper: normalizeHeroConfig
 function normalizeHeroConfig(input) {
   const base = buildDefaultHeroConfig();
   const cfg = input && typeof input === "object" ? input : {};
@@ -612,6 +634,7 @@ function normalizeHeroConfig(input) {
   };
 }
 
+// Helper: l10n
 function l10n(value, language) {
   if (value == null) return "";
   if (typeof value === "string") return value;
@@ -621,6 +644,7 @@ function l10n(value, language) {
 }
 
 
+// Helper: money
 function money(n, language = "en") {
   const locale = language === "es" ? "es-US" : "en-US";
   return new Intl.NumberFormat(locale, {
@@ -629,6 +653,7 @@ function money(n, language = "en") {
   }).format(n);
 }
 
+// Component: Button
 function Button({ children, onClick, variant = "primary", className = "" }) {
   const base =
     "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold transition active:scale-[0.99]";
@@ -645,6 +670,7 @@ function Button({ children, onClick, variant = "primary", className = "" }) {
   );
 }
 
+// Component: Pill
 function Pill({ children }) {
   return (
     <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-800">
@@ -653,6 +679,7 @@ function Pill({ children }) {
   );
 }
 
+// Component: SectionTitle
 function SectionTitle({ title, subtitle }) {
   return (
     <div className="mb-4">
@@ -664,6 +691,7 @@ function SectionTitle({ title, subtitle }) {
   );
 }
 
+// Component: Stat
 function Stat({ label, value }) {
   return (
     <div className="rounded-2xl bg-white p-4">
@@ -673,6 +701,7 @@ function Stat({ label, value }) {
   );
 }
 
+// Component: TopBar
 function TopBar({
   route,
   setRoute,
@@ -772,6 +801,7 @@ function TopBar({
   );
 }
 
+// Component: NavLink
 function NavLink({ active, onClick, children }) {
   return (
     <button
@@ -787,6 +817,7 @@ function NavLink({ active, onClick, children }) {
   );
 }
 
+// Component: MobileTab
 function MobileTab({ active, onClick, children }) {
   return (
     <button
@@ -801,6 +832,7 @@ function MobileTab({ active, onClick, children }) {
 }
 
 
+// Component: CollectionCards
 function CollectionCards({ onPick, language, t }) {
   return (
     <div className="grid gap-3 md:grid-cols-3">
@@ -825,7 +857,7 @@ function CollectionCards({ onPick, language, t }) {
   );
 }
 
- // El Hero (Home) usando heroConfig (override + fallback) //
+// Component: Hero
 function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
   const enabled = Boolean(heroConfig?.enabled);
 
@@ -945,6 +977,7 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
   );
 }
 
+// Component: ProductCard
 function ProductCard({ p, onOpen, language }) {
   const name = l10n(p.name, language);
   const short = l10n(p.short, language);
@@ -981,6 +1014,7 @@ function ProductCard({ p, onOpen, language }) {
   );
 }
 
+// Page: Home
 function Home({
   products,
   onGoCatalog,
@@ -1040,6 +1074,7 @@ function Home({
   );
 }
 
+// Component: Step
 function Step({ n, title, desc }) {
   return (
     <div className="rounded-[24px] bg-zinc-50 p-5">
@@ -1054,6 +1089,7 @@ function Step({ n, title, desc }) {
   );
 }
 
+// Page: Catalog
 function Catalog({
   products = [],
   categories = [],
@@ -1119,6 +1155,7 @@ function Catalog({
   );
 }
 
+// Component: FilterChip
 function FilterChip({ active, onClick, children }) {
   return (
     <button
@@ -1132,6 +1169,7 @@ function FilterChip({ active, onClick, children }) {
   );
 }
 
+// Page: ProductDetail
 function ProductDetail({ product, onBack, onAddToCart, t, language }) {
   const [text, setText] = useState("");
   const [verse, setVerse] = useState(VERSES[1]);
@@ -1337,6 +1375,7 @@ function ProductDetail({ product, onBack, onAddToCart, t, language }) {
   );
 }
 
+// Page: Cart
 function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
   const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
@@ -1430,6 +1469,7 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
   );
 }
 
+// Page: Checkout
 function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
   const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
@@ -1763,6 +1803,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
   );
 }
 
+// Page: Blog
 function Blog({ t, language }) {
   const posts = [
     {
@@ -1826,6 +1867,7 @@ function Blog({ t, language }) {
   );
 }
 
+// Page: About
 function About({ t, language }) {
   const values = [
     {
@@ -1893,7 +1935,7 @@ function About({ t, language }) {
   );
 }
 
- // La sección nueva del Admin (inputs que modifican heroConfig) //
+// Page: AdminPanel
 function AdminPanel({
   products = [],
   setProducts,
@@ -2009,11 +2051,14 @@ function AdminPanel({
     return { inRange, revenue, cogs, grossProfit, margin, units, topProducts };
   }, [sales, profitRange, products, language]);
 
+  // getInventoryCount
   function getInventoryCount(productId) {
     const n = Number(inventory?.[productId]);
     return Number.isFinite(n) ? n : 0;
   }
 
+
+  // setInventoryCount
   function setInventoryCount(productId, value) {
     const n = Number(value);
     setInventory((prev) => ({
@@ -2022,15 +2067,21 @@ function AdminPanel({
     }));
   }
 
+
+  // adjustInventory
   function adjustInventory(productId, delta) {
     setInventoryCount(productId, getInventoryCount(productId) + delta);
   }
 
+
+  // getUnitCost
   function getUnitCost(productId) {
     const n = Number(productCosts?.[productId]);
     return Number.isFinite(n) ? n : 0;
   }
 
+
+  // setUnitCost
   function setUnitCost(productId, value) {
     const n = Number(value);
     setProductCosts((prev) => ({
@@ -2039,10 +2090,14 @@ function AdminPanel({
     }));
   }
   
+
+  // setHeroEnabled
   function setHeroEnabled(enabled) {
     setHeroConfig((prev) => ({ ...normalizeHeroConfig(prev), enabled }));
   }
 
+
+  // setHeroTextField
   function setHeroTextField(field, lang, value) {
     setHeroConfig((prev) => ({
       ...normalizeHeroConfig(prev),
@@ -2053,6 +2108,8 @@ function AdminPanel({
     }));
   }
 
+
+  // setHeroImageField
   function setHeroImageField(field, value) {
     setHeroConfig((prev) => ({
       ...normalizeHeroConfig(prev),
@@ -2063,6 +2120,8 @@ function AdminPanel({
     }));
   }
 
+
+  // resetHero
   function resetHero() {
     setHeroConfig(buildDefaultHeroConfig());
   }
@@ -2076,6 +2135,7 @@ function AdminPanel({
     image: "",
   });
 
+  // handleAddCategory
   function handleAddCategory(e) {
     e.preventDefault();
 
@@ -2100,6 +2160,8 @@ function AdminPanel({
     setNewCategory("");
   }
 
+
+  // handleDeleteCategory
   function handleDeleteCategory(categoryToDelete) {
     if (categories.length <= 1) return;
 
@@ -2122,6 +2184,8 @@ function AdminPanel({
     }));
   }
 
+
+  // handleNewProductChange
   function handleNewProductChange(e) {
     const { name, value } = e.target;
 
@@ -2131,6 +2195,8 @@ function AdminPanel({
     }));
   }
 
+
+  // handleAddProduct
   function handleAddProduct(e) {
     e.preventDefault();
 
@@ -2199,6 +2265,7 @@ function AdminPanel({
           </div>
         </div>
 
+        {/* Dashboard: Inventory */}
         <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
           <SectionTitle title={t.inventoryTitle} subtitle={t.inventorySubtitle} />
 
@@ -2269,6 +2336,8 @@ function AdminPanel({
           </div>
         </div>
 
+
+        {/* Dashboard: Profit / Loss */}
         <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
           <SectionTitle title={t.profitTitle} subtitle={t.profitSubtitle} />
 
@@ -2357,6 +2426,8 @@ function AdminPanel({
           </div>
         </div>
 
+
+        {/* Admin: Home Hero Promotion */}
         <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
           <SectionTitle title={t.heroAdminTitle} subtitle={t.heroAdminSubtitle} />
 
@@ -2786,6 +2857,7 @@ function AdminPanel({
   );
 }
 
+// Component: Footer
 function Footer({ t }) {
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
@@ -2807,7 +2879,8 @@ function Footer({ t }) {
   );
 }
 
- // Persistencia en localStorage + pasar props a Home/Admin //
+// Root: App
+// (localStorage persistence + simple client-side routing)
 export default function App() {
   const [route, setRoute] = useState("home");
 
@@ -2947,11 +3020,14 @@ export default function App() {
 
   const cartCount = cart.reduce((acc, it) => acc + it.qty, 0);
 
+  // openProduct
   function openProduct(p) {
     setSelected(p);
     setRoute("product");
   }
 
+
+  // addToCart
   function addToCart(product, personalization) {
     const key = `${product.id}-${personalization.text}-${personalization.verse}-${personalization.font}-${personalization.color}`;
     setCart((prev) => {
@@ -2975,14 +3051,20 @@ export default function App() {
     setRoute("cart");
   }
 
+
+  // removeFromCart
   function removeFromCart(key) {
     setCart((prev) => prev.filter((x) => x.key !== key));
   }
 
+
+  // pickCollection
   function pickCollection() {
     setRoute("catalog");
   }
 
+
+  // placeOrder
   function placeOrder({ customer, shipping }) {
     if (!Array.isArray(cart) || cart.length === 0) return;
 
@@ -3038,6 +3120,7 @@ export default function App() {
         setLanguage={setLanguage}
       />
 
+      {/* Route: home */}
       {route === "home" ? (
         <Home
           products={products}
@@ -3050,6 +3133,8 @@ export default function App() {
         />
       ) : null}
 
+
+      {/* Route: catalog */}
       {route === "catalog" ? (
         <Catalog
           products={products}
@@ -3060,6 +3145,8 @@ export default function App() {
         />
       ) : null}
 
+
+      {/* Route: product */}
       {route === "product" && selected ? (
         <ProductDetail
           product={selected}
@@ -3070,6 +3157,8 @@ export default function App() {
         />
       ) : null}
 
+
+      {/* Route: cart */}
       {route === "cart" ? (
         <Cart
           cart={cart}
@@ -3081,6 +3170,8 @@ export default function App() {
         />
       ) : null}
 
+
+      {/* Route: checkout */}
       {route === "checkout" ? (
         <Checkout
           cart={cart}
@@ -3095,8 +3186,14 @@ export default function App() {
         />
       ) : null}
 
+
+      {/* Route: blog */}
       {route === "blog" ? <Blog t={t} language={language} /> : null}
+
+      {/* Route: about */}
       {route === "about" ? <About t={t} language={language} /> : null}
+
+      {/* Route: admin */}
       {route === "admin" ? (
         <AdminPanel
           products={products}
