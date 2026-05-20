@@ -764,13 +764,39 @@ function TopBar({
           >
             {language === "es" ? "EN" : "ES"}
           </Button>
-          <Button variant="primary" onClick={() => setRoute("cart")}>
-            {t.cart}
-            {cartCount > 0 ? (
-              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1 text-xs">
-                {cartCount}
-              </span>
-            ) : null}
+          <Button
+            variant="ghost"
+            className="p-2"
+            onClick={() => setRoute("cart")}
+          >
+            <span className="sr-only">{t.cart}</span>
+            <span className="relative inline-flex items-center">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6.5 6.5H21l-1.6 8.2a2 2 0 0 1-2 1.6H8.1a2 2 0 0 1-2-1.7L4.7 3.8A1.5 1.5 0 0 0 3.2 2.5H2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                  fill="currentColor"
+                />
+              </svg>
+
+              {cartCount > 0 ? (
+                <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold leading-none text-white">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              ) : null}
+            </span>
           </Button>
         </div>
       </div>
