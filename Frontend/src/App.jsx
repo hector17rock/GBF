@@ -109,6 +109,9 @@ const translations = {
     heroFeature2Title: "Listo para regalar",
     heroFeature2Body: "Diseños limpios y mensajes claros.",
 
+    heroCountdownEndsIn: "Termina en",
+    heroCountdownDays: (n) => `${n} ${n === 1 ? "día" : "días"}`,
+
     collectionsTitle: "Colecciones temáticas",
     collectionsSubtitle:
       "Temas actuales y desafíos espirituales para conectar con el corazón.",
@@ -372,6 +375,9 @@ const translations = {
     heroFeature1Body: "Text, typography, color, and verse.",
     heroFeature2Title: "Ready to gift",
     heroFeature2Body: "Clean designs and clear messages.",
+
+    heroCountdownEndsIn: "Ends in",
+    heroCountdownDays: (n) => `${n} ${n === 1 ? "day" : "days"}`,
 
     collectionsTitle: "Themed collections",
     collectionsSubtitle:
@@ -760,8 +766,18 @@ function localDateTimeStringToMs(value) {
 }
 
 
-// Helper: isHeroOverrideActive
-function isHeroOverrideActive(heroConfig) {
+// Helper: formatHms
+function formatHms(ms) {
+  const totalSeconds = Math.max(0, Math.floor(Number(ms) / 1000));
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+
+// Helper: isHeroOverrideActiveAt
+function isHeroOverrideActiveAt(heroConfig, nowMs = Date.now()) {
   const enabled = Boolean(heroConfig?.enabled);
   if (!enabled) return false;
 
@@ -773,8 +789,13 @@ function isHeroOverrideActive(heroConfig) {
 
   if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return false;
 
-  const now = Date.now();
-  return now >= startMs && now <= endMs;
+  return nowMs >= startMs && nowMs <= endMs;
+}
+
+
+// Helper: isHeroOverrideActive
+function isHeroOverrideActive(heroConfig) {
+  return isHeroOverrideActiveAt(heroConfig, Date.now());
 }
 
 
@@ -849,14 +870,21 @@ function TopBar({
     <div className="sticky top-0 z-40 border-b border-zinc-200/60 bg-white/55 backdrop-blur-xl shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-900 text-white">
-            GBF
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+            <img
+              src="/gbficon.png"
+              alt="Grow by Faith"
+              className="h-10 w-10 object-contain"
+            />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-bold text-zinc-900">
+            <div
+              className="text-[28px] font-normal leading-none text-[#7a6f69] md:text-[32px]"
+              style={{ fontFamily: '"Allura", cursive' }}
+            >
               Grow by Faith
             </div>
-            <div className="text-xs text-zinc-500">{t.tagline}</div>
+            <div className="mt-1 text-xs text-zinc-500">{t.tagline}</div>
           </div>
         </div>
 
@@ -1023,19 +1051,19 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
   const promoStart = heroConfig?.promoSchedule?.startLocal || "";
   const promoEnd = heroConfig?.promoSchedule?.endLocal || "";
 
-  const [, setPromoTick] = useState(0);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
     if (!heroConfig?.enabled || promoType !== "promo") return;
 
     const id = window.setInterval(() => {
-      setPromoTick((x) => x + 1);
-    }, 30_000);
+      setNowMs(Date.now());
+    }, 1000);
 
     return () => window.clearInterval(id);
   }, [heroConfig?.enabled, promoType, promoStart, promoEnd]);
 
-  const enabled = isHeroOverrideActive(heroConfig);
+  const enabled = isHeroOverrideActiveAt(heroConfig, nowMs);
 
   const pillOverride = enabled ? l10n(heroConfig?.pill, language).trim() : "";
   const titleOneOverride = enabled
@@ -1058,6 +1086,22 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
   const heroText = textOverride || t.heroText;
   const primaryLabel = primaryOverride || t.heroPrimary;
   const secondaryLabel = secondaryOverride || t.heroSecondary;
+
+  const promoEndMs = localDateTimeStringToMs(heroConfig?.promoSchedule?.endLocal);
+  const remainingMs = Number.isFinite(promoEndMs) ? promoEndMs - nowMs : Number.NaN;
+  const showCountdown =
+    promoType === "promo" &&
+    enabled &&
+    Number.isFinite(promoEndMs) &&
+    Number.isFinite(remainingMs) &&
+    remainingMs >= 0;
+
+  const dayMs = 24 * 60 * 60 * 1000;
+  const countdownValue = showCountdown
+    ? remainingMs > dayMs
+      ? t.heroCountdownDays(Math.ceil(remainingMs / dayMs))
+      : formatHms(remainingMs)
+    : "";
 
   const heroImage =
     enabled && typeof heroConfig?.images?.hero === "string" && heroConfig.images.hero.trim()
@@ -1088,6 +1132,13 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
       <div className="relative grid gap-6 p-6 md:grid-cols-2 md:p-10">
         <div>
           <Pill>{pillText}</Pill>
+
+          {showCountdown ? (
+            <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-zinc-200/60 bg-white/55 px-3 py-1 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-xl">
+              <span className="text-zinc-600">{t.heroCountdownEndsIn}</span>
+              <span className="text-zinc-900">{countdownValue}</span>
+            </div>
+          ) : null}
 
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
             {titleOne}
