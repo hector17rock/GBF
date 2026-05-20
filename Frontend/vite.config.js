@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+// Helper: extFromMime
 function extFromMime(mime) {
   if (mime === 'image/png') return 'png'
   if (mime === 'image/jpeg') return 'jpg'
@@ -13,6 +14,7 @@ function extFromMime(mime) {
   return ''
 }
 
+// Helper: safeFilename
 function safeFilename(input) {
   const s = String(input || '').trim()
   if (!s) return ''

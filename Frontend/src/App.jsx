@@ -1719,6 +1719,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
 
   const [cardMessage, setCardMessage] = useState("");
 
+  // handleCardPay
   function handleCardPay(e) {
     e.preventDefault();
     setCardMessage("");
