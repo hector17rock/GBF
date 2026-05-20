@@ -582,6 +582,11 @@ const translations = {
 };
 
 // -----------------------------
+// Local images folder
+// -----------------------------
+// Put local images in: public/images/
+// Then reference them like: "/images/hero.jpg" (Vite serves from /public)
+// -----------------------------
 // localStorage Keys
 // -----------------------------
 const HERO_STORAGE_KEY = "gbf.homeHero.v1";
@@ -694,7 +699,7 @@ function SectionTitle({ title, subtitle }) {
 // Component: Stat
 function Stat({ label, value }) {
   return (
-    <div className="rounded-2xl bg-white p-4">
+    <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
       <div className="text-xs font-semibold text-zinc-500">{label}</div>
       <div className="mt-2 text-base font-extrabold text-zinc-900">{value}</div>
     </div>
@@ -712,7 +717,7 @@ function TopBar({
 }) {
 
   return (
-    <div className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 backdrop-blur">
+    <div className="sticky top-0 z-40 border-b border-zinc-200/60 bg-white/55 backdrop-blur-xl shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-900 text-white">
@@ -866,7 +871,7 @@ function CollectionCards({ onPick, language, t }) {
         <button
           key={c.id}
           onClick={() => onPick(c)}
-          className="rounded-[24px] border border-zinc-200 bg-white p-5 text-left transition hover:bg-zinc-50"
+          className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
         >
           <div className="text-sm font-bold text-zinc-900">
             {l10n(c.name, language)}
@@ -929,7 +934,7 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
       : DEFAULT_HERO_IMAGES.product2;
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-zinc-200 bg-white">
+    <div className="relative overflow-hidden rounded-[28px] border border-zinc-200/60 bg-white/55 shadow-sm backdrop-blur-xl">
       <div className="absolute inset-0">
         <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
         <div className="absolute -right-32 -bottom-32 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
@@ -959,12 +964,12 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-zinc-600 md:max-w-md">
-            <div className="rounded-2xl bg-zinc-50 p-3">
+            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl">
               <div className="font-semibold text-zinc-900">{t.heroFeature1Title}</div>
               <div className="mt-1">{t.heroFeature1Body}</div>
             </div>
 
-            <div className="rounded-2xl bg-zinc-50 p-3">
+            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl">
               <div className="font-semibold text-zinc-900">{t.heroFeature2Title}</div>
               <div className="mt-1">{t.heroFeature2Body}</div>
             </div>
@@ -1011,7 +1016,7 @@ function ProductCard({ p, onOpen, language }) {
   return (
     <button
       onClick={() => onOpen(p)}
-      className="group overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-left transition hover:bg-zinc-50"
+      className="group overflow-hidden rounded-[24px] border border-zinc-200/60 bg-white/55 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
     >
       <div className="overflow-hidden">
         <img
@@ -1075,7 +1080,7 @@ function Home({
         </div>
       </div>
 
-      <div className="mt-10 rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="mt-10 rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.stepsTitle} subtitle={t.stepsSubtitle} />
         <div className="grid gap-4 md:grid-cols-3">
           <Step n="1" title={t.step1Title} desc={t.step1Desc} />
@@ -1085,11 +1090,11 @@ function Home({
       </div>
 
       <div className="mt-10 grid gap-3 md:grid-cols-2">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6">
+        <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
           <div className="text-sm font-bold text-zinc-900">{t.mottoTitle}</div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">{t.mottoQuote}</p>
         </div>
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6">
+        <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
           <div className="text-sm font-bold text-zinc-900">{t.quickCtaTitle}</div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">{t.quickCtaBody}</p>
         </div>
@@ -1103,7 +1108,7 @@ function Home({
 // Component: Step
 function Step({ n, title, desc }) {
   return (
-    <div className="rounded-[24px] bg-zinc-50 p-5">
+    <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
       <div className="flex items-center gap-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-bold text-white">
           {n}
@@ -1138,7 +1143,7 @@ function Catalog({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.catalogTitle} subtitle={t.catalogSubtitle} />
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
@@ -1224,7 +1229,7 @@ function ProductDetail({ product, onBack, onAddToCart, t, language }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-xs font-semibold text-zinc-500">
@@ -1255,7 +1260,7 @@ function ProductDetail({ product, onBack, onAddToCart, t, language }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
 
               <div className="absolute bottom-4 left-4 right-4">
-                <div className="rounded-[22px] bg-white/90 p-4 backdrop-blur">
+                <div className="rounded-[22px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                   <div className="text-xs font-semibold text-zinc-500">
                     {t.preview}
                   </div>
@@ -1356,7 +1361,7 @@ function ProductDetail({ product, onBack, onAddToCart, t, language }) {
                 </div>
               </div>
 
-              <div className="rounded-[24px] bg-zinc-50 p-5">
+              <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
                 <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
                 <div className="mt-2 text-sm text-zinc-700">
                   <div>
@@ -1407,7 +1412,7 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionTitle title={t.cartTitle} subtitle={t.cartSubtitle} />
           <div className="flex items-center gap-2">
@@ -1419,7 +1424,7 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
         </div>
 
         {cart.length === 0 ? (
-          <div className="rounded-[24px] bg-zinc-50 p-6 text-sm text-zinc-600">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
             {t.emptyCart}
           </div>
         ) : (
@@ -1427,7 +1432,7 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
             {cart.map((it) => (
               <div
                 key={it.key}
-                className="rounded-[24px] border border-zinc-200 p-5"
+                className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -1472,7 +1477,7 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
               </div>
             ))}
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-zinc-50 p-5">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
               <div>
                 <div className="text-sm font-bold text-zinc-900">{t.total}</div>
                 <div className="text-sm text-zinc-600">{t.estimatedTotal}</div>
@@ -1558,14 +1563,14 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <SectionTitle title={t.checkoutTitle} subtitle={t.checkoutSubtitle} />
           <div className="text-lg font-bold text-zinc-900">{money(total, language)}</div>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="rounded-[24px] bg-zinc-50 p-6">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.yourDetails}</div>
             <div className="mt-4 grid gap-3">
               <input
@@ -1589,7 +1594,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
               />
             </div>
 
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
+            <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.shippingTitle}</div>
               <div className="mt-1 text-xs leading-5 text-zinc-600">{t.shippingSubtitle}</div>
 
@@ -1679,7 +1684,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
+            <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.checkoutPaymentTitle}</div>
               <div className="mt-1 text-xs leading-5 text-zinc-600">
                 {t.checkoutPaymentSubtitle}
@@ -1781,11 +1786,11 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
           </div>
 
           <div>
-            <div className="rounded-[24px] border border-zinc-200 p-6">
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
               <div className="mt-4 grid gap-3">
                 {cart.map((it) => (
-                  <div key={it.key} className="rounded-2xl bg-zinc-50 p-4">
+                  <div key={it.key} className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold text-zinc-500">
@@ -1809,14 +1814,14 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                 ))}
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-2xl bg-zinc-50 p-4">
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                 <div className="text-sm font-bold text-zinc-900">{t.total}</div>
                 <div className="text-base font-extrabold text-zinc-900">
                   {money(total, language)}
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-zinc-600">
+              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
                 {t.checkoutCompleteHint}
               </div>
             </div>
@@ -1866,13 +1871,13 @@ function Blog({ t, language }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.blogTitle} subtitle={t.blogSubtitle} />
         <div className="grid gap-3 md:grid-cols-3">
           {posts.map((p, idx) => (
             <div
               key={`${l10n(p.title, "en") || l10n(p.title, "es")}-${idx}`}
-              className="rounded-[24px] border border-zinc-200 bg-white p-5"
+              className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
             >
               <div className="text-sm font-bold text-zinc-900">
                 {l10n(p.title, language)}
@@ -1932,13 +1937,13 @@ function About({ t, language }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.valuesTitle} subtitle={t.valuesSubtitle} />
         <div className="grid gap-3 md:grid-cols-2">
           {values.map((v, idx) => (
             <div
               key={`${l10n(v.title, "en") || l10n(v.title, "es")}-${idx}`}
-              className="rounded-[24px] border border-zinc-200 bg-white p-5"
+              className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
             >
               <div className="text-sm font-bold text-zinc-900">
                 {l10n(v.title, language)}
@@ -1950,7 +1955,7 @@ function About({ t, language }) {
           ))}
         </div>
 
-        <div className="mt-6 rounded-[24px] bg-zinc-50 p-6">
+        <div className="mt-6 rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
           <div className="text-sm font-bold text-zinc-900">{t.missionTitle}</div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">{t.missionText}</p>
         </div>
@@ -2256,11 +2261,11 @@ function AdminPanel({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6 md:p-10">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.adminTitle} subtitle={t.adminSubtitle} />
 
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[24px] bg-zinc-50 p-5">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.adminStatProducts}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
@@ -2270,7 +2275,7 @@ function AdminPanel({
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatProductsBody}</p>
           </div>
 
-          <div className="rounded-[24px] bg-zinc-50 p-5">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.adminStatMode}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
@@ -2280,7 +2285,7 @@ function AdminPanel({
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatModeBody}</p>
           </div>
 
-          <div className="rounded-[24px] bg-zinc-50 p-5">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.adminStatManagement}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
@@ -2292,14 +2297,14 @@ function AdminPanel({
         </div>
 
         {/* Dashboard: Inventory */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.inventoryTitle} subtitle={t.inventorySubtitle} />
 
           <div className="grid gap-3">
             {products.map((p) => (
               <div
                 key={p.id}
-                className="flex flex-col gap-4 rounded-[24px] border border-zinc-200 bg-white p-4 md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-4 rounded-[24px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl md:flex-row md:items-center md:justify-between"
               >
                 <div className="flex items-center gap-4">
                   <img
@@ -2364,11 +2369,11 @@ function AdminPanel({
 
 
         {/* Dashboard: Profit / Loss */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.profitTitle} subtitle={t.profitSubtitle} />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-zinc-50 p-4">
+            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
               <div className="grid gap-3">
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
@@ -2419,7 +2424,7 @@ function AdminPanel({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.profitTopProducts}</div>
               <div className="mt-3 grid gap-2">
                 {profitStats.topProducts.length === 0 ? (
@@ -2428,7 +2433,7 @@ function AdminPanel({
                   profitStats.topProducts.map((x) => (
                     <div
                       key={x.productId}
-                      className="flex items-center justify-between rounded-2xl bg-zinc-50 px-4 py-3"
+                      className="flex items-center justify-between rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
                     >
                       <div>
                         <div className="text-sm font-semibold text-zinc-900">{x.name}</div>
@@ -2454,7 +2459,7 @@ function AdminPanel({
 
 
         {/* Admin: Home Hero Promotion */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.heroAdminTitle} subtitle={t.heroAdminSubtitle} />
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -2668,7 +2673,7 @@ function AdminPanel({
           </div>
         </div>
 
-        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.categoriesTitle} subtitle={t.categoriesSubtitle} />
 
           <div className="flex flex-wrap gap-2">
@@ -2714,7 +2719,7 @@ function AdminPanel({
           </form>
         </div>
 
-        <div className="mt-8 rounded-[24px] border border-zinc-200 p-5">
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.addProductTitle} subtitle={t.addProductSubtitle} />
 
           <form onSubmit={handleAddProduct} className="grid gap-4">
@@ -2831,7 +2836,7 @@ function AdminPanel({
             {products.map((product) => (
               <div
                 key={product.id}
-                className="rounded-[24px] border border-zinc-200 p-5"
+                className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
@@ -2887,7 +2892,7 @@ function AdminPanel({
 function Footer({ t }) {
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="text-sm font-bold text-zinc-900">Grow by Faith</div>
