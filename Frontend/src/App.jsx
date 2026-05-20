@@ -285,8 +285,8 @@ const translations = {
 
     heroAdminTitle: "Promoción del Home",
     heroAdminSubtitle:
-      "Edita el recuadro principal del inicio para promociones sin programador.",
-    heroAdminEnabled: "Activar promoción",
+      "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin programador.",
+    heroAdminEnabled: "Activar cuadro del Home",
     heroAdminReset: "Restablecer",
     heroAdminEs: "Español (ES)",
     heroAdminEn: "Inglés (EN)",
@@ -299,6 +299,21 @@ const translations = {
     heroAdminHeroImage: "Imagen principal",
     heroAdminImage1: "Imagen 1",
     heroAdminImage2: "Imagen 2",
+
+    uploadImageLabel: "Subir imagen",
+    uploading: "Subiendo...",
+    uploadFailed: "Error al subir:",
+    uploadDevOnlyHint: "Funciona solo en desarrollo (npm run dev).",
+
+    heroAdminTypeLabel: "Tipo",
+    heroAdminTypeContent: "Solo actualizar contenido",
+    heroAdminTypePromo: "Promoción (con fechas)",
+    heroAdminScheduleTitle: "Fechas de promoción",
+    heroAdminStartLabel: "Inicio",
+    heroAdminEndLabel: "Fin",
+    heroAdminScheduleHint: "Hora local",
+    heroAdminStatusActive: "Activa ahora",
+    heroAdminStatusInactive: "Inactiva ahora",
 
     categoriesTitle: "Categorías",
     categoriesSubtitle:
@@ -532,8 +547,8 @@ const translations = {
 
     heroAdminTitle: "Homepage promotion",
     heroAdminSubtitle:
-      "Edit the main homepage hero for promotions without needing a developer.",
-    heroAdminEnabled: "Enable promotion",
+      "Edit the main homepage hero for promotions or content updates without needing a developer.",
+    heroAdminEnabled: "Enable homepage hero",
     heroAdminReset: "Reset",
     heroAdminEs: "Spanish (ES)",
     heroAdminEn: "English (EN)",
@@ -546,6 +561,21 @@ const translations = {
     heroAdminHeroImage: "Main image",
     heroAdminImage1: "Image 1",
     heroAdminImage2: "Image 2",
+
+    uploadImageLabel: "Upload image",
+    uploading: "Uploading...",
+    uploadFailed: "Upload error:",
+    uploadDevOnlyHint: "Only works in development (npm run dev).",
+
+    heroAdminTypeLabel: "Type",
+    heroAdminTypeContent: "Content update only",
+    heroAdminTypePromo: "Promotion (with dates)",
+    heroAdminScheduleTitle: "Promotion dates",
+    heroAdminStartLabel: "Start",
+    heroAdminEndLabel: "End",
+    heroAdminScheduleHint: "Local time",
+    heroAdminStatusActive: "Active now",
+    heroAdminStatusInactive: "Inactive now",
 
     categoriesTitle: "Categories",
     categoriesSubtitle: "Create or remove available product categories.",
@@ -609,6 +639,11 @@ const DEFAULT_HERO_IMAGES = {
 function buildDefaultHeroConfig() {
   return {
     enabled: false,
+    promoType: "content", // "content" | "promo"
+    promoSchedule: {
+      startLocal: "", // datetime-local string (YYYY-MM-DDTHH:mm)
+      endLocal: "",
+    },
     pill: { es: translations.es.heroPill, en: translations.en.heroPill },
     titleOne: { es: translations.es.heroTitleOne, en: translations.en.heroTitleOne },
     titleTwo: { es: translations.es.heroTitleTwo, en: translations.en.heroTitleTwo },
@@ -626,9 +661,17 @@ function buildDefaultHeroConfig() {
 function normalizeHeroConfig(input) {
   const base = buildDefaultHeroConfig();
   const cfg = input && typeof input === "object" ? input : {};
+
+  const promoType = cfg.promoType === "promo" ? "promo" : "content";
+
   return {
     ...base,
     ...cfg,
+    promoType,
+    promoSchedule: {
+      ...base.promoSchedule,
+      ...(cfg.promoSchedule || {}),
+    },
     pill: { ...base.pill, ...(cfg.pill || {}) },
     titleOne: { ...base.titleOne, ...(cfg.titleOne || {}) },
     titleTwo: { ...base.titleTwo, ...(cfg.titleTwo || {}) },
@@ -646,6 +689,92 @@ function l10n(value, language) {
   if (typeof value === "number") return String(value);
   if (typeof value === "object") return value[language] ?? value.es ?? "";
   return String(value);
+}
+
+
+// Helper: fileToDataUrl (for Admin image uploads)
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error("No file"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+
+// Helper: buildUploadFilename
+function buildUploadFilename(prefix, file) {
+  const base = String(file?.name || "upload").replace(/\s+/g, "-");
+  const id =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : String(Date.now());
+  return `${prefix}-${id}-${base}`;
+}
+
+
+// Helper: uploadImageToPublicImages (dev-server endpoint)
+async function uploadImageToPublicImages({ file, filename }) {
+  const dataUrl = await fileToDataUrl(file);
+
+  const res = await fetch("/__gbf_upload_image", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename, dataUrl }),
+  });
+
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok || !json?.ok || typeof json?.url !== "string") {
+    throw new Error(json?.error || `Upload failed (${res.status})`);
+  }
+
+  return json.url;
+}
+
+
+// Helper: localDateTimeStringToMs
+function localDateTimeStringToMs(value) {
+  const s = String(value || "").trim();
+  if (!s) return Number.NaN;
+
+  const m =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(s);
+  if (!m) return Number.NaN;
+
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const hour = Number(m[4]);
+  const minute = Number(m[5]);
+  const second = Number(m[6] || 0);
+
+  const dt = new Date(year, month - 1, day, hour, minute, second, 0);
+  return dt.getTime();
+}
+
+
+// Helper: isHeroOverrideActive
+function isHeroOverrideActive(heroConfig) {
+  const enabled = Boolean(heroConfig?.enabled);
+  if (!enabled) return false;
+
+  const promoType = heroConfig?.promoType === "promo" ? "promo" : "content";
+  if (promoType !== "promo") return true;
+
+  const startMs = localDateTimeStringToMs(heroConfig?.promoSchedule?.startLocal);
+  const endMs = localDateTimeStringToMs(heroConfig?.promoSchedule?.endLocal);
+
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return false;
+
+  const now = Date.now();
+  return now >= startMs && now <= endMs;
 }
 
 
@@ -890,7 +1019,23 @@ function CollectionCards({ onPick, language, t }) {
 
 // Component: Hero
 function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
-  const enabled = Boolean(heroConfig?.enabled);
+  const promoType = heroConfig?.promoType === "promo" ? "promo" : "content";
+  const promoStart = heroConfig?.promoSchedule?.startLocal || "";
+  const promoEnd = heroConfig?.promoSchedule?.endLocal || "";
+
+  const [, setPromoTick] = useState(0);
+
+  useEffect(() => {
+    if (!heroConfig?.enabled || promoType !== "promo") return;
+
+    const id = window.setInterval(() => {
+      setPromoTick((x) => x + 1);
+    }, 30_000);
+
+    return () => window.clearInterval(id);
+  }, [heroConfig?.enabled, promoType, promoStart, promoEnd]);
+
+  const enabled = isHeroOverrideActive(heroConfig);
 
   const pillOverride = enabled ? l10n(heroConfig?.pill, language).trim() : "";
   const titleOneOverride = enabled
@@ -1986,6 +2131,9 @@ function AdminPanel({
 
   const [newCategory, setNewCategory] = useState("");
 
+  const [uploading, setUploading] = useState({});
+  const [uploadErrors, setUploadErrors] = useState({});
+
   const [profitPeriod, setProfitPeriod] = useState("week");
   const [profitDate, setProfitDate] = useState(() => {
     const d = new Date();
@@ -2152,9 +2300,53 @@ function AdminPanel({
   }
 
 
+  // setHeroPromoType
+  function setHeroPromoType(value) {
+    const promoType = value === "promo" ? "promo" : "content";
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      promoType,
+    }));
+  }
+
+
+  // setHeroPromoScheduleField
+  function setHeroPromoScheduleField(field, value) {
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      promoSchedule: {
+        ...(prev?.promoSchedule || {}),
+        [field]: value,
+      },
+    }));
+  }
+
+
   // resetHero
   function resetHero() {
     setHeroConfig(buildDefaultHeroConfig());
+  }
+
+
+  // handleUploadImage
+  async function handleUploadImage({ key, file, filenamePrefix, onSuccess }) {
+    if (!file) return;
+
+    setUploadErrors((prev) => ({ ...(prev || {}), [key]: "" }));
+    setUploading((prev) => ({ ...(prev || {}), [key]: true }));
+
+    try {
+      const filename = buildUploadFilename(filenamePrefix, file);
+      const url = await uploadImageToPublicImages({ file, filename });
+      onSuccess(url);
+    } catch (err) {
+      setUploadErrors((prev) => ({
+        ...(prev || {}),
+        [key]: err?.message || "Upload failed",
+      }));
+    } finally {
+      setUploading((prev) => ({ ...(prev || {}), [key]: false }));
+    }
   }
 
   const [newProduct, setNewProduct] = useState({
@@ -2478,6 +2670,74 @@ function AdminPanel({
             </Button>
           </div>
 
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="text-sm font-semibold text-zinc-900">
+                {t.heroAdminTypeLabel}
+              </label>
+              <select
+                value={heroConfig?.promoType === "promo" ? "promo" : "content"}
+                onChange={(e) => setHeroPromoType(e.target.value)}
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              >
+                <option value="content">{t.heroAdminTypeContent}</option>
+                <option value="promo">{t.heroAdminTypePromo}</option>
+              </select>
+            </div>
+
+            {heroConfig?.promoType === "promo" ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="text-sm font-bold text-zinc-900">
+                  {t.heroAdminScheduleTitle}
+                </div>
+
+                <div className="mt-3 grid gap-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <label className="text-xs font-semibold text-zinc-700">
+                        {t.heroAdminStartLabel}
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={heroConfig?.promoSchedule?.startLocal || ""}
+                        onChange={(e) =>
+                          setHeroPromoScheduleField("startLocal", e.target.value)
+                        }
+                        className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-zinc-700">
+                        {t.heroAdminEndLabel}
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={heroConfig?.promoSchedule?.endLocal || ""}
+                        onChange={(e) =>
+                          setHeroPromoScheduleField("endLocal", e.target.value)
+                        }
+                        className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-zinc-500">
+                    {t.heroAdminScheduleHint}
+                    {heroConfig?.enabled ? (
+                      <>
+                        {" · "}
+                        {isHeroOverrideActive(heroConfig)
+                          ? t.heroAdminStatusActive
+                          : t.heroAdminStatusInactive}
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           <div className="mt-5 grid gap-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -2646,7 +2906,42 @@ function AdminPanel({
                   placeholder="https://..."
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
+
+                <div className="mt-2">
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.uploadImageLabel}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={Boolean(uploading["hero:hero"])}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      handleUploadImage({
+                        key: "hero:hero",
+                        file,
+                        filenamePrefix: "hero-hero",
+                        onSuccess: (url) => setHeroImageField("hero", url),
+                      });
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                  />
+
+                  {uploading["hero:hero"] ? (
+                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                  ) : null}
+
+                  {uploadErrors["hero:hero"] ? (
+                    <div className="mt-1 text-xs font-semibold text-red-600">
+                      {t.uploadFailed} {uploadErrors["hero:hero"]}
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                  )}
+                </div>
               </div>
+
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
                   {t.heroAdminImage1}
@@ -2657,7 +2952,42 @@ function AdminPanel({
                   placeholder="https://..."
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
+
+                <div className="mt-2">
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.uploadImageLabel}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={Boolean(uploading["hero:product1"])}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      handleUploadImage({
+                        key: "hero:product1",
+                        file,
+                        filenamePrefix: "hero-product1",
+                        onSuccess: (url) => setHeroImageField("product1", url),
+                      });
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                  />
+
+                  {uploading["hero:product1"] ? (
+                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                  ) : null}
+
+                  {uploadErrors["hero:product1"] ? (
+                    <div className="mt-1 text-xs font-semibold text-red-600">
+                      {t.uploadFailed} {uploadErrors["hero:product1"]}
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                  )}
+                </div>
               </div>
+
               <div>
                 <label className="text-sm font-semibold text-zinc-900">
                   {t.heroAdminImage2}
@@ -2668,6 +2998,40 @@ function AdminPanel({
                   placeholder="https://..."
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
+
+                <div className="mt-2">
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.uploadImageLabel}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={Boolean(uploading["hero:product2"])}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      handleUploadImage({
+                        key: "hero:product2",
+                        file,
+                        filenamePrefix: "hero-product2",
+                        onSuccess: (url) => setHeroImageField("product2", url),
+                      });
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                  />
+
+                  {uploading["hero:product2"] ? (
+                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                  ) : null}
+
+                  {uploadErrors["hero:product2"] ? (
+                    <div className="mt-1 text-xs font-semibold text-red-600">
+                      {t.uploadFailed} {uploadErrors["hero:product2"]}
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -2786,6 +3150,41 @@ function AdminPanel({
                   placeholder={t.productImagePlaceholder}
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
+
+                <div className="mt-2">
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.uploadImageLabel}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={Boolean(uploading["newProduct:image"])}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      handleUploadImage({
+                        key: "newProduct:image",
+                        file,
+                        filenamePrefix: "product-new",
+                        onSuccess: (url) =>
+                          setNewProduct((prev) => ({ ...prev, image: url })),
+                      });
+                    }}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                  />
+
+                  {uploading["newProduct:image"] ? (
+                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                  ) : null}
+
+                  {uploadErrors["newProduct:image"] ? (
+                    <div className="mt-1 text-xs font-semibold text-red-600">
+                      {t.uploadFailed} {uploadErrors["newProduct:image"]}
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -2876,6 +3275,66 @@ function AdminPanel({
                     </div>
                   </div>
 
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.productImageLabel}
+                    </label>
+                    <input
+                      value={product.image}
+                      onChange={(e) => {
+                        const nextUrl = e.target.value;
+                        setProducts((prev) =>
+                          prev.map((p) =>
+                            p.id === product.id ? { ...p, image: nextUrl } : p
+                          )
+                        );
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.uploadImageLabel}
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={Boolean(uploading[`product:${product.id}`])}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        handleUploadImage({
+                          key: `product:${product.id}`,
+                          file,
+                          filenamePrefix: `product-${product.id}`,
+                          onSuccess: (url) => {
+                            setProducts((prev) =>
+                              prev.map((p) =>
+                                p.id === product.id ? { ...p, image: url } : p
+                              )
+                            );
+                          },
+                        });
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                    />
+
+                    {uploading[`product:${product.id}`] ? (
+                      <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                    ) : null}
+
+                    {uploadErrors[`product:${product.id}`] ? (
+                      <div className="mt-1 text-xs font-semibold text-red-600">
+                        {t.uploadFailed} {uploadErrors[`product:${product.id}`]}
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
