@@ -91,6 +91,7 @@ const translations = {
     navCatalog: "Catálogo",
     navBlog: "Blog",
     navValues: "Valores",
+    navOrderStatus: "Estatus de Orden",
     navAdmin: "Admin",
 
     explore: "Explorar",
@@ -178,6 +179,20 @@ const translations = {
     estimatedTotal: "Este total es estimado para el MVP.",
     goToCheckout: "Ir a checkout",
 
+    taxPrState: "Tax estatal (PR)",
+    taxPrMunicipal: "Tax municipal (PR)",
+    taxPrTotal: "Tax total (PR)",
+
+    checkoutSubtotal: "Subtotal",
+    checkoutTaxPr: "IVU (PR)",
+    checkoutTaxStateLabel: "Estatal",
+    checkoutTaxMunicipalLabel: "Municipal",
+    checkoutTaxRateLabel: "Tasa (%)",
+    checkoutShippingFee: "Costo de envío",
+    checkoutGrandTotal: "Total",
+    checkoutEditTaxesShippingHint:
+      "El IVU y el envío se calculan automáticamente.",
+
     checkoutTitle: "Checkout",
     checkoutSubtitle: "Pago con tarjeta (Stripe) — demo frontend, sin backend todavía.",
     yourDetails: "Tus datos",
@@ -203,6 +218,12 @@ const translations = {
     cardZipLabel: "ZIP / Postal",
     cardZipPlaceholder: "12345",
     payNow: "Pagar ahora",
+    checkoutReviewTitle: "Revisar su orden",
+    checkoutReviewSubtitle: "Confirma los detalles antes de someter la orden.",
+    checkoutEditDetails: "Editar datos",
+    checkoutSubmitOrder: "Someter orden",
+    checkoutDetailsRequired: "Completa nombre, teléfono y dirección de envío.",
+    checkoutOrderSubmittedToast: "Orden sometida",
     cardRequired: "Completa todos los campos de tarjeta.",
     cardNotReady:
       "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
@@ -283,8 +304,89 @@ const translations = {
     profitGrossProfit: "Ganancia bruta",
     profitMargin: "Margen",
     profitUnits: "Unidades vendidas",
-    profitNoSales: "No hay ventas registradas en este periodo.",
-    profitTopProducts: "Top productos",
+    profitTaxCollected: "Tax recaudado",
+    profitTaxCollectedAllTime: "Tax recaudado (total)",
+
+    adminCheckoutSettingsTitle: "Ajustes de Checkout",
+    adminCheckoutSettingsSubtitle:
+      "Solo el administrador puede cambiar taxes y envío. Aplica a artículos nuevos y existentes.",
+    adminCheckoutDefaultShippingLabel: "Costo de envío",
+    adminCheckoutTaxStateRateLabel: "Tax estatal (PR) — tasa (%)",
+    adminCheckoutTaxMunicipalRateLabel: "Tax municipal (PR) — tasa (%)",
+    profitNoSales: "No hay ventas registradas en este período.",
+    profitTopProducts: "Productos top",
+
+    adminStatOrdersPending: "Órdenes pendientes",
+    adminStatOrdersPendingBody: "Pedidos por empacar / enviar.",
+
+    ordersTitle: "Órdenes",
+    ordersSubtitle: "Gestiona pedidos: imprime etiquetas y recibos.",
+    ordersEmpty: "No hay órdenes todavía.",
+    ordersStatusPending: "Pendiente",
+    ordersStatusFulfilled: "Completada",
+    ordersStatusCancelled: "Cancelada",
+    ordersOrder: "Orden",
+    ordersPlacedAt: "Creada",
+    ordersCustomer: "Cliente",
+    ordersShipping: "Envío",
+    ordersItems: "Artículos",
+    ordersTotal: "Total",
+    ordersPrintLabel: "Imprimir Label de Envío",
+    ordersPrintReceipt: "Recibo (PDF)",
+    ordersViewDetails: "Ver detalle de la orden",
+    ordersHideDetails: "Ocultar detalle de la orden",
+    ordersReceiptHint:
+      "Tip: En la ventana de imprimir, selecciona 'Guardar como PDF' para archivarlo.",
+    ordersMarkFulfilled: "Marcar completada",
+    ordersMarkPending: "Marcar pendiente",
+
+    ordersPaymentMethod: "Método de pago",
+    ordersPaymentCard: "Tarjeta",
+    ordersPaymentWhatsApp: "WhatsApp",
+
+    ordersTrackingNumberLabel: "Tracking #",
+    ordersTrackingNumberPlaceholder: "Ej: 9400 1000 0000 0000 0000 00",
+    ordersEtaLabel: "Tiempo estimado",
+    ordersEtaPlaceholder: "Ej: 3-5 días",
+
+    orderConfirmationTitle: "Confirmación de orden",
+    orderConfirmationSubtitle:
+      "Gracias. Recibimos tu pedido. Guarda esta información por si surge alguna situación.",
+    orderConfirmationOrderNumber: "Número de orden",
+    orderConfirmationPaymentMethod: "Método de pago",
+    orderConfirmationPrintReceipt: "Imprimir recibo (PDF)",
+    orderConfirmationGoHome: "Volver al inicio",
+    orderConfirmationGoAdmin: "Ir a Admin",
+    orderConfirmationNotFound: "No encontramos esa orden.",
+    orderConfirmationToastOrderSent: "Orden enviada",
+
+    orderStatusTitle: "Estatus de Orden",
+    orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estatus en tiempo real.",
+    orderStatusOrderNumberLabel: "Número de confirmación",
+    orderStatusOrderNumberPlaceholder: "Ej: GBF-000123",
+    orderStatusLookup: "Buscar",
+    orderStatusNotFound: "No encontramos una orden con ese número.",
+    orderStatusCurrentStatus: "Estatus actual",
+    orderStatusUpdatedAt: "Actualizado",
+    orderStatusTracking: "Tracking",
+    orderStatusEta: "Tiempo estimado",
+    orderStatusCancelRequestTitle: "Solicitud de cancelación",
+    orderStatusRequestCancelButton: "Solicitar cancelación",
+    orderStatusCancelRequestReasonLabel: "Razón de la cancelación",
+    orderStatusCancelRequestReasonPlaceholder: "Explica brevemente por qué deseas cancelar.",
+    orderStatusSendCancelRequest: "Enviar solicitud",
+    orderStatusCancelModalClose: "Cerrar",
+    orderStatusCancelRequestSent: "Solicitud enviada.",
+
+    ordersStatusPreparing: "Preparar orden",
+    ordersStatusPaused: "Pausar orden",
+    ordersStatusShipped: "Orden enviada",
+    ordersCancelReasonLabel: "Causa de cancelación",
+    ordersCancelReasonPlaceholder: "Ej: Cliente solicitó cancelación / producto sin stock",
+    ordersUpdateStatusLabel: "Actualizar estatus",
+    ordersApplyStatus: "Aplicar",
+    ordersStatusTrackingRequired: "Para marcar como 'Orden enviada' debes escribir el tracking.",
+    ordersStatusCancelReasonRequired: "Para cancelar la orden debes escribir la causa de cancelación.",
 
     heroAdminTitle: "Promoción del Home",
     heroAdminSubtitle:
@@ -358,6 +460,7 @@ const translations = {
     navCatalog: "Catalog",
     navBlog: "Blog",
     navValues: "Values",
+    navOrderStatus: "Order Status",
     navAdmin: "Admin",
 
     explore: "Explore",
@@ -445,6 +548,20 @@ const translations = {
     estimatedTotal: "This total is estimated for the MVP.",
     goToCheckout: "Go to checkout",
 
+    taxPrState: "PR state tax",
+    taxPrMunicipal: "PR municipal tax",
+    taxPrTotal: "PR tax total",
+
+    checkoutSubtotal: "Subtotal",
+    checkoutTaxPr: "PR tax",
+    checkoutTaxStateLabel: "State",
+    checkoutTaxMunicipalLabel: "Municipal",
+    checkoutTaxRateLabel: "Rate (%)",
+    checkoutShippingFee: "Shipping",
+    checkoutGrandTotal: "Total",
+    checkoutEditTaxesShippingHint:
+      "Tax and shipping are calculated automatically.",
+
     checkoutTitle: "Checkout",
     checkoutSubtitle: "Card payment (Stripe) — frontend demo, no backend yet.",
     yourDetails: "Your details",
@@ -470,7 +587,13 @@ const translations = {
     cardZipLabel: "ZIP / Postal",
     cardZipPlaceholder: "12345",
     payNow: "Pay now",
-    cardRequired: "Please fill in all card fields.",
+    checkoutReviewTitle: "Review your order",
+    checkoutReviewSubtitle: "Confirm the details before submitting your order.",
+    checkoutEditDetails: "Edit details",
+    checkoutSubmitOrder: "Submit order",
+    checkoutDetailsRequired: "Please enter your name, phone, and shipping address.",
+    checkoutOrderSubmittedToast: "Order submitted",
+    cardRequired: "Complete all card fields.",
     cardNotReady:
       "Card payments will be available once the backend is connected to Stripe.",
     checkoutCompleteHint:
@@ -548,8 +671,89 @@ const translations = {
     profitGrossProfit: "Gross profit",
     profitMargin: "Margin",
     profitUnits: "Units sold",
+    profitTaxCollected: "Tax collected",
+    profitTaxCollectedAllTime: "Tax collected (all time)",
+
+    adminCheckoutSettingsTitle: "Checkout settings",
+    adminCheckoutSettingsSubtitle:
+      "Only the admin can change taxes and shipping. Applies to new and existing items.",
+    adminCheckoutDefaultShippingLabel: "Shipping cost",
+    adminCheckoutTaxStateRateLabel: "PR state tax — rate (%)",
+    adminCheckoutTaxMunicipalRateLabel: "PR municipal tax — rate (%)",
     profitNoSales: "No sales recorded for this period.",
     profitTopProducts: "Top products",
+
+    adminStatOrdersPending: "Pending orders",
+    adminStatOrdersPendingBody: "Orders waiting to be packed / shipped.",
+
+    ordersTitle: "Orders",
+    ordersSubtitle: "Manage orders: print shipping labels and receipts.",
+    ordersEmpty: "No orders yet.",
+    ordersStatusPending: "Pending",
+    ordersStatusFulfilled: "Fulfilled",
+    ordersStatusCancelled: "Cancelled",
+    ordersOrder: "Order",
+    ordersPlacedAt: "Placed",
+    ordersCustomer: "Customer",
+    ordersShipping: "Shipping",
+    ordersItems: "Items",
+    ordersTotal: "Total",
+    ordersPrintLabel: "Print label",
+    ordersPrintReceipt: "Receipt (PDF)",
+    ordersViewDetails: "View order details",
+    ordersHideDetails: "Hide order details",
+    ordersReceiptHint:
+      "Tip: In the print dialog, choose 'Save as PDF' to archive it.",
+    ordersMarkFulfilled: "Mark fulfilled",
+    ordersMarkPending: "Mark pending",
+
+    ordersPaymentMethod: "Payment method",
+    ordersPaymentCard: "Card",
+    ordersPaymentWhatsApp: "WhatsApp",
+
+    ordersTrackingNumberLabel: "Tracking #",
+    ordersTrackingNumberPlaceholder: "e.g. 9400 1000 0000 0000 0000 00",
+    ordersEtaLabel: "Estimated time",
+    ordersEtaPlaceholder: "e.g. 3–5 days",
+
+    orderConfirmationTitle: "Order confirmation",
+    orderConfirmationSubtitle:
+      "Thank you. We received your order. Save this info in case you need it later.",
+    orderConfirmationOrderNumber: "Order number",
+    orderConfirmationPaymentMethod: "Payment method",
+    orderConfirmationPrintReceipt: "Print receipt (PDF)",
+    orderConfirmationGoHome: "Back to home",
+    orderConfirmationGoAdmin: "Go to Admin",
+    orderConfirmationNotFound: "We couldn't find that order.",
+    orderConfirmationToastOrderSent: "Order sent",
+
+    orderStatusTitle: "Order status",
+    orderStatusSubtitle: "Enter your confirmation number to see real-time status.",
+    orderStatusOrderNumberLabel: "Confirmation number",
+    orderStatusOrderNumberPlaceholder: "e.g. GBF-000123",
+    orderStatusLookup: "Search",
+    orderStatusNotFound: "We couldn't find an order with that number.",
+    orderStatusCurrentStatus: "Current status",
+    orderStatusUpdatedAt: "Updated",
+    orderStatusTracking: "Tracking",
+    orderStatusEta: "Estimated time",
+    orderStatusCancelRequestTitle: "Cancellation request",
+    orderStatusRequestCancelButton: "Request cancellation",
+    orderStatusCancelRequestReasonLabel: "Cancellation reason",
+    orderStatusCancelRequestReasonPlaceholder: "Briefly explain why you want to cancel.",
+    orderStatusSendCancelRequest: "Send request",
+    orderStatusCancelModalClose: "Close",
+    orderStatusCancelRequestSent: "Request sent.",
+
+    ordersStatusPreparing: "Preparing order",
+    ordersStatusPaused: "Order paused",
+    ordersStatusShipped: "Order shipped",
+    ordersCancelReasonLabel: "Cancellation reason",
+    ordersCancelReasonPlaceholder: "e.g. Customer requested cancellation / out of stock",
+    ordersUpdateStatusLabel: "Update status",
+    ordersApplyStatus: "Apply",
+    ordersStatusTrackingRequired: "To mark as 'Order shipped' you must enter a tracking number.",
+    ordersStatusCancelReasonRequired: "To cancel the order you must enter a cancellation reason.",
 
     heroAdminTitle: "Homepage promotion",
     heroAdminSubtitle:
@@ -629,6 +833,99 @@ const HERO_STORAGE_KEY = "gbf.homeHero.v1";
 const INVENTORY_STORAGE_KEY = "gbf.inventory.v1";
 const PRODUCT_COSTS_STORAGE_KEY = "gbf.productCosts.v1";
 const SALES_STORAGE_KEY = "gbf.sales.v1";
+const ORDERS_STORAGE_KEY = "gbf.orders.v1";
+const ORDER_COUNTER_STORAGE_KEY = "gbf.orderCounter.v1";
+const CHECKOUT_CONFIG_STORAGE_KEY = "gbf.checkoutConfig.v1";
+
+// -----------------------------
+// Puerto Rico taxes (split)
+// -----------------------------
+const PR_TAX_STATE_RATE_PCT = 10.5;
+const PR_TAX_MUNICIPAL_RATE_PCT = 1.0;
+const PR_TAX_TOTAL_RATE_PCT = PR_TAX_STATE_RATE_PCT + PR_TAX_MUNICIPAL_RATE_PCT;
+
+// -----------------------------
+// Helper: buildDefaultCheckoutConfig
+// -----------------------------
+function buildDefaultCheckoutConfig() {
+  return {
+    prTaxStateRatePct: PR_TAX_STATE_RATE_PCT,
+    prTaxMunicipalRatePct: PR_TAX_MUNICIPAL_RATE_PCT,
+    defaultShippingFee: 0,
+  };
+}
+
+
+// -----------------------------
+// Helper: normalizeCheckoutConfig
+// -----------------------------
+function normalizeCheckoutConfig(cfg) {
+  const base = buildDefaultCheckoutConfig();
+  if (!cfg || typeof cfg !== "object") return base;
+
+  const prTaxStateRatePct = Math.max(
+    0,
+    parseNumberOr(cfg.prTaxStateRatePct, base.prTaxStateRatePct)
+  );
+  const prTaxMunicipalRatePct = Math.max(
+    0,
+    parseNumberOr(cfg.prTaxMunicipalRatePct, base.prTaxMunicipalRatePct)
+  );
+  const defaultShippingFee = Math.max(0, parseNumberOr(cfg.defaultShippingFee, base.defaultShippingFee));
+
+  return { prTaxStateRatePct, prTaxMunicipalRatePct, defaultShippingFee };
+}
+
+
+// -----------------------------
+// Helper: buildDefaultCheckoutDraft
+// -----------------------------
+function buildDefaultCheckoutDraft() {
+  return {
+    paymentMethod: "card", // card | whatsapp
+    customer: {
+      name: "",
+      phone: "",
+      notes: "",
+    },
+    shipping: {
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      stateRegion: "",
+      postalCode: "",
+      country: "",
+    },
+    card: {
+      name: "",
+      number: "",
+      expiry: "",
+      cvc: "",
+      zip: "",
+    },
+  };
+}
+
+
+// -----------------------------
+// Helper: normalizeCheckoutDraft
+// -----------------------------
+function normalizeCheckoutDraft(draft) {
+  const base = buildDefaultCheckoutDraft();
+  const cfg = draft && typeof draft === "object" ? draft : {};
+
+  const paymentMethod = cfg.paymentMethod === "whatsapp" ? "whatsapp" : "card";
+
+  return {
+    ...base,
+    ...cfg,
+    paymentMethod,
+    customer: { ...base.customer, ...(cfg.customer || {}) },
+    shipping: { ...base.shipping, ...(cfg.shipping || {}) },
+    card: { ...base.card, ...(cfg.card || {}) },
+  };
+}
+
 
 // -----------------------------
 // Hero promo defaults (used by Home + Admin)
@@ -808,6 +1105,471 @@ function money(n, language = "en") {
   }).format(n);
 }
 
+
+// Helper: roundMoney
+function roundMoney(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return 0;
+  return Math.round(x * 100) / 100;
+}
+
+
+// Helper: parseNumberOr
+function parseNumberOr(value, fallback = 0) {
+  const s = String(value ?? "").trim();
+  if (!s) return fallback;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+
+// Helper: formatRatePct
+function formatRatePct(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return "";
+  return x % 1 === 0 ? x.toFixed(1) : String(x);
+}
+
+
+// Helper: getPrTaxBreakdownFromOrder
+function getPrTaxBreakdownFromOrder(order, subtotalFallback = 0) {
+  const subtotal = Number.isFinite(Number(order?.subtotal))
+    ? Number(order.subtotal)
+    : Math.max(0, Number(subtotalFallback) || 0);
+
+  const stateRateFromOrder = Number.isFinite(Number(order?.taxStateRatePct))
+    ? Number(order.taxStateRatePct)
+    : null;
+  const municipalRateFromOrder = Number.isFinite(Number(order?.taxMunicipalRatePct))
+    ? Number(order.taxMunicipalRatePct)
+    : null;
+
+  const totalRateFromOrder = Number.isFinite(Number(order?.taxRatePct)) ? Number(order.taxRatePct) : null;
+
+  const stateRateDefault =
+    totalRateFromOrder != null
+      ? (totalRateFromOrder * PR_TAX_STATE_RATE_PCT) / PR_TAX_TOTAL_RATE_PCT
+      : PR_TAX_STATE_RATE_PCT;
+
+  const municipalRateDefault =
+    totalRateFromOrder != null
+      ? (totalRateFromOrder * PR_TAX_MUNICIPAL_RATE_PCT) / PR_TAX_TOTAL_RATE_PCT
+      : PR_TAX_MUNICIPAL_RATE_PCT;
+
+  const stateRatePct = Math.max(0, parseNumberOr(stateRateFromOrder, stateRateDefault));
+  const municipalRatePct = Math.max(0, parseNumberOr(municipalRateFromOrder, municipalRateDefault));
+
+  const taxTotalAmountFromOrder = Number.isFinite(Number(order?.taxAmount)) ? Number(order.taxAmount) : null;
+
+  let stateAmount = Number.isFinite(Number(order?.taxStateAmount))
+    ? Number(order.taxStateAmount)
+    : roundMoney(subtotal * (stateRatePct / 100));
+
+  let municipalAmount = Number.isFinite(Number(order?.taxMunicipalAmount))
+    ? Number(order.taxMunicipalAmount)
+    : roundMoney(subtotal * (municipalRatePct / 100));
+
+  let totalAmount = taxTotalAmountFromOrder;
+  if (totalAmount == null) {
+    totalAmount = roundMoney(stateAmount + municipalAmount);
+  } else {
+    totalAmount = roundMoney(totalAmount);
+  }
+
+  const diff = roundMoney(totalAmount - (stateAmount + municipalAmount));
+  if (diff !== 0) stateAmount = roundMoney(stateAmount + diff);
+
+  const totalRatePct = roundMoney(stateRatePct + municipalRatePct);
+
+  return {
+    subtotal,
+    stateRatePct,
+    municipalRatePct,
+    totalRatePct,
+    stateAmount,
+    municipalAmount,
+    totalAmount,
+  };
+}
+
+
+// Helper: normalizeOrderStatus
+function normalizeOrderStatus(status) {
+  const s = String(status || "").trim().toLowerCase();
+  if (s === "fulfilled") return "shipped";
+  if (s === "preparing" || s === "paused" || s === "cancelled" || s === "shipped" || s === "pending") {
+    return s;
+  }
+  return "pending";
+}
+
+
+// Helper: isOpenOrderStatus
+function isOpenOrderStatus(status) {
+  const s = normalizeOrderStatus(status);
+  return s !== "shipped" && s !== "cancelled";
+}
+
+
+// Helper: orderStatusLabel
+function orderStatusLabel(status, t) {
+  const s = normalizeOrderStatus(status);
+  if (s === "preparing") return t.ordersStatusPreparing;
+  if (s === "paused") return t.ordersStatusPaused;
+  if (s === "shipped") return t.ordersStatusShipped;
+  if (s === "cancelled") return t.ordersStatusCancelled;
+  return t.ordersStatusPending;
+}
+
+
+// Helper: orderStatusBadgeClass
+function orderStatusBadgeClass(status) {
+  const s = normalizeOrderStatus(status);
+  if (s === "shipped") return "bg-emerald-100 text-emerald-800";
+  if (s === "cancelled") return "bg-zinc-200 text-zinc-800";
+  if (s === "paused") return "bg-sky-100 text-sky-800";
+  if (s === "preparing") return "bg-violet-100 text-violet-800";
+  return "bg-amber-100 text-amber-800";
+}
+
+
+// Helper: escapeHtml
+function escapeHtml(value) {
+  const s = String(value ?? "");
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// Helper: getNextOrderNumber
+function getNextOrderNumber() {
+  const fallback = `GBF-${Date.now()}`;
+  if (typeof window === "undefined") return fallback;
+
+  try {
+    const raw = window.localStorage.getItem(ORDER_COUNTER_STORAGE_KEY);
+    const prev = Number(raw);
+    const base = Number.isFinite(prev) && prev > 0 ? prev : 0;
+    const next = base + 1;
+    window.localStorage.setItem(ORDER_COUNTER_STORAGE_KEY, String(next));
+    return `GBF-${String(next).padStart(6, "0")}`;
+  } catch {
+    return fallback;
+  }
+}
+
+
+// Helper: openPrintWindow
+function openPrintWindow({ title, bodyHtml, cssText, autoPrint = true }) {
+  if (typeof window === "undefined") return;
+
+  const safeTitle = escapeHtml(title || "Print");
+  const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${safeTitle}</title>
+    <style>
+      ${cssText || ""}
+    </style>
+  </head>
+  <body>
+    ${bodyHtml || ""}
+  </body>
+</html>`;
+
+  // Try opening a new tab/window (best UX when allowed).
+  const w = window.open("", "_blank");
+
+  if (w) {
+    try {
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+
+      if (autoPrint) {
+        const tryPrint = () => {
+          try {
+            w.focus();
+            w.print();
+          } catch {
+            // ignore
+          }
+        };
+
+        // Some browsers need a little extra time for layout/fonts.
+        w.addEventListener?.("load", () => window.setTimeout(tryPrint, 200));
+        window.setTimeout(tryPrint, 500);
+      }
+
+      return;
+    } catch {
+      // Fall through to iframe-based printing.
+    }
+  }
+
+  // Fallback: print via an in-page hidden iframe (avoids popup blockers).
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  iframe.style.opacity = "0";
+  iframe.setAttribute("aria-hidden", "true");
+
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentDocument;
+  const win = iframe.contentWindow;
+  if (!doc || !win) {
+    iframe.remove();
+    return;
+  }
+
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  if (autoPrint) {
+    const doPrint = () => {
+      try {
+        win.focus();
+        win.print();
+      } catch {
+        // ignore
+      } finally {
+        window.setTimeout(() => iframe.remove(), 500);
+      }
+    };
+
+    // Wait a moment to ensure the iframe has rendered.
+    window.setTimeout(doPrint, 500);
+  }
+}
+
+
+// Helper: buildShippingLabelHtml
+function buildShippingLabelHtml({ order }) {
+  const toName = escapeHtml(order?.customer?.name || "");
+  const toPhone = escapeHtml(order?.customer?.phone || "");
+
+  const ship = order?.shipping || {};
+  const lines = [
+    ship.addressLine1,
+    ship.addressLine2,
+    [ship.city, ship.stateRegion].filter(Boolean).join(", "),
+    ship.postalCode,
+    ship.country,
+  ]
+    .map((x) => String(x || "").trim())
+    .filter(Boolean);
+
+  const toAddress = lines.map((l) => `<div>${escapeHtml(l)}</div>`).join("");
+
+  const orderNo = escapeHtml(order?.orderNumber || order?.id || "");
+
+  return `
+  <div class="page">
+    <div class="row">
+      <div class="from">
+        <div class="brand">Grow by Faith</div>
+      </div>
+      <div class="order">
+        <div class="muted">Order</div>
+        <div class="orderNo">${orderNo}</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="muted">SHIP TO</div>
+      <div class="name">${toName || "—"}</div>
+      <div class="address">${toAddress || "<div>—</div>"}</div>
+      ${toPhone ? `<div class="phone">${toPhone}</div>` : ""}
+    </div>
+
+    <div class="footer">
+      <div class="small muted">Printed from Admin</div>
+    </div>
+  </div>`;
+}
+
+
+// Helper: buildReceiptHtml
+function buildReceiptHtml({ order, language }) {
+  const lang = language === "es" ? "es" : "en";
+  const tr = translations[lang];
+
+  const orderNo = escapeHtml(order?.orderNumber || order?.id || "");
+  const createdAt =
+    typeof order?.createdAt === "number"
+      ? new Date(order.createdAt).toLocaleString(lang === "es" ? "es-US" : "en-US")
+      : "";
+
+  const customerName = escapeHtml(order?.customer?.name || "");
+  const customerPhone = escapeHtml(order?.customer?.phone || "");
+  const customerNotes = escapeHtml(order?.customer?.notes || "");
+
+  const ship = order?.shipping || {};
+  const shipLines = [
+    ship.addressLine1,
+    ship.addressLine2,
+    [ship.city, ship.stateRegion].filter(Boolean).join(", "),
+    ship.postalCode,
+    ship.country,
+  ]
+    .map((x) => String(x || "").trim())
+    .filter(Boolean);
+
+  const shipHtml = shipLines.map((l) => `<div>${escapeHtml(l)}</div>`).join("");
+
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const rows = items
+    .map((it) => {
+      const name = escapeHtml(l10n(it?.name, lang));
+      const qty = Number(it?.qty) || 0;
+      const unitPrice = Number(it?.unitPrice) || 0;
+      const lineTotal = qty * unitPrice;
+      const p = it?.personalization || {};
+      const pText = escapeHtml(p.text || "");
+      const pVerse = escapeHtml(p.verse || "");
+      const pExtra = [
+        pText ? `${lang === "es" ? "Texto" : "Text"}: ${pText}` : "",
+        pVerse ? `${lang === "es" ? "Versículo" : "Verse"}: ${pVerse}` : "",
+      ]
+        .filter(Boolean)
+        .join(" · ");
+
+      return `
+        <tr>
+          <td>
+            <div class="itemName">${name}</div>
+            ${pExtra ? `<div class="itemMeta">${pExtra}</div>` : ""}
+          </td>
+          <td class="qty">${qty}</td>
+          <td class="money">${escapeHtml(money(unitPrice, lang))}</td>
+          <td class="money">${escapeHtml(money(lineTotal, lang))}</td>
+        </tr>`;
+    })
+    .join("");
+
+  const total = Number(order?.total) || 0;
+  const subtotal = Number.isFinite(Number(order?.subtotal))
+    ? Number(order.subtotal)
+    : roundMoney(
+        items.reduce(
+          (acc, it) => acc + (Number(it?.qty) || 0) * (Number(it?.unitPrice) || 0),
+          0
+        )
+      );
+
+  const prTax = getPrTaxBreakdownFromOrder(order, subtotal);
+
+  const shippingFee = Number.isFinite(Number(order?.shippingFee)) ? Number(order.shippingFee) : 0;
+
+  const paymentText =
+    order?.paymentMethod === "whatsapp"
+      ? lang === "es"
+        ? "WhatsApp"
+        : "WhatsApp"
+      : lang === "es"
+      ? "Tarjeta"
+      : "Card";
+
+  const tracking = escapeHtml(order?.trackingNumber || "");
+  const etaText = escapeHtml(order?.etaText || "");
+
+  return `
+  <div class="receipt">
+    <div class="header">
+      <div>
+        <div class="brandRow">
+          <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith" />
+          <div class="brandName">Grow by Faith</div>
+        </div>
+        <div class="muted">${lang === "es" ? "Recibo" : "Receipt"}</div>
+      </div>
+      <div class="right">
+        <div class="muted">${lang === "es" ? "Orden" : "Order"}</div>
+        <div class="orderNo">${orderNo}</div>
+        <div class="muted">${escapeHtml(createdAt)}</div>
+      </div>
+    </div>
+
+    <div class="muted" style="margin-top: 6px;">
+      ${lang === "es" ? "Método de pago" : "Payment method"}: ${escapeHtml(paymentText)}
+      ${tracking ? ` · ${lang === "es" ? "Tracking" : "Tracking"}: ${tracking}` : ""}
+      ${etaText ? ` · ${lang === "es" ? "Tiempo" : "ETA"}: ${etaText}` : ""}
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="cardTitle">${lang === "es" ? "Cliente" : "Customer"}</div>
+        <div>${customerName || "—"}</div>
+        ${customerPhone ? `<div>${customerPhone}</div>` : ""}
+        ${customerNotes ? `<div class="muted">${customerNotes}</div>` : ""}
+      </div>
+      <div class="card">
+        <div class="cardTitle">${lang === "es" ? "Envío" : "Shipping"}</div>
+        ${shipHtml || "<div>—</div>"}
+      </div>
+    </div>
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th>${lang === "es" ? "Artículo" : "Item"}</th>
+          <th class="qty">${lang === "es" ? "Cant." : "Qty"}</th>
+          <th class="money">${lang === "es" ? "Precio" : "Price"}</th>
+          <th class="money">${lang === "es" ? "Total" : "Total"}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows || ""}
+      </tbody>
+    </table>
+
+    <div style="margin-top: 14px;">
+      <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
+        <div class="muted">${lang === "es" ? "Subtotal" : "Subtotal"}</div>
+        <div class="money">${escapeHtml(money(subtotal, lang))}</div>
+      </div>
+      <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
+        <div class="muted">${escapeHtml(tr.taxPrState)} (${escapeHtml(formatRatePct(prTax.stateRatePct))}%)</div>
+        <div class="money">${escapeHtml(money(prTax.stateAmount, lang))}</div>
+      </div>
+      <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
+        <div class="muted">${escapeHtml(tr.taxPrMunicipal)} (${escapeHtml(formatRatePct(prTax.municipalRatePct))}%)</div>
+        <div class="money">${escapeHtml(money(prTax.municipalAmount, lang))}</div>
+      </div>
+      <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
+        <div class="muted">${escapeHtml(tr.taxPrTotal)} (${escapeHtml(formatRatePct(prTax.totalRatePct))}%)</div>
+        <div class="money">${escapeHtml(money(prTax.totalAmount, lang))}</div>
+      </div>
+      <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
+        <div class="muted">${lang === "es" ? "Envío" : "Shipping"}</div>
+        <div class="money">${escapeHtml(money(shippingFee, lang))}</div>
+      </div>
+    </div>
+
+    <div class="totalRow">
+      <div class="muted">${lang === "es" ? "Total" : "Total"}</div>
+      <div class="total">${escapeHtml(money(total, lang))}</div>
+    </div>
+
+    <div class="muted footer">
+      ${lang === "es" ? "Imprime y guarda como PDF para archivarlo." : "Print and save as PDF to archive."}
+    </div>
+  </div>`;
+}
+
+
 // Component: Button
 function Button({ children, onClick, variant = "primary", className = "" }) {
   const base =
@@ -865,6 +1627,31 @@ function TopBar({
   language,
   setLanguage,
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [route]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
+  const menuLabel = language === "es" ? "Menú" : "Menu";
+  const openMenuLabel = language === "es" ? "Abrir menú" : "Open menu";
+  const closeMenuLabel = language === "es" ? "Cerrar menú" : "Close menu";
+
+  const go = (nextRoute) => {
+    setRoute(nextRoute);
+    setMenuOpen(false);
+  };
 
   return (
     <div className="sticky top-0 z-40 border-b border-zinc-200/60 bg-white/55 backdrop-blur-xl shadow-sm">
@@ -888,48 +1675,11 @@ function TopBar({
           </div>
         </div>
 
-        <div className="hidden items-center gap-1 md:flex">
-          <NavLink active={route === "home"} onClick={() => setRoute("home")}>
-            {t.navHome}
-          </NavLink>
-          <NavLink
-            active={route === "catalog"}
-            onClick={() => setRoute("catalog")}
-          >
-            {t.navCatalog}
-          </NavLink>
-          <NavLink active={route === "blog"} onClick={() => setRoute("blog")}>
-            {t.navBlog}
-          </NavLink>
-          <NavLink
-            active={route === "about"}
-            onClick={() => setRoute("about")}
-          >
-            {t.navValues}
-          </NavLink>
-
-          <NavLink
-            active={route === "admin"}
-            onClick={() => setRoute("admin")}
-          >
-            {t.navAdmin}
-          </NavLink>
-        </div>
-
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setRoute("catalog")}>
-            {t.explore}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setLanguage(language === "es" ? "en" : "es")}
-          >
-            {language === "es" ? "EN" : "ES"}
-          </Button>
           <Button
             variant="ghost"
             className="p-2"
-            onClick={() => setRoute("cart")}
+            onClick={() => go("cart")}
           >
             <span className="sr-only">{t.cart}</span>
             <span className="relative inline-flex items-center">
@@ -960,31 +1710,167 @@ function TopBar({
               ) : null}
             </span>
           </Button>
+
+          <Button
+            variant="ghost"
+            className="p-2"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-expanded={menuOpen}
+            aria-controls="gbf-hamburger-menu"
+          >
+            <span className="sr-only">{menuOpen ? closeMenuLabel : openMenuLabel}</span>
+            {menuOpen ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 6l12 12M18 6L6 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </Button>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pb-2 md:hidden">
-        <div className="grid grid-cols-5 gap-2">
-          <MobileTab active={route === "home"} onClick={() => setRoute("home")}>
-            {t.navHome}
-          </MobileTab>
-          <MobileTab
-            active={route === "catalog"}
-            onClick={() => setRoute("catalog")}
+      {menuOpen ? (
+        <div className="fixed inset-0 z-50">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+            aria-label={closeMenuLabel}
+            onClick={() => setMenuOpen(false)}
+          />
+
+          <div
+            id="gbf-hamburger-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label={menuLabel}
+            className="absolute right-4 top-4 w-[min(92vw,360px)] rounded-[28px] border border-zinc-200/60 bg-white/75 p-4 shadow-xl backdrop-blur-xl"
           >
-            {t.navCatalog}
-          </MobileTab>
-          <MobileTab active={route === "blog"} onClick={() => setRoute("blog")}>
-            {t.navBlog}
-          </MobileTab>
-          <MobileTab active={route === "about"} onClick={() => setRoute("about")}>
-            {t.navValues}
-          </MobileTab>
-          <MobileTab active={route === "admin"} onClick={() => setRoute("admin")}>
-            {t.navAdmin}
-          </MobileTab>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-extrabold text-zinc-900">{menuLabel}</div>
+              <Button variant="ghost" className="p-2" onClick={() => setMenuOpen(false)}>
+                <span className="sr-only">{closeMenuLabel}</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 6l12 12M18 6L6 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </Button>
+            </div>
+
+            <div className="mt-3 grid gap-1">
+              <button
+                onClick={() => go("home")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "home"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navHome}
+              </button>
+              <button
+                onClick={() => go("catalog")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "catalog"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navCatalog}
+              </button>
+              <button
+                onClick={() => go("blog")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "blog"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navBlog}
+              </button>
+              <button
+                onClick={() => go("about")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "about"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navValues}
+              </button>
+              <button
+                onClick={() => go("order_status")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "order_status"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navOrderStatus}
+              </button>
+              <button
+                onClick={() => go("admin")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "admin"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navAdmin}
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => setLanguage(language === "es" ? "en" : "es")}
+              >
+                {language === "es" ? "EN" : "ES"}
+              </Button>
+              <Button variant="secondary" onClick={() => go("catalog")}>
+                {t.explore}
+              </Button>
+              <Button variant="secondary" onClick={() => go("cart")}>
+                {t.cart}
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -1004,21 +1890,6 @@ function NavLink({ active, onClick, children }) {
     </button>
   );
 }
-
-// Component: MobileTab
-function MobileTab({ active, onClick, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-2xl px-3 py-2 text-xs font-semibold transition ${
-        active ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-800"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
 
 // Component: CollectionCards
 function CollectionCards({ onPick, language, t }) {
@@ -1603,8 +2474,23 @@ function ProductDetail({ product, onBack, onAddToCart, t, language }) {
 }
 
 // Page: Cart
-function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
-  const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
+function Cart({ cart, checkoutConfig, onRemove, onCheckout, onBack, t, language }) {
+  const subtotal = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
+
+  const cfg = normalizeCheckoutConfig(checkoutConfig);
+
+  const taxStateRate = Math.max(0, parseNumberOr(cfg.prTaxStateRatePct, PR_TAX_STATE_RATE_PCT));
+  const taxMunicipalRate = Math.max(
+    0,
+    parseNumberOr(cfg.prTaxMunicipalRatePct, PR_TAX_MUNICIPAL_RATE_PCT)
+  );
+
+  const taxStateAmount = roundMoney(subtotal * (taxStateRate / 100));
+  const taxMunicipalAmount = roundMoney(subtotal * (taxMunicipalRate / 100));
+  const taxAmount = roundMoney(taxStateAmount + taxMunicipalAmount);
+
+  const shipping = Math.max(0, parseNumberOr(cfg.defaultShippingFee, 0));
+  const total = roundMoney(subtotal + taxAmount + shipping);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -1677,7 +2563,37 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
               <div>
                 <div className="text-sm font-bold text-zinc-900">{t.total}</div>
                 <div className="text-sm text-zinc-600">{t.estimatedTotal}</div>
+
+                <div className="mt-3 grid gap-1 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">{t.checkoutSubtotal}</div>
+                    <div className="font-semibold text-zinc-900">{money(subtotal, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">
+                      {t.taxPrState} ({formatRatePct(taxStateRate)}%)
+                    </div>
+                    <div className="font-semibold text-zinc-900">{money(taxStateAmount, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">
+                      {t.taxPrMunicipal} ({formatRatePct(taxMunicipalRate)}%)
+                    </div>
+                    <div className="font-semibold text-zinc-900">{money(taxMunicipalAmount, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">
+                      {t.taxPrTotal} ({formatRatePct(taxStateRate + taxMunicipalRate)}%)
+                    </div>
+                    <div className="font-semibold text-zinc-900">{money(taxAmount, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">{t.checkoutShippingFee}</div>
+                    <div className="font-semibold text-zinc-900">{money(shipping, language)}</div>
+                  </div>
+                </div>
               </div>
+
               <div className="flex items-center gap-2">
                 <div className="text-lg font-extrabold text-zinc-900">
                   {money(total, language)}
@@ -1697,64 +2613,214 @@ function Cart({ cart, onRemove, onCheckout, onBack, t, language }) {
 }
 
 // Page: Checkout
-function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
-  const total = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
+function Checkout({
+  cart,
+  checkoutConfig,
+  checkoutDraft,
+  setCheckoutDraft,
+  onBack,
+  onGoReview,
+  onPlaceOrder,
+  t,
+  language,
+}) {
+  const subtotal = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
+  const cfg = normalizeCheckoutConfig(checkoutConfig);
 
-  const [addressLine1, setAddressLine1] = useState("");
-  const [addressLine2, setAddressLine2] = useState("");
-  const [city, setCity] = useState("");
-  const [stateRegion, setStateRegion] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("");
+  const taxStateRate = Math.max(0, parseNumberOr(cfg.prTaxStateRatePct, PR_TAX_STATE_RATE_PCT));
+  const taxMunicipalRate = Math.max(
+    0,
+    parseNumberOr(cfg.prTaxMunicipalRatePct, PR_TAX_MUNICIPAL_RATE_PCT)
+  );
 
-  const [cardName, setCardName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
-  const [cardZip, setCardZip] = useState("");
+  const shippingFeeAmount = Math.max(0, parseNumberOr(cfg.defaultShippingFee, 0));
 
+  const taxStateAmount = roundMoney(subtotal * (taxStateRate / 100));
+  const taxMunicipalAmount = roundMoney(subtotal * (taxMunicipalRate / 100));
+  const taxAmount = roundMoney(taxStateAmount + taxMunicipalAmount);
+  const taxRate = roundMoney(taxStateRate + taxMunicipalRate);
+
+  const grandTotal = roundMoney(subtotal + taxAmount + shippingFeeAmount);
+
+  const draft = normalizeCheckoutDraft(checkoutDraft);
+  const paymentMethod = draft.paymentMethod;
+
+  const [paymentMessage, setPaymentMessage] = useState("");
   const [cardMessage, setCardMessage] = useState("");
 
-  // handleCardPay
-  function handleCardPay(e) {
+  const name = String(draft.customer?.name || "");
+  const phone = String(draft.customer?.phone || "");
+  const notes = String(draft.customer?.notes || "");
+
+  const addressLine1 = String(draft.shipping?.addressLine1 || "");
+  const addressLine2 = String(draft.shipping?.addressLine2 || "");
+  const city = String(draft.shipping?.city || "");
+  const stateRegion = String(draft.shipping?.stateRegion || "");
+  const postalCode = String(draft.shipping?.postalCode || "");
+  const country = String(draft.shipping?.country || "");
+
+  const cardName = String(draft.card?.name || "");
+  const cardNumber = String(draft.card?.number || "");
+  const cardExpiry = String(draft.card?.expiry || "");
+  const cardCvc = String(draft.card?.cvc || "");
+  const cardZip = String(draft.card?.zip || "");
+
+  // Draft setter: setDraftPaymentMethod
+  function setDraftPaymentMethod(value) {
+    if (typeof setCheckoutDraft !== "function") return;
+    setCheckoutDraft((prev) => ({
+      ...normalizeCheckoutDraft(prev),
+      paymentMethod: value === "whatsapp" ? "whatsapp" : "card",
+    }));
+  }
+
+  // Draft setter: setDraftCustomerField
+  function setDraftCustomerField(field, value) {
+    if (typeof setCheckoutDraft !== "function") return;
+    setCheckoutDraft((prev) => {
+      const base = normalizeCheckoutDraft(prev);
+      return { ...base, customer: { ...base.customer, [field]: value } };
+    });
+  }
+
+  // Draft setter: setDraftShippingField
+  function setDraftShippingField(field, value) {
+    if (typeof setCheckoutDraft !== "function") return;
+    setCheckoutDraft((prev) => {
+      const base = normalizeCheckoutDraft(prev);
+      return { ...base, shipping: { ...base.shipping, [field]: value } };
+    });
+  }
+
+  // Draft setter: setDraftCardField
+  function setDraftCardField(field, value) {
+    if (typeof setCheckoutDraft !== "function") return;
+    setCheckoutDraft((prev) => {
+      const base = normalizeCheckoutDraft(prev);
+      return { ...base, card: { ...base.card, [field]: value } };
+    });
+  }
+
+  // Validation: validateCustomerAndShipping
+  function validateCustomerAndShipping() {
+    const customerOk = name.trim() && phone.trim();
+    const shippingOk = addressLine1.trim() && city.trim();
+    return Boolean(customerOk && shippingOk);
+  }
+
+  // handleGoToReview (Card)
+  function handleGoToReview(e) {
     e.preventDefault();
     setCardMessage("");
+    setPaymentMessage("");
 
-    const ok =
+    const cardOk =
       cardName.trim() &&
       cardNumber.trim() &&
       cardExpiry.trim() &&
       cardCvc.trim() &&
       cardZip.trim();
 
-    if (!ok) {
+    if (!validateCustomerAndShipping()) {
+      setCardMessage(t.checkoutDetailsRequired);
+      return;
+    }
+
+    if (!cardOk) {
       setCardMessage(t.cardRequired);
       return;
     }
 
-    if (typeof onPlaceOrder === "function") {
-      onPlaceOrder({
-        customer: {
-          name: name.trim(),
-          phone: phone.trim(),
-          notes: notes.trim(),
-        },
-        shipping: {
-          addressLine1: addressLine1.trim(),
-          addressLine2: addressLine2.trim(),
-          city: city.trim(),
-          stateRegion: stateRegion.trim(),
-          postalCode: postalCode.trim(),
-          country: country.trim(),
-        },
-      });
-    } else if (typeof onDone === "function") {
-      onDone();
+    if (typeof onGoReview === "function") {
+      onGoReview();
     }
+  }
+
+
+  // handleWhatsAppPay
+  function handleWhatsAppPay() {
+    setPaymentMessage("");
+
+    const customer = {
+      name: name.trim(),
+      phone: phone.trim(),
+      notes: notes.trim(),
+    };
+
+    const shippingInfo = {
+      addressLine1: addressLine1.trim(),
+      addressLine2: addressLine2.trim(),
+      city: city.trim(),
+      stateRegion: stateRegion.trim(),
+      postalCode: postalCode.trim(),
+      country: country.trim(),
+    };
+
+    if (!customer.name || !customer.phone) {
+      setPaymentMessage(
+        language === "es"
+          ? "Completa nombre y teléfono para enviar por WhatsApp."
+          : "Please enter name and phone to send via WhatsApp."
+      );
+      return;
+    }
+
+    if (!shippingInfo.addressLine1 || !shippingInfo.city) {
+      setPaymentMessage(
+        language === "es"
+          ? "Completa la dirección y ciudad para envío."
+          : "Please enter shipping address and city."
+      );
+      return;
+    }
+
+    let orderNumber = "";
+    if (typeof onPlaceOrder === "function") {
+      const res = onPlaceOrder({
+        customer,
+        shipping: shippingInfo,
+        paymentMethod: "whatsapp",
+        taxRatePct: taxRate,
+        taxStateRatePct: taxStateRate,
+        taxMunicipalRatePct: taxMunicipalRate,
+        shippingFee: shippingFeeAmount,
+      });
+      orderNumber = String(res?.orderNumber || "");
+    }
+
+    const lines = [];
+    lines.push(t.waGreeting);
+    if (orderNumber) lines.push(`${t.orderConfirmationOrderNumber}: ${orderNumber}`);
+    lines.push(`${t.waTotalEstimated} ${money(grandTotal, language)}`);
+    lines.push(`${t.checkoutSubtotal}: ${money(subtotal, language)}`);
+    lines.push(`${t.taxPrState} (${formatRatePct(taxStateRate)}%): ${money(taxStateAmount, language)}`);
+    lines.push(
+      `${t.taxPrMunicipal} (${formatRatePct(taxMunicipalRate)}%): ${money(taxMunicipalAmount, language)}`
+    );
+    lines.push(`${t.taxPrTotal} (${formatRatePct(taxRate)}%): ${money(taxAmount, language)}`);
+    lines.push(`${t.checkoutShippingFee}: ${money(shippingFeeAmount, language)}`);
+    lines.push("");
+    lines.push(`${t.waName} ${customer.name}`);
+    lines.push(`${t.waPhone} ${customer.phone}`);
+    if (customer.notes) lines.push(`${t.waNotes} ${customer.notes}`);
+    lines.push("");
+    lines.push(t.waShippingAddress);
+    const shipParts = [
+      shippingInfo.addressLine1,
+      shippingInfo.addressLine2,
+      [shippingInfo.city, shippingInfo.stateRegion].filter(Boolean).join(", "),
+      shippingInfo.postalCode,
+      shippingInfo.country,
+    ]
+      .map((x) => String(x || "").trim())
+      .filter(Boolean);
+    lines.push(...shipParts);
+
+    const msg = lines.join("\n");
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
 
@@ -1763,7 +2829,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <SectionTitle title={t.checkoutTitle} subtitle={t.checkoutSubtitle} />
-          <div className="text-lg font-bold text-zinc-900">{money(total, language)}</div>
+          <div className="text-lg font-bold text-zinc-900">{money(grandTotal, language)}</div>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -1772,19 +2838,19 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
             <div className="mt-4 grid gap-3">
               <input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setDraftCustomerField("name", e.target.value)}
                 placeholder={t.namePlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
               <input
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setDraftCustomerField("phone", e.target.value)}
                 placeholder={t.phonePlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
               <textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => setDraftCustomerField("notes", e.target.value)}
                 placeholder={t.notesPlaceholder}
                 rows={4}
                 className="w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1802,7 +2868,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                   </label>
                   <input
                     value={addressLine1}
-                    onChange={(e) => setAddressLine1(e.target.value)}
+                    onChange={(e) => setDraftShippingField("addressLine1", e.target.value)}
                     placeholder={t.addressLine1Placeholder}
                     autoComplete="shipping address-line1"
                     className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1815,7 +2881,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                   </label>
                   <input
                     value={addressLine2}
-                    onChange={(e) => setAddressLine2(e.target.value)}
+                    onChange={(e) => setDraftShippingField("addressLine2", e.target.value)}
                     placeholder={t.addressLine2Placeholder}
                     autoComplete="shipping address-line2"
                     className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1829,7 +2895,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
+                      onChange={(e) => setDraftShippingField("city", e.target.value)}
                       placeholder={t.cityPlaceholder}
                       autoComplete="shipping address-level2"
                       className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1842,7 +2908,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={stateRegion}
-                      onChange={(e) => setStateRegion(e.target.value)}
+                      onChange={(e) => setDraftShippingField("stateRegion", e.target.value)}
                       placeholder={t.statePlaceholder}
                       autoComplete="shipping address-level1"
                       className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1857,7 +2923,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value)}
+                      onChange={(e) => setDraftShippingField("postalCode", e.target.value)}
                       placeholder={t.postalPlaceholder}
                       inputMode="numeric"
                       autoComplete="shipping postal-code"
@@ -1871,7 +2937,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={country}
-                      onChange={(e) => setCountry(e.target.value)}
+                      onChange={(e) => setDraftShippingField("country", e.target.value)}
                       placeholder={t.countryPlaceholder}
                       autoComplete="shipping country"
                       className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1887,14 +2953,60 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                 {t.checkoutPaymentSubtitle}
               </div>
 
-              <form onSubmit={handleCardPay} className="mt-4 grid gap-3">
+              <div className="mt-4">
+                <div className="text-xs font-semibold text-zinc-700">{t.paymentMethod}</div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDraftPaymentMethod("whatsapp")}
+                    className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
+                      paymentMethod === "whatsapp"
+                        ? "border-zinc-900 bg-zinc-900 text-white"
+                        : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
+                    }`}
+                  >
+                    {t.payByWhatsApp}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDraftPaymentMethod("card")}
+                    className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
+                      paymentMethod === "card"
+                        ? "border-zinc-900 bg-zinc-900 text-white"
+                        : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
+                    }`}
+                  >
+                    {t.payByCard}
+                  </button>
+                </div>
+
+                {paymentMessage ? (
+                  <div className="mt-2 text-xs font-semibold text-amber-700">
+                    {paymentMessage}
+                  </div>
+                ) : null}
+              </div>
+
+              {paymentMethod === "whatsapp" ? (
+                <div className="mt-4 grid gap-3">
+                  <Button variant="primary" onClick={handleWhatsAppPay} className="w-full">
+                    {t.sendWhatsApp}
+                  </Button>
+                  <div className="text-xs leading-5 text-zinc-500">
+                    {language === "es"
+                      ? "Se abrirá WhatsApp con el resumen de tu orden."
+                      : "WhatsApp will open with your order summary."}
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleGoToReview} className="mt-4 grid gap-3">
                 <div>
                   <label className="text-xs font-semibold text-zinc-700">
                     {t.cardNameLabel}
                   </label>
                   <input
                     value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
+                    onChange={(e) => setDraftCardField("name", e.target.value)}
                     placeholder={t.cardNamePlaceholder}
                     autoComplete="cc-name"
                     className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -1907,7 +3019,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                   </label>
                   <input
                     value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
+                    onChange={(e) => setDraftCardField("number", e.target.value)}
                     placeholder={t.cardNumberPlaceholder}
                     inputMode="numeric"
                     autoComplete="cc-number"
@@ -1922,7 +3034,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
+                      onChange={(e) => setDraftCardField("expiry", e.target.value)}
                       placeholder={t.cardExpiryPlaceholder}
                       inputMode="numeric"
                       autoComplete="cc-exp"
@@ -1936,7 +3048,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value)}
+                      onChange={(e) => setDraftCardField("cvc", e.target.value)}
                       placeholder={t.cardCvcPlaceholder}
                       inputMode="numeric"
                       autoComplete="cc-csc"
@@ -1950,7 +3062,7 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     </label>
                     <input
                       value={cardZip}
-                      onChange={(e) => setCardZip(e.target.value)}
+                      onChange={(e) => setDraftCardField("zip", e.target.value)}
                       placeholder={t.cardZipPlaceholder}
                       inputMode="numeric"
                       autoComplete="postal-code"
@@ -1970,7 +3082,8 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                     {cardMessage}
                   </div>
                 ) : null}
-              </form>
+                </form>
+              )}
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -2011,10 +3124,47 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
                 ))}
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                <div className="text-sm font-bold text-zinc-900">{t.total}</div>
-                <div className="text-base font-extrabold text-zinc-900">
-                  {money(total, language)}
+              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="font-semibold text-zinc-700">{t.checkoutSubtotal}</div>
+                    <div className="font-bold text-zinc-900">{money(subtotal, language)}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-zinc-600">
+                      {t.taxPrState} ({formatRatePct(taxStateRate)}%)
+                    </div>
+                    <div className="font-bold text-zinc-900">{money(taxStateAmount, language)}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-zinc-600">
+                      {t.taxPrMunicipal} ({formatRatePct(taxMunicipalRate)}%)
+                    </div>
+                    <div className="font-bold text-zinc-900">{money(taxMunicipalAmount, language)}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="font-semibold text-zinc-700">
+                      {t.taxPrTotal} ({formatRatePct(taxRate)}%)
+                    </div>
+                    <div className="font-bold text-zinc-900">{money(taxAmount, language)}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-zinc-600">{t.checkoutShippingFee}</div>
+                    <div className="font-bold text-zinc-900">{money(shippingFeeAmount, language)}</div>
+                  </div>
+
+                  <div className="mt-1 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-base">
+                    <div className="font-extrabold text-zinc-900">{t.checkoutGrandTotal}</div>
+                    <div className="text-lg font-extrabold text-zinc-900">
+                      {money(grandTotal, language)}
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-zinc-500">{t.checkoutEditTaxesShippingHint}</div>
                 </div>
               </div>
 
@@ -2025,6 +3175,804 @@ function Checkout({ cart, onBack, onDone, onPlaceOrder, t, language }) {
           </div>
         </div>
       </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: CheckoutReview
+function CheckoutReview({
+  cart,
+  checkoutConfig,
+  checkoutDraft,
+  onBack,
+  onRemove,
+  onPlaceOrder,
+  t,
+  language,
+}) {
+  const cfg = normalizeCheckoutConfig(checkoutConfig);
+  const draft = normalizeCheckoutDraft(checkoutDraft);
+
+  const subtotal = Array.isArray(cart) ? cart.reduce((acc, it) => acc + it.price * it.qty, 0) : 0;
+
+  const taxStateRate = Math.max(0, parseNumberOr(cfg.prTaxStateRatePct, PR_TAX_STATE_RATE_PCT));
+  const taxMunicipalRate = Math.max(
+    0,
+    parseNumberOr(cfg.prTaxMunicipalRatePct, PR_TAX_MUNICIPAL_RATE_PCT)
+  );
+
+  const shippingFeeAmount = Math.max(0, parseNumberOr(cfg.defaultShippingFee, 0));
+
+  const taxStateAmount = roundMoney(subtotal * (taxStateRate / 100));
+  const taxMunicipalAmount = roundMoney(subtotal * (taxMunicipalRate / 100));
+  const taxAmount = roundMoney(taxStateAmount + taxMunicipalAmount);
+  const taxRate = roundMoney(taxStateRate + taxMunicipalRate);
+
+  const grandTotal = roundMoney(subtotal + taxAmount + shippingFeeAmount);
+
+  const [message, setMessage] = useState("");
+  const [submitToken, setSubmitToken] = useState(0);
+
+  useEffect(() => {
+    if (!submitToken) return;
+    const timer = window.setTimeout(() => setSubmitToken(0), 2000);
+    return () => window.clearTimeout(timer);
+  }, [submitToken]);
+
+  // Validation: validateDraft
+  function validateDraft() {
+    const customerOk = String(draft?.customer?.name || "").trim() && String(draft?.customer?.phone || "").trim();
+    const shippingOk = String(draft?.shipping?.addressLine1 || "").trim() && String(draft?.shipping?.city || "").trim();
+    return Boolean(customerOk && shippingOk);
+  }
+
+  // Action: submitOrder (shows toast then calls onPlaceOrder)
+  function submitOrder() {
+    setMessage("");
+
+    if (!Array.isArray(cart) || cart.length === 0) {
+      setMessage(t.emptyCart);
+      return;
+    }
+
+    if (draft.paymentMethod !== "card") {
+      setMessage(t.checkoutDetailsRequired);
+      return;
+    }
+
+    if (!validateDraft()) {
+      setMessage(t.checkoutDetailsRequired);
+      return;
+    }
+
+    setSubmitToken(Date.now());
+
+    window.setTimeout(() => {
+      if (typeof onPlaceOrder !== "function") return;
+
+      onPlaceOrder({
+        customer: {
+          name: String(draft.customer?.name || "").trim(),
+          phone: String(draft.customer?.phone || "").trim(),
+          notes: String(draft.customer?.notes || "").trim(),
+        },
+        shipping: {
+          addressLine1: String(draft.shipping?.addressLine1 || "").trim(),
+          addressLine2: String(draft.shipping?.addressLine2 || "").trim(),
+          city: String(draft.shipping?.city || "").trim(),
+          stateRegion: String(draft.shipping?.stateRegion || "").trim(),
+          postalCode: String(draft.shipping?.postalCode || "").trim(),
+          country: String(draft.shipping?.country || "").trim(),
+        },
+        paymentMethod: "card",
+        taxRatePct: taxRate,
+        taxStateRatePct: taxStateRate,
+        taxMunicipalRatePct: taxMunicipalRate,
+        shippingFee: shippingFeeAmount,
+      });
+    }, 900);
+  }
+
+  const shipLines = [
+    draft?.shipping?.addressLine1,
+    draft?.shipping?.addressLine2,
+    [draft?.shipping?.city, draft?.shipping?.stateRegion].filter(Boolean).join(", "),
+    draft?.shipping?.postalCode,
+    draft?.shipping?.country,
+  ]
+    .map((x) => String(x || "").trim())
+    .filter(Boolean)
+    .join("\n");
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <SectionTitle title={t.checkoutReviewTitle} subtitle={t.checkoutReviewSubtitle} />
+          <div className="text-lg font-bold text-zinc-900">{money(grandTotal, language)}</div>
+        </div>
+
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div>
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+              <div className="text-sm font-bold text-zinc-900">{t.yourDetails}</div>
+              <div className="mt-2 text-sm font-extrabold text-zinc-900">
+                {String(draft?.customer?.name || "").trim() || "—"}
+              </div>
+              <div className="mt-1 text-xs text-zinc-600">
+                {String(draft?.customer?.phone || "").trim() || "—"}
+              </div>
+              {String(draft?.customer?.notes || "").trim() ? (
+                <div className="mt-3 text-xs text-zinc-600">{String(draft.customer.notes)}</div>
+              ) : null}
+
+              <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="text-xs font-semibold text-zinc-500">{t.shippingTitle}</div>
+                <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
+                  {shipLines || "—"}
+                </pre>
+              </div>
+
+              {message ? (
+                <div className="mt-4 text-xs font-semibold text-amber-700">{message}</div>
+              ) : null}
+
+              <div className="mt-6 grid gap-2 md:grid-cols-2">
+                <Button variant="secondary" onClick={onBack}>
+                  {t.checkoutEditDetails}
+                </Button>
+                <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
+                  {t.checkoutSubmitOrder}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+              <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
+
+              {Array.isArray(cart) && cart.length > 0 ? (
+                <div className="mt-4 grid gap-3">
+                  {cart.map((it) => (
+                    <div
+                      key={it.key}
+                      className="flex items-start justify-between gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                    >
+                      <div>
+                        <div className="text-xs font-semibold text-zinc-500">{it.category}</div>
+                        <div className="mt-1 text-sm font-bold text-zinc-900">
+                          {l10n(it.name, language)}
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {t.summaryText} {it.personalization?.text || "—"}
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {t.summaryVerse} {it.personalization?.verse || "—"}
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {t.qty} {Number(it.qty) || 0}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-zinc-900">
+                          {money((Number(it.price) || 0) * (Number(it.qty) || 0), language)}
+                        </div>
+                        {typeof onRemove === "function" ? (
+                          <div className="mt-2">
+                            <Button variant="secondary" onClick={() => onRemove(it.key)}>
+                              {t.remove}
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+                  {t.emptyCart}
+                </div>
+              )}
+
+              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="grid gap-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">{t.checkoutSubtotal}</div>
+                    <div className="font-semibold text-zinc-900">{money(subtotal, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">
+                      {t.taxPrState} ({formatRatePct(taxStateRate)}%)
+                    </div>
+                    <div className="font-semibold text-zinc-900">{money(taxStateAmount, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">
+                      {t.taxPrMunicipal} ({formatRatePct(taxMunicipalRate)}%)
+                    </div>
+                    <div className="font-semibold text-zinc-900">{money(taxMunicipalAmount, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">
+                      {t.taxPrTotal} ({formatRatePct(taxRate)}%)
+                    </div>
+                    <div className="font-semibold text-zinc-900">{money(taxAmount, language)}</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-zinc-600">{t.checkoutShippingFee}</div>
+                    <div className="font-semibold text-zinc-900">{money(shippingFeeAmount, language)}</div>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between border-t border-zinc-200/60 pt-3">
+                    <div className="font-extrabold text-zinc-900">{t.checkoutGrandTotal}</div>
+                    <div className="text-lg font-extrabold text-zinc-900">{money(grandTotal, language)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {submitToken ? (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+          <div
+            key={submitToken}
+            className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
+            style={{ animation: "gbfPop 280ms ease-out" }}
+          >
+            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70 animate-ping" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="relative h-6 w-6"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </span>
+            <span>{t.checkoutOrderSubmittedToast}</span>
+          </div>
+
+          <style>{`@keyframes gbfPop { from { transform: translateY(10px) scale(0.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
+        </div>
+      ) : null}
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: OrderConfirmation
+function OrderConfirmation({ order, onGoHome, t, language }) {
+  const [orderSentToken, setOrderSentToken] = useState(0);
+
+  useEffect(() => {
+    if (!order) return;
+    setOrderSentToken(Date.now());
+  }, [order?.id]);
+
+  useEffect(() => {
+    if (!orderSentToken) return;
+    const timer = window.setTimeout(() => setOrderSentToken(0), 3000);
+    return () => window.clearTimeout(timer);
+  }, [orderSentToken]);
+
+  const paymentText =
+    order?.paymentMethod === "whatsapp" ? t.ordersPaymentWhatsApp : t.ordersPaymentCard;
+
+  const createdLabel =
+    typeof order?.createdAt === "number"
+      ? new Date(order.createdAt).toLocaleString(language === "es" ? "es-US" : "en-US")
+      : "";
+
+  const ship = order?.shipping || {};
+  const shipLines = [
+    ship.addressLine1,
+    ship.addressLine2,
+    [ship.city, ship.stateRegion].filter(Boolean).join(", "),
+    ship.postalCode,
+    ship.country,
+  ]
+    .map((x) => String(x || "").trim())
+    .filter(Boolean)
+    .join("\n");
+
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const itemsCount = items.reduce((acc, it) => acc + (Number(it?.qty) || 0), 0);
+
+  const subtotal = Number.isFinite(Number(order?.subtotal))
+    ? Number(order.subtotal)
+    : roundMoney(
+        items.reduce(
+          (acc, it) => acc + (Number(it?.qty) || 0) * (Number(it?.unitPrice) || 0),
+          0
+        )
+      );
+
+  const prTax = getPrTaxBreakdownFromOrder(order, subtotal);
+  const shippingFee = Number.isFinite(Number(order?.shippingFee)) ? Number(order.shippingFee) : 0;
+  const orderTotal = Number.isFinite(Number(order?.total))
+    ? Number(order.total)
+    : roundMoney(subtotal + prTax.totalAmount + shippingFee);
+
+  // printReceipt
+  function printReceipt() {
+    if (!order) return;
+
+    const css = `
+@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+
+@page { size: letter; margin: 0.6in; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
+.muted { color: #555; font-size: 12px; }
+
+.receipt { max-width: 760px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.right { text-align: right; }
+.orderNo { font-size: 16px; font-weight: 800; }
+
+.brandRow { display: flex; align-items: center; gap: 10px; }
+.brandLogo { width: 42px; height: 42px; object-fit: contain; }
+.brandName { font-family: 'Allura', cursive; font-size: 34px; line-height: 1; color: #7a6f69; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; }
+.cardTitle { font-size: 12px; font-weight: 800; color: #111; margin-bottom: 6px; }
+.items { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.items th, .items td { border-bottom: 1px solid #eee; padding: 10px 6px; vertical-align: top; }
+.items th { text-align: left; font-size: 12px; color: #333; }
+.qty { width: 60px; text-align: right; }
+.money { width: 110px; text-align: right; }
+.itemName { font-weight: 800; }
+.itemMeta { margin-top: 4px; font-size: 12px; color: #555; }
+.totalRow { display: flex; justify-content: space-between; margin-top: 14px; font-weight: 900; }
+.total { font-size: 18px; }
+.footer { margin-top: 16px; }
+`;
+
+    openPrintWindow({
+      title: `Receipt ${order?.orderNumber || ""}`,
+      bodyHtml: buildReceiptHtml({ order, language }),
+      cssText: css,
+      autoPrint: true,
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <SectionTitle title={t.orderConfirmationTitle} subtitle={t.orderConfirmationSubtitle} />
+
+        {!order ? (
+          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+            {t.orderConfirmationNotFound}
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <Stat
+                label={t.orderConfirmationOrderNumber}
+                value={order.orderNumber || order.id}
+              />
+              <Stat label={t.orderConfirmationPaymentMethod} value={paymentText} />
+              <Stat label={t.ordersItems} value={String(itemsCount)} />
+            </div>
+
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  {createdLabel ? (
+                    <div className="text-xs text-zinc-500">
+                      {t.ordersPlacedAt}: {createdLabel}
+                    </div>
+                  ) : null}
+                  <div className="mt-2 text-sm font-bold text-zinc-900">
+                    {t.total}: {money(orderTotal, language)}
+                  </div>
+
+                  <div className="mt-3 grid gap-1 text-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="text-zinc-600">{t.checkoutSubtotal}</div>
+                      <div className="font-semibold text-zinc-900">{money(subtotal, language)}</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-zinc-600">
+                        {t.taxPrState} ({formatRatePct(prTax.stateRatePct)}%)
+                      </div>
+                      <div className="font-semibold text-zinc-900">{money(prTax.stateAmount, language)}</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-zinc-600">
+                        {t.taxPrMunicipal} ({formatRatePct(prTax.municipalRatePct)}%)
+                      </div>
+                      <div className="font-semibold text-zinc-900">{money(prTax.municipalAmount, language)}</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-zinc-600">
+                        {t.taxPrTotal} ({formatRatePct(prTax.totalRatePct)}%)
+                      </div>
+                      <div className="font-semibold text-zinc-900">{money(prTax.totalAmount, language)}</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-zinc-600">{t.checkoutShippingFee}</div>
+                      <div className="font-semibold text-zinc-900">{money(shippingFee, language)}</div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between border-t border-zinc-200/60 pt-2">
+                      <div className="font-extrabold text-zinc-900">{t.checkoutGrandTotal}</div>
+                      <div className="font-extrabold text-zinc-900">{money(orderTotal, language)}</div>
+                    </div>
+                  </div>
+
+                  {order?.trackingNumber ? (
+                    <div className="mt-2 text-xs text-zinc-600">
+                      {t.ordersTrackingNumberLabel}: {order.trackingNumber}
+                    </div>
+                  ) : null}
+                  {order?.etaText ? (
+                    <div className="mt-1 text-xs text-zinc-600">
+                      {t.ordersEtaLabel}: {order.etaText}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-wrap gap-2 md:justify-end">
+                  <Button variant="secondary" onClick={printReceipt}>
+                    {t.orderConfirmationPrintReceipt}
+                  </Button>
+                  <Button variant="primary" onClick={onGoHome}>
+                    {t.orderConfirmationGoHome}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+                <div className="text-xs font-semibold text-zinc-500">{t.ordersCustomer}</div>
+                <div className="mt-1 text-sm font-bold text-zinc-900">
+                  {order?.customer?.name || "—"}
+                </div>
+                {order?.customer?.phone ? (
+                  <div className="mt-1 text-xs text-zinc-600">{order.customer.phone}</div>
+                ) : null}
+                {order?.customer?.notes ? (
+                  <div className="mt-2 text-xs text-zinc-600">{order.customer.notes}</div>
+                ) : null}
+              </div>
+
+              <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+                <div className="text-xs font-semibold text-zinc-500">{t.ordersShipping}</div>
+                <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
+                  {shipLines || "—"}
+                </pre>
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+              <div className="text-sm font-bold text-zinc-900">{t.ordersItems}</div>
+              <div className="mt-3 grid gap-2">
+                {items.map((it) => (
+                  <div
+                    key={it.id}
+                    className="flex items-start justify-between gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-zinc-900">
+                        {l10n(it.name, language)}
+                      </div>
+                      {it?.personalization?.text ? (
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {t.summaryText} {it.personalization.text}
+                        </div>
+                      ) : null}
+                      {it?.personalization?.verse ? (
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {t.summaryVerse} {it.personalization.verse}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-zinc-900">×{Number(it.qty) || 0}</div>
+                      <div className="mt-1 text-xs text-zinc-600">
+                        {money(Number(it.unitPrice) || 0, language)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {orderSentToken ? (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+          <div
+            key={orderSentToken}
+            className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
+            style={{ animation: "gbfPop 280ms ease-out" }}
+          >
+            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70 animate-ping" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="relative h-6 w-6"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </span>
+            <span>{t.orderConfirmationToastOrderSent}</span>
+          </div>
+
+          <style>{`@keyframes gbfPop { from { transform: translateY(10px) scale(0.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
+        </div>
+      ) : null}
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: OrderStatus
+function OrderStatus({ orders, setOrders, t, language }) {
+  const [orderNumber, setOrderNumber] = useState("");
+  const [searchedOrderNumber, setSearchedOrderNumber] = useState("");
+
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelRequestMessage, setCancelRequestMessage] = useState("");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelSuccessToken, setCancelSuccessToken] = useState(0);
+
+  useEffect(() => {
+    if (!cancelSuccessToken) return;
+    const timer = window.setTimeout(() => setCancelSuccessToken(0), 3000);
+    return () => window.clearTimeout(timer);
+  }, [cancelSuccessToken]);
+
+  const normalizedQuery = String(searchedOrderNumber || "").trim().toLowerCase();
+
+  const order = useMemo(() => {
+    const list = Array.isArray(orders) ? orders : [];
+    if (!normalizedQuery) return null;
+
+    return (
+      list.find((o) => String(o?.orderNumber || "").trim().toLowerCase() === normalizedQuery) || null
+    );
+  }, [orders, normalizedQuery]);
+
+  const status = normalizeOrderStatus(order?.status);
+  const statusText = order ? orderStatusLabel(status, t) : "";
+  const statusClass = order ? orderStatusBadgeClass(status) : "";
+
+  const updatedAtMs =
+    typeof order?.statusUpdatedAt === "number"
+      ? order.statusUpdatedAt
+      : typeof order?.updatedAt === "number"
+      ? order.updatedAt
+      : typeof order?.createdAt === "number"
+      ? order.createdAt
+      : null;
+
+  const updatedAtLabel =
+    updatedAtMs != null
+      ? new Date(updatedAtMs).toLocaleString(language === "es" ? "es-US" : "en-US")
+      : "";
+
+  const cancelRequested =
+    Boolean(order?.customerCancelRequestedAt) && Boolean(order?.customerCancelRequestReason);
+
+  const canRequestCancel = Boolean(order) && isOpenOrderStatus(status) && !cancelRequested;
+
+  // Handler: submitLookup
+  function submitLookup(e) {
+    e.preventDefault();
+    setCancelRequestMessage("");
+    setSearchedOrderNumber(orderNumber.trim());
+  }
+
+  // Handler: sendCancelRequest
+  function sendCancelRequest() {
+    setCancelRequestMessage("");
+    const reason = cancelReason.trim();
+    if (!order || !reason || typeof setOrders !== "function") return;
+
+    setOrders((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.map((o) => {
+        if (o?.id !== order.id) return o;
+        return {
+          ...o,
+          customerCancelRequestReason: reason,
+          customerCancelRequestedAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+      });
+    });
+
+    setCancelReason("");
+    setShowCancelModal(false);
+    setCancelRequestMessage(t.orderStatusCancelRequestSent);
+    setCancelSuccessToken(Date.now());
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <SectionTitle title={t.orderStatusTitle} subtitle={t.orderStatusSubtitle} />
+
+        <form onSubmit={submitLookup} className="grid gap-3 md:grid-cols-3 md:items-end">
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-zinc-700">
+              {t.orderStatusOrderNumberLabel}
+            </label>
+            <input
+              value={orderNumber}
+              onChange={(e) => setOrderNumber(e.target.value)}
+              placeholder={t.orderStatusOrderNumberPlaceholder}
+              className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+            />
+          </div>
+          <Button variant="primary" className="w-full">
+            {t.orderStatusLookup}
+          </Button>
+        </form>
+
+        {!normalizedQuery ? null : !order ? (
+          <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+            {t.orderStatusNotFound}
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-4">
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold text-zinc-500">{t.orderConfirmationOrderNumber}</div>
+                  <div className="mt-1 text-sm font-extrabold text-zinc-900">
+                    {order.orderNumber || order.id}
+                  </div>
+
+                  {updatedAtLabel ? (
+                    <div className="mt-2 text-xs text-zinc-600">
+                      {t.orderStatusUpdatedAt}: {updatedAtLabel}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="text-right">
+                  <div className="text-xs font-semibold text-zinc-500">{t.orderStatusCurrentStatus}</div>
+                  <div className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                    {statusText}
+                  </div>
+                </div>
+              </div>
+
+              {status === "shipped" && order?.trackingNumber ? (
+                <div className="mt-3 text-sm text-zinc-700">
+                  <span className="font-semibold">{t.orderStatusTracking}:</span> {order.trackingNumber}
+                </div>
+              ) : null}
+
+              {order?.etaText ? (
+                <div className="mt-1 text-sm text-zinc-700">
+                  <span className="font-semibold">{t.orderStatusEta}:</span> {order.etaText}
+                </div>
+              ) : null}
+
+              {status === "cancelled" && order?.cancelReason ? (
+                <div className="mt-3 text-sm text-zinc-700">
+                  <span className="font-semibold">{t.ordersCancelReasonLabel}:</span> {order.cancelReason}
+                </div>
+              ) : null}
+
+              {cancelRequested ? (
+                <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-700 shadow-sm backdrop-blur-xl">
+                  <div className="text-xs font-semibold text-zinc-500">{t.orderStatusCancelRequestTitle}</div>
+                  <div className="mt-2">
+                    {order?.customerCancelRequestReason}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {canRequestCancel ? (
+              <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+                <Button
+                  variant="primary"
+                  className="w-full md:w-auto"
+                  onClick={() => {
+                    setCancelRequestMessage("");
+                    setShowCancelModal(true);
+                  }}
+                >
+                  {t.orderStatusRequestCancelButton}
+                </Button>
+              </div>
+            ) : null}
+
+            {canRequestCancel && showCancelModal ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                <div className="w-full max-w-xl rounded-[24px] border border-zinc-200 bg-white p-5 shadow-xl">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-zinc-900">
+                        {t.orderStatusRequestCancelButton}
+                      </div>
+                      <div className="mt-1 text-xs text-zinc-600">
+                        {t.orderStatusCancelRequestReasonLabel}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowCancelModal(false)}
+                      className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-700 hover:border-zinc-300"
+                    >
+                      {t.orderStatusCancelModalClose}
+                    </button>
+                  </div>
+
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    rows={4}
+                    placeholder={t.orderStatusCancelRequestReasonPlaceholder}
+                    className="mt-4 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+
+                  <div className="mt-4 grid gap-2 md:grid-cols-2">
+                    <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
+                      {t.orderStatusCancelModalClose}
+                    </Button>
+                    <Button variant="primary" onClick={sendCancelRequest} disabled={!cancelReason.trim()}>
+                      {t.orderStatusSendCancelRequest}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      {cancelSuccessToken ? (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+          <div
+            key={cancelSuccessToken}
+            className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
+            style={{ animation: "gbfPop 280ms ease-out" }}
+          >
+            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70 animate-ping" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="relative h-6 w-6"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </span>
+            <span>{t.orderStatusCancelRequestSent}</span>
+          </div>
+
+          <style>{`@keyframes gbfPop { from { transform: translateY(10px) scale(0.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
+        </div>
+      ) : null}
 
       <Footer t={t} />
     </div>
@@ -2176,6 +4124,10 @@ function AdminPanel({
   productCosts,
   setProductCosts,
   sales,
+  orders,
+  setOrders,
+  checkoutConfig,
+  setCheckoutConfig,
   t,
   language,
 }) {
@@ -2281,6 +4233,187 @@ function AdminPanel({
 
     return { inRange, revenue, cogs, grossProfit, margin, units, topProducts };
   }, [sales, profitRange, products, language]);
+
+  const taxCollectedStats = useMemo(() => {
+    const list = Array.isArray(orders) ? orders : [];
+    let inRangeTax = 0;
+    let allTimeTax = 0;
+
+    for (const o of list) {
+      const status = o?.status || "pending";
+      if (status === "cancelled") continue;
+
+      const createdAt = typeof o?.createdAt === "number" ? o.createdAt : null;
+      const prTax = getPrTaxBreakdownFromOrder(o, 0);
+      const tax = Number(prTax?.totalAmount) || 0;
+
+      allTimeTax += tax;
+
+      if (createdAt != null && createdAt >= profitRange.startMs && createdAt < profitRange.endMs) {
+        inRangeTax += tax;
+      }
+    }
+
+    return {
+      inRange: roundMoney(inRangeTax),
+      allTime: roundMoney(allTimeTax),
+    };
+  }, [orders, profitRange]);
+
+  const ordersList = Array.isArray(orders) ? orders : [];
+  const openOrders = ordersList.filter((o) =>
+    isOpenOrderStatus(normalizeOrderStatus(o?.status))
+  );
+
+  const [expandedOrders, setExpandedOrders] = useState({});
+
+  const [orderStatusDrafts, setOrderStatusDrafts] = useState({});
+  const [orderStatusErrors, setOrderStatusErrors] = useState({});
+
+  // toggleOrderDetails
+  function toggleOrderDetails(orderId) {
+    setExpandedOrders((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [orderId]: !Boolean(prev?.[orderId]),
+    }));
+  }
+
+  // Draft setter: setOrderStatusDraft
+  function setOrderStatusDraft(orderId, patch) {
+    setOrderStatusErrors((prev) => ({ ...(prev || {}), [orderId]: "" }));
+    setOrderStatusDrafts((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [orderId]: {
+        ...(prev?.[orderId] || {}),
+        ...(patch && typeof patch === "object" ? patch : {}),
+      },
+    }));
+  }
+
+  // Action: applyOrderStatusUpdate
+  function applyOrderStatusUpdate(order) {
+    if (!order?.id || typeof setOrders !== "function") return;
+
+    const draft = orderStatusDrafts?.[order.id] || {};
+    const nextStatus = normalizeOrderStatus(draft.nextStatus || order.status);
+
+    const trackingNumber = String(order?.trackingNumber || "").trim();
+
+    const cancelReason = String(
+      (draft.cancelReason || "").trim() ||
+        (order?.cancelReason || "").trim() ||
+        (order?.customerCancelRequestReason || "").trim()
+    ).trim();
+
+    if (nextStatus === "cancelled" && !cancelReason) {
+      setOrderStatusErrors((prev) => ({
+        ...(prev || {}),
+        [order.id]: t.ordersStatusCancelReasonRequired,
+      }));
+      return;
+    }
+
+    if (nextStatus === "shipped" && !trackingNumber) {
+      setOrderStatusErrors((prev) => ({
+        ...(prev || {}),
+        [order.id]: t.ordersStatusTrackingRequired,
+      }));
+      return;
+    }
+
+    const now = Date.now();
+
+    setOrders((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.map((o) => {
+        if (o?.id !== order.id) return o;
+
+        const next = {
+          ...o,
+          status: nextStatus,
+          statusUpdatedAt: now,
+          updatedAt: now,
+          shippedAt: nextStatus === "shipped" ? (typeof o?.shippedAt === "number" ? o.shippedAt : now) : null,
+          cancelledAt: nextStatus === "cancelled" ? now : null,
+          cancelReason: nextStatus === "cancelled" ? cancelReason : "",
+        };
+
+        return next;
+      });
+    });
+  }
+
+
+  // printShippingLabel
+  function printShippingLabel(order) {
+    const css = `
+@page { size: 4in 6in; margin: 0; }
+html, body { width: 4in; height: 6in; margin: 0; padding: 0; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+.page { box-sizing: border-box; width: 100%; height: 100%; padding: 0.25in; }
+.row { display: flex; justify-content: space-between; gap: 12px; }
+.brand { font-size: 18px; font-weight: 800; }
+.muted { color: #555; font-size: 12px; }
+.orderNo { font-size: 16px; font-weight: 800; }
+.box { margin-top: 16px; border: 2px solid #000; border-radius: 10px; padding: 14px; }
+.name { margin-top: 6px; font-size: 22px; font-weight: 800; }
+.address { margin-top: 10px; font-size: 18px; line-height: 1.2; font-weight: 700; }
+.phone { margin-top: 10px; font-size: 16px; font-weight: 700; }
+.footer { position: absolute; left: 0.25in; right: 0.25in; bottom: 0.25in; }
+.small { font-size: 11px; }
+`;
+
+    const body = buildShippingLabelHtml({ order });
+    openPrintWindow({
+      title: `Label ${order?.orderNumber || ""}`,
+      bodyHtml: body,
+      cssText: css,
+      autoPrint: true,
+    });
+  }
+
+
+  // printReceiptPdf
+  function printReceiptPdf(order) {
+    const css = `
+@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+
+@page { size: letter; margin: 0.6in; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
+.muted { color: #555; font-size: 12px; }
+
+.receipt { max-width: 760px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.right { text-align: right; }
+.orderNo { font-size: 16px; font-weight: 800; }
+
+.brandRow { display: flex; align-items: center; gap: 10px; }
+.brandLogo { width: 42px; height: 42px; object-fit: contain; }
+.brandName { font-family: 'Allura', cursive; font-size: 34px; line-height: 1; color: #7a6f69; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; }
+.cardTitle { font-size: 12px; font-weight: 800; color: #111; margin-bottom: 6px; }
+.items { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.items th, .items td { border-bottom: 1px solid #eee; padding: 10px 6px; vertical-align: top; }
+.items th { text-align: left; font-size: 12px; color: #333; }
+.qty { width: 60px; text-align: right; }
+.money { width: 110px; text-align: right; }
+.itemName { font-weight: 800; }
+.itemMeta { margin-top: 4px; font-size: 12px; color: #555; }
+.totalRow { display: flex; justify-content: space-between; margin-top: 14px; font-weight: 900; }
+.total { font-size: 18px; }
+.footer { margin-top: 16px; }
+`;
+
+    const body = buildReceiptHtml({ order, language });
+    openPrintWindow({
+      title: `Receipt ${order?.orderNumber || ""}`,
+      bodyHtml: body,
+      cssText: css,
+      autoPrint: true,
+    });
+  }
 
   // getInventoryCount
   function getInventoryCount(productId) {
@@ -2503,12 +4636,26 @@ function AdminPanel({
     });
   }
 
+  const normalizedCheckoutConfig = normalizeCheckoutConfig(checkoutConfig);
+
+  // setCheckoutConfigField
+  function setCheckoutConfigField(field, value) {
+    if (typeof setCheckoutConfig !== "function") return;
+
+    setCheckoutConfig((prev) =>
+      normalizeCheckoutConfig({
+        ...(prev && typeof prev === "object" ? prev : {}),
+        [field]: value,
+      })
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.adminTitle} subtitle={t.adminSubtitle} />
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.adminStatProducts}</div>
 
@@ -2538,6 +4685,424 @@ function AdminPanel({
 
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatManagementBody}</p>
           </div>
+
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-bold text-zinc-900">{t.adminStatOrdersPending}</div>
+
+            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
+              {openOrders.length}
+            </div>
+
+            <p className="mt-1 text-sm text-zinc-600">{t.adminStatOrdersPendingBody}</p>
+          </div>
+        </div>
+
+        {/* Admin: Checkout Settings */}
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+          <SectionTitle
+            title={t.adminCheckoutSettingsTitle}
+            subtitle={t.adminCheckoutSettingsSubtitle}
+          />
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <label className="text-xs font-semibold text-zinc-700">
+                {t.adminCheckoutTaxStateRateLabel}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={String(normalizedCheckoutConfig.prTaxStateRatePct)}
+                onChange={(e) => setCheckoutConfigField("prTaxStateRatePct", e.target.value)}
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-zinc-700">
+                {t.adminCheckoutTaxMunicipalRateLabel}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={String(normalizedCheckoutConfig.prTaxMunicipalRatePct)}
+                onChange={(e) =>
+                  setCheckoutConfigField("prTaxMunicipalRatePct", e.target.value)
+                }
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-zinc-700">
+                {t.adminCheckoutDefaultShippingLabel}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                placeholder={language === "es" ? "0.00" : "0.00"}
+                value={String(normalizedCheckoutConfig.defaultShippingFee)}
+                onChange={(e) => setCheckoutConfigField("defaultShippingFee", e.target.value)}
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+              <div className="mt-1 text-[11px] text-zinc-500">USD</div>
+            </div>
+          </div>
+
+          <div className="mt-3 text-xs text-zinc-500">
+            {t.taxPrTotal} ({formatRatePct(
+              normalizedCheckoutConfig.prTaxStateRatePct +
+                normalizedCheckoutConfig.prTaxMunicipalRatePct
+            )}%)
+          </div>
+        </div>
+
+        {/* Dashboard: Orders */}
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+          <SectionTitle title={t.ordersTitle} subtitle={t.ordersSubtitle} />
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <Stat label={t.ordersStatusPending} value={String(openOrders.length)} />
+            <Stat label={t.ordersTotal} value={String(ordersList.length)} />
+          </div>
+
+          <div className="mt-3 text-xs text-zinc-500">{t.ordersReceiptHint}</div>
+
+          {ordersList.length === 0 ? (
+            <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+              {t.ordersEmpty}
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-3">
+              {ordersList
+                .slice()
+.sort((a, b) => {
+                  const aStatus = normalizeOrderStatus(a?.status);
+                  const bStatus = normalizeOrderStatus(b?.status);
+
+                  const rank = (s) => (s === "cancelled" ? 2 : s === "shipped" ? 1 : 0);
+
+                  const aRank = rank(aStatus);
+                  const bRank = rank(bStatus);
+                  if (aRank !== bRank) return aRank - bRank;
+
+                  const aTime = typeof a?.createdAt === "number" ? a.createdAt : 0;
+                  const bTime = typeof b?.createdAt === "number" ? b.createdAt : 0;
+                  return bTime - aTime;
+                })
+                .slice(0, 200)
+                .map((o) => {
+                  const status = normalizeOrderStatus(o?.status);
+                  const statusText = orderStatusLabel(status, t);
+                  const statusClass = orderStatusBadgeClass(status);
+
+                  const createdLabel =
+                    typeof o?.createdAt === "number"
+                      ? new Date(o.createdAt).toLocaleString(
+                          language === "es" ? "es-US" : "en-US"
+                        )
+                      : "";
+
+                  const paymentText =
+                    o?.paymentMethod === "whatsapp"
+                      ? t.ordersPaymentWhatsApp
+                      : t.ordersPaymentCard;
+
+                  const ship = o?.shipping || {};
+                  const shipLines = [
+                    ship.addressLine1,
+                    ship.addressLine2,
+                    [ship.city, ship.stateRegion].filter(Boolean).join(", "),
+                    ship.postalCode,
+                    ship.country,
+                  ]
+                    .map((x) => String(x || "").trim())
+                    .filter(Boolean)
+                    .join("\n");
+
+                  const itemsCount = Array.isArray(o?.items)
+                    ? o.items.reduce((acc, it) => acc + (Number(it?.qty) || 0), 0)
+                    : 0;
+
+                  const isExpanded = Boolean(expandedOrders?.[o.id]);
+
+                  const draft = orderStatusDrafts?.[o.id] || {};
+                  const nextStatusDraft = normalizeOrderStatus(draft.nextStatus || status);
+                  const showCancelReason = nextStatusDraft === "cancelled";
+                  const statusError = String(orderStatusErrors?.[o.id] || "").trim();
+
+                  const hasCustomerCancelRequest =
+                    Boolean(o?.customerCancelRequestedAt) && Boolean(o?.customerCancelRequestReason);
+
+                  const customerCancelRequestedAtLabel =
+                    typeof o?.customerCancelRequestedAt === "number"
+                      ? new Date(o.customerCancelRequestedAt).toLocaleString(
+                          language === "es" ? "es-US" : "en-US"
+                        )
+                      : "";
+
+                  return (
+                    <div
+                      key={o.id}
+                      className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
+                    >
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="text-sm font-extrabold text-zinc-900">
+                              {t.ordersOrder} {o.orderNumber || o.id}
+                            </div>
+                            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                              {statusText}
+                            </span>
+                          </div>
+
+                          <div className="mt-1 text-xs text-zinc-600">
+                            {(o?.customer?.name || "—")}
+                            {createdLabel ? ` · ${t.ordersPlacedAt}: ${createdLabel}` : ""}
+                            {` · ${t.ordersItems}: ${itemsCount}`}
+                            {` · ${t.ordersTotal}: ${money(Number(o?.total) || 0, language)}`}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 md:justify-end">
+                          <Button variant="secondary" onClick={() => toggleOrderDetails(o.id)}>
+                            {isExpanded ? t.ordersHideDetails : t.ordersViewDetails}
+                          </Button>
+                          <Button variant="secondary" onClick={() => printShippingLabel(o)}>
+                            {t.ordersPrintLabel}
+                          </Button>
+                          <Button variant="secondary" onClick={() => printReceiptPdf(o)}>
+                            {t.ordersPrintReceipt}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {isExpanded ? (
+                        <div className="mt-4 grid gap-3 md:grid-cols-3">
+                          <div className="md:col-span-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                              <div>
+                                <div className="text-sm font-bold text-zinc-900">{t.ordersUpdateStatusLabel}</div>
+                                {statusError ? (
+                                  <div className="mt-2 text-xs font-semibold text-rose-700">{statusError}</div>
+                                ) : null}
+                              </div>
+
+                              <div className="grid gap-3 md:grid-cols-3 md:items-end">
+                                <div>
+                                  <label className="text-[11px] font-semibold text-zinc-600">
+                                    {t.orderStatusCurrentStatus}
+                                  </label>
+                                  <select
+                                    value={nextStatusDraft}
+                                    onChange={(e) =>
+                                      setOrderStatusDraft(o.id, { nextStatus: e.target.value })
+                                    }
+                                    className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                                  >
+                                    <option value="pending">{orderStatusLabel("pending", t)}</option>
+                                    <option value="preparing">{orderStatusLabel("preparing", t)}</option>
+                                    <option value="paused">{orderStatusLabel("paused", t)}</option>
+                                    <option value="shipped">{orderStatusLabel("shipped", t)}</option>
+                                    <option value="cancelled">{orderStatusLabel("cancelled", t)}</option>
+                                  </select>
+                                </div>
+
+                                {showCancelReason ? (
+                                  <div>
+                                    <label className="text-[11px] font-semibold text-zinc-600">
+                                      {t.ordersCancelReasonLabel}
+                                    </label>
+                                    <input
+                                      value={String(draft.cancelReason ?? o?.cancelReason ?? "")}
+                                      onChange={(e) =>
+                                        setOrderStatusDraft(o.id, { cancelReason: e.target.value })
+                                      }
+                                      placeholder={t.ordersCancelReasonPlaceholder}
+                                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div />
+                                )}
+
+                                <div>
+                                  <Button
+                                    variant="primary"
+                                    className="w-full"
+                                    onClick={() => applyOrderStatusUpdate(o)}
+                                  >
+                                    {t.ordersApplyStatus}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {nextStatusDraft === "shipped" && !statusError ? (
+                              <div className="mt-2 text-xs text-zinc-600">
+                                {t.ordersStatusTrackingRequired}
+                              </div>
+                            ) : null}
+
+                            {hasCustomerCancelRequest ? (
+                              <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                                <div className="text-xs font-semibold text-zinc-500">
+                                  {t.orderStatusCancelRequestTitle}
+                                </div>
+                                {customerCancelRequestedAtLabel ? (
+                                  <div className="mt-1 text-[11px] text-zinc-600">
+                                    {customerCancelRequestedAtLabel}
+                                  </div>
+                                ) : null}
+                                <div className="mt-2 text-sm text-zinc-800">
+                                  {o?.customerCancelRequestReason}
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                            <div className="text-xs font-semibold text-zinc-500">{t.ordersCustomer}</div>
+                            <div className="mt-1 text-sm font-bold text-zinc-900">
+                              {o?.customer?.name || "—"}
+                            </div>
+                            {o?.customer?.phone ? (
+                              <div className="mt-1 text-xs text-zinc-600">{o.customer.phone}</div>
+                            ) : null}
+                            {o?.customer?.notes ? (
+                              <div className="mt-2 text-xs text-zinc-600">{o.customer.notes}</div>
+                            ) : null}
+
+                            <div className="mt-3 text-xs text-zinc-600">
+                              {t.ordersPaymentMethod}: {paymentText}
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                            <div className="text-xs font-semibold text-zinc-500">{t.ordersShipping}</div>
+                            <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
+                              {shipLines || "—"}
+                            </pre>
+
+                            <div className="mt-3 grid gap-3">
+                              <div>
+                                <label className="text-[11px] font-semibold text-zinc-600">
+                                  {t.ordersTrackingNumberLabel}
+                                </label>
+                                <input
+                                  value={o?.trackingNumber || ""}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    setOrders((prev) => {
+                                      const base = Array.isArray(prev) ? prev : [];
+                                      return base.map((x) =>
+                                        x?.id === o.id
+                                          ? { ...x, trackingNumber: v, updatedAt: Date.now() }
+                                          : x
+                                      );
+                                    });
+                                  }}
+                                  placeholder={t.ordersTrackingNumberPlaceholder}
+                                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-[11px] font-semibold text-zinc-600">
+                                  {t.ordersEtaLabel}
+                                </label>
+                                <input
+                                  value={o?.etaText || ""}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    setOrders((prev) => {
+                                      const base = Array.isArray(prev) ? prev : [];
+                                      return base.map((x) =>
+                                        x?.id === o.id
+                                          ? { ...x, etaText: v, updatedAt: Date.now() }
+                                          : x
+                                      );
+                                    });
+                                  }}
+                                  placeholder={t.ordersEtaPlaceholder}
+                                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                            <div className="text-xs font-semibold text-zinc-500">{t.ordersItems}</div>
+                            <div className="mt-1 text-sm font-bold text-zinc-900">
+                              {itemsCount}
+                            </div>
+                            <div className="mt-1 text-xs text-zinc-600">
+                              {t.ordersTotal}: {money(Number(o?.total) || 0, language)}
+                            </div>
+                          </div>
+
+                          <div className="md:col-span-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                            <div className="text-xs font-semibold text-zinc-500">{t.ordersItems}</div>
+                            <div className="mt-3 grid gap-2">
+                              {(Array.isArray(o?.items) ? o.items : []).map((it) => {
+                                const p = it?.personalization || {};
+                                const fontLabel =
+                                  l10n(FONTS.find((f) => f.id === p.font)?.label, language) ||
+                                  String(p.font || "").trim() ||
+                                  "—";
+                                const colorLabel =
+                                  l10n(COLORS.find((c) => c.id === p.color)?.label, language) ||
+                                  String(p.color || "").trim() ||
+                                  "—";
+
+                                return (
+                                  <div
+                                    key={it.id}
+                                    className="rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div>
+                                        <div className="text-sm font-bold text-zinc-900">
+                                          {l10n(it?.name, language)}
+                                        </div>
+                                        <div className="mt-1 text-xs text-zinc-600">
+                                          {t.summaryText} {p.text ? p.text : "—"}
+                                        </div>
+                                        <div className="mt-1 text-xs text-zinc-600">
+                                          {t.summaryVerse} {p.verse ? p.verse : "—"}
+                                        </div>
+                                        <div className="mt-1 text-xs text-zinc-600">
+                                          {t.summaryFont} {fontLabel}
+                                        </div>
+                                        <div className="mt-1 text-xs text-zinc-600">
+                                          {t.summaryColor} {colorLabel}
+                                        </div>
+                                      </div>
+
+                                      <div className="text-right">
+                                        <div className="text-sm font-bold text-zinc-900">×{Number(it?.qty) || 0}</div>
+                                        <div className="mt-1 text-xs text-zinc-600">
+                                          {money(Number(it?.unitPrice) || 0, language)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </div>
 
         {/* Dashboard: Inventory */}
@@ -2660,6 +5225,11 @@ function AdminPanel({
                     value={`${(profitStats.margin * 100).toFixed(1)}%`}
                   />
                   <Stat label={t.profitUnits} value={String(profitStats.units)} />
+                  <Stat label={t.profitTaxCollected} value={money(taxCollectedStats.inRange, language)} />
+                  <Stat
+                    label={t.profitTaxCollectedAllTime}
+                    value={money(taxCollectedStats.allTime, language)}
+                  />
                 </div>
 
                 {profitStats.inRange.length === 0 ? (
@@ -3425,6 +5995,7 @@ function Footer({ t }) {
 // (localStorage persistence + simple client-side routing)
 export default function App() {
   const [route, setRoute] = useState("home");
+  const [lastOrderId, setLastOrderId] = useState(null);
 
   const [language, setLanguage] = useState("es");
 
@@ -3449,6 +6020,31 @@ export default function App() {
       // ignore storage errors
     }
   }, [heroConfig]);
+
+  const [checkoutConfig, setCheckoutConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultCheckoutConfig();
+    try {
+      const raw = window.localStorage.getItem(CHECKOUT_CONFIG_STORAGE_KEY);
+      if (!raw) return buildDefaultCheckoutConfig();
+      return normalizeCheckoutConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultCheckoutConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        CHECKOUT_CONFIG_STORAGE_KEY,
+        JSON.stringify(normalizeCheckoutConfig(checkoutConfig))
+      );
+    } catch {
+      // ignore storage errors
+    }
+  }, [checkoutConfig]);
+
+  const [checkoutDraft, setCheckoutDraft] = useState(() => buildDefaultCheckoutDraft());
 
   const [inventory, setInventory] = useState(() => {
     if (typeof window === "undefined") return {};
@@ -3513,6 +6109,47 @@ export default function App() {
     }
   }, [sales]);
 
+  const [orders, setOrders] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(ORDERS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    } catch {
+      // ignore storage errors
+    }
+  }, [orders]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Handler: onStorage (sync orders between tabs)
+    function onStorage(e) {
+      if (!e) return;
+      if (e.key !== ORDERS_STORAGE_KEY) return;
+
+      try {
+        const parsed = e.newValue ? JSON.parse(e.newValue) : [];
+        if (!Array.isArray(parsed)) return;
+        setOrders(parsed);
+      } catch {
+        // ignore
+      }
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const [categories, setCategories] = useState(["Yeti", "Journals"]);
 
   const [products, setProducts] = useState([
@@ -3562,6 +6199,14 @@ export default function App() {
 
   const cartCount = cart.reduce((acc, it) => acc + it.qty, 0);
 
+  const confirmationOrder = useMemo(() => {
+    const list = Array.isArray(orders) ? orders : [];
+    if (lastOrderId) {
+      return list.find((o) => o?.id === lastOrderId) || null;
+    }
+    return list[0] || null;
+  }, [orders, lastOrderId]);
+
   // openProduct
   function openProduct(p) {
     setSelected(p);
@@ -3607,21 +6252,114 @@ export default function App() {
 
 
   // placeOrder
-  function placeOrder({ customer, shipping }) {
-    if (!Array.isArray(cart) || cart.length === 0) return;
+  function placeOrder({
+    customer,
+    shipping,
+    paymentMethod,
+    taxRatePct,
+    taxStateRatePct,
+    taxMunicipalRatePct,
+    shippingFee,
+  }) {
+    if (!Array.isArray(cart) || cart.length === 0) return null;
 
     const createdAt = Date.now();
+    const orderId = crypto.randomUUID();
+    const orderNumber = getNextOrderNumber();
 
-    const saleItems = cart.map((it) => {
-      const productId = String(it.id);
-      const unitCost = Number(productCosts?.[productId] ?? 0) || 0;
+    const nextPaymentMethod =
+      paymentMethod === "whatsapp" ? "whatsapp" : "card";
+
+    const orderItems = cart.map((it) => ({
+      id: crypto.randomUUID(),
+      productId: String(it.id),
+      qty: Number(it.qty) || 0,
+      unitPrice: Number(it.price) || 0,
+      name: it.name,
+      category: it.category,
+      personalization: it.personalization,
+    }));
+
+    const subtotal = roundMoney(
+      orderItems.reduce(
+        (acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0),
+        0
+      )
+    );
+
+    const nextTotalTaxRate = parseNumberOr(taxRatePct, Number.NaN);
+
+    const nextStateRateFallback = Number.isFinite(nextTotalTaxRate)
+      ? (nextTotalTaxRate * PR_TAX_STATE_RATE_PCT) / PR_TAX_TOTAL_RATE_PCT
+      : PR_TAX_STATE_RATE_PCT;
+
+    const nextMunicipalRateFallback = Number.isFinite(nextTotalTaxRate)
+      ? (nextTotalTaxRate * PR_TAX_MUNICIPAL_RATE_PCT) / PR_TAX_TOTAL_RATE_PCT
+      : PR_TAX_MUNICIPAL_RATE_PCT;
+
+    const nextStateRate = Math.max(0, parseNumberOr(taxStateRatePct, nextStateRateFallback));
+    const nextMunicipalRate = Math.max(
+      0,
+      parseNumberOr(taxMunicipalRatePct, nextMunicipalRateFallback)
+    );
+
+    const nextTaxRate = roundMoney(nextStateRate + nextMunicipalRate);
+
+    const nextShipping = Math.max(0, parseNumberOr(shippingFee, 0));
+
+    const taxStateAmount = roundMoney(subtotal * (nextStateRate / 100));
+    const taxMunicipalAmount = roundMoney(subtotal * (nextMunicipalRate / 100));
+    const taxAmount = roundMoney(taxStateAmount + taxMunicipalAmount);
+
+    const total = roundMoney(subtotal + taxAmount + nextShipping);
+
+    const order = {
+      id: orderId,
+      orderNumber,
+      createdAt,
+      updatedAt: createdAt,
+      statusUpdatedAt: createdAt,
+      status: "pending", // pending | preparing | paused | shipped | cancelled
+      customer,
+      shipping,
+      paymentMethod: nextPaymentMethod, // card | whatsapp
+      trackingNumber: "",
+      shippedAt: null,
+      etaText: "",
+      cancelReason: "",
+      cancelledAt: null,
+      customerCancelRequestReason: "",
+      customerCancelRequestedAt: null,
+      subtotal,
+      taxRatePct: nextTaxRate,
+      taxStateRatePct: nextStateRate,
+      taxMunicipalRatePct: nextMunicipalRate,
+      taxStateAmount,
+      taxMunicipalAmount,
+      taxAmount,
+      shippingFee: nextShipping,
+      items: orderItems,
+      total,
+      currency: "USD",
+    };
+
+    setOrders((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      const next = [order, ...base];
+      return next.slice(0, 2000);
+    });
+
+    const saleItems = orderItems.map((it) => {
+      const unitCost = Number(productCosts?.[it.productId] ?? 0) || 0;
 
       return {
         id: crypto.randomUUID(),
         createdAt,
-        productId,
+        orderId,
+        orderNumber,
+        productId: it.productId,
         qty: it.qty,
-        unitPrice: it.price,
+        unitPrice: it.unitPrice,
         unitCost,
         name: it.name,
         category: it.category,
@@ -3648,7 +6386,11 @@ export default function App() {
     });
 
     setCart([]);
-    setRoute("home");
+    setCheckoutDraft(buildDefaultCheckoutDraft());
+    setLastOrderId(orderId);
+    setRoute("order_confirmation");
+
+    return { orderId, orderNumber };
   }
 
   return (
@@ -3704,6 +6446,7 @@ export default function App() {
       {route === "cart" ? (
         <Cart
           cart={cart}
+          checkoutConfig={checkoutConfig}
           onRemove={removeFromCart}
           onCheckout={() => setRoute("checkout")}
           onBack={() => setRoute("catalog")}
@@ -3717,17 +6460,45 @@ export default function App() {
       {route === "checkout" ? (
         <Checkout
           cart={cart}
+          checkoutConfig={checkoutConfig}
+          checkoutDraft={checkoutDraft}
+          setCheckoutDraft={setCheckoutDraft}
           onBack={() => setRoute("cart")}
-          onDone={() => {
-            setCart([]);
-            setRoute("home");
-          }}
+          onGoReview={() => setRoute("checkout_review")}
           onPlaceOrder={placeOrder}
           t={t}
           language={language}
         />
       ) : null}
 
+      {/* Route: checkout review */}
+      {route === "checkout_review" ? (
+        <CheckoutReview
+          cart={cart}
+          checkoutConfig={checkoutConfig}
+          checkoutDraft={checkoutDraft}
+          onBack={() => setRoute("checkout")}
+          onRemove={removeFromCart}
+          onPlaceOrder={placeOrder}
+          t={t}
+          language={language}
+        />
+      ) : null}
+
+      {/* Route: order confirmation */}
+      {route === "order_confirmation" ? (
+        <OrderConfirmation
+          order={confirmationOrder}
+          onGoHome={() => setRoute("home")}
+          t={t}
+          language={language}
+        />
+      ) : null}
+
+      {/* Route: order status */}
+      {route === "order_status" ? (
+        <OrderStatus orders={orders} setOrders={setOrders} t={t} language={language} />
+      ) : null}
 
       {/* Route: blog */}
       {route === "blog" ? <Blog t={t} language={language} /> : null}
@@ -3749,6 +6520,10 @@ export default function App() {
           productCosts={productCosts}
           setProductCosts={setProductCosts}
           sales={sales}
+          orders={orders}
+          setOrders={setOrders}
+          checkoutConfig={checkoutConfig}
+          setCheckoutConfig={setCheckoutConfig}
           t={t}
           language={language}
         />
