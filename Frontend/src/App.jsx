@@ -97,6 +97,13 @@ const translations = {
     explore: "Explorar",
     cart: "Carrito",
 
+    orderFlowProgress: (current, total) => `Paso ${current} de ${total}`,
+    orderFlowStepCart: "Carrito",
+    orderFlowStepCheckout: "Checkout",
+    orderFlowStepReview: "Revisar y someter",
+
+    adminProfitCardBody: "Ver reportes de ganancias y pérdidas.",
+
     heroPill: "Evangelio para todos",
     heroTitleOne: "Productos con propósito,",
     heroTitleTwo: "fe que transforma.",
@@ -179,9 +186,9 @@ const translations = {
     estimatedTotal: "Este total es estimado para el MVP.",
     goToCheckout: "Ir a checkout",
 
-    taxPrState: "Tax estatal (PR)",
-    taxPrMunicipal: "Tax municipal (PR)",
-    taxPrTotal: "Tax total (PR)",
+    taxPrState: "IVU estatal (PR)",
+    taxPrMunicipal: "IVU municipal (PR)",
+    taxPrTotal: "IVU total (PR)",
 
     checkoutSubtotal: "Subtotal",
     checkoutTaxPr: "IVU (PR)",
@@ -218,7 +225,7 @@ const translations = {
     cardZipLabel: "ZIP / Postal",
     cardZipPlaceholder: "12345",
     payNow: "Pagar ahora",
-    checkoutReviewTitle: "Revisar su orden",
+    checkoutReviewTitle: "Revisar tu orden",
     checkoutReviewSubtitle: "Confirma los detalles antes de someter la orden.",
     checkoutEditDetails: "Editar datos",
     checkoutSubmitOrder: "Someter orden",
@@ -304,15 +311,15 @@ const translations = {
     profitGrossProfit: "Ganancia bruta",
     profitMargin: "Margen",
     profitUnits: "Unidades vendidas",
-    profitTaxCollected: "Tax recaudado",
-    profitTaxCollectedAllTime: "Tax recaudado (total)",
+    profitTaxCollected: "IVU recaudado",
+    profitTaxCollectedAllTime: "IVU recaudado (total)",
 
     adminCheckoutSettingsTitle: "Ajustes de Checkout",
     adminCheckoutSettingsSubtitle:
-      "Solo el administrador puede cambiar taxes y envío. Aplica a artículos nuevos y existentes.",
+      "Solo el administrador puede cambiar IVU y envío. Aplica a artículos nuevos y existentes.",
     adminCheckoutDefaultShippingLabel: "Costo de envío",
-    adminCheckoutTaxStateRateLabel: "Tax estatal (PR) — tasa (%)",
-    adminCheckoutTaxMunicipalRateLabel: "Tax municipal (PR) — tasa (%)",
+    adminCheckoutTaxStateRateLabel: "IVU estatal (PR) — tasa (%)",
+    adminCheckoutTaxMunicipalRateLabel: "IVU municipal (PR) — tasa (%)",
     profitNoSales: "No hay ventas registradas en este período.",
     profitTopProducts: "Productos top",
 
@@ -331,8 +338,11 @@ const translations = {
     ordersShipping: "Envío",
     ordersItems: "Artículos",
     ordersTotal: "Total",
-    ordersPrintLabel: "Imprimir Label de Envío",
+    ordersPrintLabel: "Imprimir etiqueta de envío",
     ordersPrintReceipt: "Recibo (PDF)",
+    shippingLabelOrder: "Orden",
+    shippingLabelShipTo: "ENVIAR A",
+    shippingLabelPrintedFromAdmin: "Impreso desde Admin",
     ordersViewDetails: "Ver detalle de la orden",
     ordersHideDetails: "Ocultar detalle de la orden",
     ordersReceiptHint:
@@ -465,6 +475,13 @@ const translations = {
 
     explore: "Explore",
     cart: "Cart",
+
+    orderFlowProgress: (current, total) => `Step ${current} of ${total}`,
+    orderFlowStepCart: "Cart",
+    orderFlowStepCheckout: "Checkout",
+    orderFlowStepReview: "Review & submit",
+
+    adminProfitCardBody: "View profit/loss reports.",
 
     heroPill: "Gospel for everyone",
     heroTitleOne: "Products with purpose,",
@@ -700,6 +717,9 @@ const translations = {
     ordersTotal: "Total",
     ordersPrintLabel: "Print label",
     ordersPrintReceipt: "Receipt (PDF)",
+    shippingLabelOrder: "Order",
+    shippingLabelShipTo: "SHIP TO",
+    shippingLabelPrintedFromAdmin: "Printed from Admin",
     ordersViewDetails: "View order details",
     ordersHideDetails: "Hide order details",
     ordersReceiptHint:
@@ -1356,7 +1376,10 @@ function openPrintWindow({ title, bodyHtml, cssText, autoPrint = true }) {
 
 
 // Helper: buildShippingLabelHtml
-function buildShippingLabelHtml({ order }) {
+function buildShippingLabelHtml({ order, language }) {
+  const lang = language === "es" ? "es" : "en";
+  const tr = translations[lang];
+
   const toName = escapeHtml(order?.customer?.name || "");
   const toPhone = escapeHtml(order?.customer?.phone || "");
 
@@ -1382,20 +1405,20 @@ function buildShippingLabelHtml({ order }) {
         <div class="brand">Grow by Faith</div>
       </div>
       <div class="order">
-        <div class="muted">Order</div>
+        <div class="muted">${escapeHtml(tr.shippingLabelOrder)}</div>
         <div class="orderNo">${orderNo}</div>
       </div>
     </div>
 
     <div class="box">
-      <div class="muted">SHIP TO</div>
+      <div class="muted">${escapeHtml(tr.shippingLabelShipTo)}</div>
       <div class="name">${toName || "—"}</div>
       <div class="address">${toAddress || "<div>—</div>"}</div>
       ${toPhone ? `<div class="phone">${toPhone}</div>` : ""}
     </div>
 
     <div class="footer">
-      <div class="small muted">Printed from Admin</div>
+      <div class="small muted">${escapeHtml(tr.shippingLabelPrintedFromAdmin)}</div>
     </div>
   </div>`;
 }
@@ -1845,7 +1868,7 @@ function TopBar({
               <button
                 onClick={() => go("admin")}
                 className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "admin"
+                  route === "admin" || route === "admin_orders" || route === "admin_profit"
                     ? "bg-zinc-900 text-white"
                     : "text-zinc-800 hover:bg-zinc-100"
                 }`}
@@ -1871,6 +1894,86 @@ function TopBar({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// Component: OrderFlowStepper
+function OrderFlowStepper({ currentStep = 1, t }) {
+  const steps = [
+    { key: "cart", label: t.orderFlowStepCart },
+    { key: "checkout", label: t.orderFlowStepCheckout },
+    { key: "review", label: t.orderFlowStepReview },
+  ];
+
+  const total = steps.length;
+  const safeStep = Math.min(Math.max(1, Number(currentStep) || 1), total);
+  const progressPct = total <= 1 ? 0 : ((safeStep - 1) / (total - 1)) * 100;
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 pt-4">
+      <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-xs font-semibold text-zinc-600">
+            {typeof t.orderFlowProgress === "function" ? t.orderFlowProgress(safeStep, total) : ""}
+          </div>
+        </div>
+
+        <div className="relative mt-3">
+          <div className="h-2 w-full rounded-full bg-zinc-200" />
+          <div
+            className="absolute left-0 top-0 h-2 rounded-full bg-emerald-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {steps.map((s, idx) => {
+            const n = idx + 1;
+            const done = n < safeStep;
+            const current = n === safeStep;
+
+            return (
+              <div key={s.key} className="flex flex-col items-center gap-1 text-center">
+                <span
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-extrabold ${
+                    done
+                      ? "border-emerald-200 bg-emerald-100 text-emerald-900"
+                      : current
+                      ? "border-zinc-900 bg-zinc-900 text-white"
+                      : "border-zinc-200 bg-white text-zinc-700"
+                  }`}
+                  aria-label={`${n}`}
+                >
+                  {done ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  ) : (
+                    n
+                  )}
+                </span>
+                <div
+                  className={`text-[11px] font-semibold leading-4 ${
+                    current ? "text-zinc-900" : "text-zinc-500"
+                  }`}
+                >
+                  {s.label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -3539,7 +3642,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 `;
 
     openPrintWindow({
-      title: `Receipt ${order?.orderNumber || ""}`,
+      title: `${t.orderConfirmationPrintReceipt} ${order?.orderNumber || ""}`.trim(),
       bodyHtml: buildReceiptHtml({ order, language }),
       cssText: css,
       autoPrint: true,
@@ -4128,6 +4231,8 @@ function AdminPanel({
   setOrders,
   checkoutConfig,
   setCheckoutConfig,
+  onGoOrders,
+  onGoProfit,
   t,
   language,
 }) {
@@ -4138,282 +4243,11 @@ function AdminPanel({
   const [uploading, setUploading] = useState({});
   const [uploadErrors, setUploadErrors] = useState({});
 
-  const [profitPeriod, setProfitPeriod] = useState("week");
-  const [profitDate, setProfitDate] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-      d.getDate()
-    ).padStart(2, "0")}`;
-  });
-
-  const profitRange = useMemo(() => {
-    const base = new Date(`${profitDate}T00:00:00`);
-    if (Number.isNaN(base.getTime())) {
-      const now = new Date();
-      return { startMs: now.getTime(), endMs: now.getTime() };
-    }
-
-    if (profitPeriod === "day") {
-      const start = new Date(base);
-      const end = new Date(base);
-      end.setDate(end.getDate() + 1);
-      return { startMs: start.getTime(), endMs: end.getTime() };
-    }
-
-    if (profitPeriod === "month") {
-      const start = new Date(base.getFullYear(), base.getMonth(), 1);
-      const end = new Date(base.getFullYear(), base.getMonth() + 1, 1);
-      return { startMs: start.getTime(), endMs: end.getTime() };
-    }
-
-    // week (Mon-Sun)
-    const day = base.getDay(); // 0 Sun ... 6 Sat
-    const diffToMonday = (day + 6) % 7;
-    const start = new Date(base);
-    start.setDate(start.getDate() - diffToMonday);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 7);
-    return { startMs: start.getTime(), endMs: end.getTime() };
-  }, [profitDate, profitPeriod]);
-
-  const profitStats = useMemo(() => {
-    const rows = Array.isArray(sales) ? sales : [];
-    const inRange = rows.filter(
-      (s) =>
-        typeof s?.createdAt === "number" &&
-        s.createdAt >= profitRange.startMs &&
-        s.createdAt < profitRange.endMs
-    );
-
-    let revenue = 0;
-    let cogs = 0;
-    let units = 0;
-
-    const byProduct = new Map();
-
-    for (const s of inRange) {
-      const qty = Number(s.qty) || 0;
-      const unitPrice = Number(s.unitPrice) || 0;
-      const unitCost = Number(s.unitCost) || 0;
-      const productId = String(s.productId ?? "");
-
-      units += qty;
-      revenue += qty * unitPrice;
-      cogs += qty * unitCost;
-
-      if (!byProduct.has(productId)) {
-        byProduct.set(productId, {
-          productId,
-          units: 0,
-          revenue: 0,
-          profit: 0,
-        });
-      }
-
-      const agg = byProduct.get(productId);
-      agg.units += qty;
-      agg.revenue += qty * unitPrice;
-      agg.profit += qty * (unitPrice - unitCost);
-    }
-
-    const grossProfit = revenue - cogs;
-    const margin = revenue > 0 ? grossProfit / revenue : 0;
-
-    const topProducts = Array.from(byProduct.values())
-      .filter((x) => x.productId)
-      .sort((a, b) => b.profit - a.profit)
-      .slice(0, 5)
-      .map((x) => {
-        const product = products.find((p) => p.id === x.productId);
-        return {
-          ...x,
-          name: product ? l10n(product.name, language) : x.productId,
-        };
-      });
-
-    return { inRange, revenue, cogs, grossProfit, margin, units, topProducts };
-  }, [sales, profitRange, products, language]);
-
-  const taxCollectedStats = useMemo(() => {
-    const list = Array.isArray(orders) ? orders : [];
-    let inRangeTax = 0;
-    let allTimeTax = 0;
-
-    for (const o of list) {
-      const status = o?.status || "pending";
-      if (status === "cancelled") continue;
-
-      const createdAt = typeof o?.createdAt === "number" ? o.createdAt : null;
-      const prTax = getPrTaxBreakdownFromOrder(o, 0);
-      const tax = Number(prTax?.totalAmount) || 0;
-
-      allTimeTax += tax;
-
-      if (createdAt != null && createdAt >= profitRange.startMs && createdAt < profitRange.endMs) {
-        inRangeTax += tax;
-      }
-    }
-
-    return {
-      inRange: roundMoney(inRangeTax),
-      allTime: roundMoney(allTimeTax),
-    };
-  }, [orders, profitRange]);
 
   const ordersList = Array.isArray(orders) ? orders : [];
   const openOrders = ordersList.filter((o) =>
     isOpenOrderStatus(normalizeOrderStatus(o?.status))
   );
-
-  const [expandedOrders, setExpandedOrders] = useState({});
-
-  const [orderStatusDrafts, setOrderStatusDrafts] = useState({});
-  const [orderStatusErrors, setOrderStatusErrors] = useState({});
-
-  // toggleOrderDetails
-  function toggleOrderDetails(orderId) {
-    setExpandedOrders((prev) => ({
-      ...(prev && typeof prev === "object" ? prev : {}),
-      [orderId]: !Boolean(prev?.[orderId]),
-    }));
-  }
-
-  // Draft setter: setOrderStatusDraft
-  function setOrderStatusDraft(orderId, patch) {
-    setOrderStatusErrors((prev) => ({ ...(prev || {}), [orderId]: "" }));
-    setOrderStatusDrafts((prev) => ({
-      ...(prev && typeof prev === "object" ? prev : {}),
-      [orderId]: {
-        ...(prev?.[orderId] || {}),
-        ...(patch && typeof patch === "object" ? patch : {}),
-      },
-    }));
-  }
-
-  // Action: applyOrderStatusUpdate
-  function applyOrderStatusUpdate(order) {
-    if (!order?.id || typeof setOrders !== "function") return;
-
-    const draft = orderStatusDrafts?.[order.id] || {};
-    const nextStatus = normalizeOrderStatus(draft.nextStatus || order.status);
-
-    const trackingNumber = String(order?.trackingNumber || "").trim();
-
-    const cancelReason = String(
-      (draft.cancelReason || "").trim() ||
-        (order?.cancelReason || "").trim() ||
-        (order?.customerCancelRequestReason || "").trim()
-    ).trim();
-
-    if (nextStatus === "cancelled" && !cancelReason) {
-      setOrderStatusErrors((prev) => ({
-        ...(prev || {}),
-        [order.id]: t.ordersStatusCancelReasonRequired,
-      }));
-      return;
-    }
-
-    if (nextStatus === "shipped" && !trackingNumber) {
-      setOrderStatusErrors((prev) => ({
-        ...(prev || {}),
-        [order.id]: t.ordersStatusTrackingRequired,
-      }));
-      return;
-    }
-
-    const now = Date.now();
-
-    setOrders((prev) => {
-      const base = Array.isArray(prev) ? prev : [];
-      return base.map((o) => {
-        if (o?.id !== order.id) return o;
-
-        const next = {
-          ...o,
-          status: nextStatus,
-          statusUpdatedAt: now,
-          updatedAt: now,
-          shippedAt: nextStatus === "shipped" ? (typeof o?.shippedAt === "number" ? o.shippedAt : now) : null,
-          cancelledAt: nextStatus === "cancelled" ? now : null,
-          cancelReason: nextStatus === "cancelled" ? cancelReason : "",
-        };
-
-        return next;
-      });
-    });
-  }
-
-
-  // printShippingLabel
-  function printShippingLabel(order) {
-    const css = `
-@page { size: 4in 6in; margin: 0; }
-html, body { width: 4in; height: 6in; margin: 0; padding: 0; }
-body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-.page { box-sizing: border-box; width: 100%; height: 100%; padding: 0.25in; }
-.row { display: flex; justify-content: space-between; gap: 12px; }
-.brand { font-size: 18px; font-weight: 800; }
-.muted { color: #555; font-size: 12px; }
-.orderNo { font-size: 16px; font-weight: 800; }
-.box { margin-top: 16px; border: 2px solid #000; border-radius: 10px; padding: 14px; }
-.name { margin-top: 6px; font-size: 22px; font-weight: 800; }
-.address { margin-top: 10px; font-size: 18px; line-height: 1.2; font-weight: 700; }
-.phone { margin-top: 10px; font-size: 16px; font-weight: 700; }
-.footer { position: absolute; left: 0.25in; right: 0.25in; bottom: 0.25in; }
-.small { font-size: 11px; }
-`;
-
-    const body = buildShippingLabelHtml({ order });
-    openPrintWindow({
-      title: `Label ${order?.orderNumber || ""}`,
-      bodyHtml: body,
-      cssText: css,
-      autoPrint: true,
-    });
-  }
-
-
-  // printReceiptPdf
-  function printReceiptPdf(order) {
-    const css = `
-@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
-
-@page { size: letter; margin: 0.6in; }
-body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
-.muted { color: #555; font-size: 12px; }
-
-.receipt { max-width: 760px; margin: 0 auto; }
-.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
-.right { text-align: right; }
-.orderNo { font-size: 16px; font-weight: 800; }
-
-.brandRow { display: flex; align-items: center; gap: 10px; }
-.brandLogo { width: 42px; height: 42px; object-fit: contain; }
-.brandName { font-family: 'Allura', cursive; font-size: 34px; line-height: 1; color: #7a6f69; }
-
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-.card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; }
-.cardTitle { font-size: 12px; font-weight: 800; color: #111; margin-bottom: 6px; }
-.items { width: 100%; border-collapse: collapse; margin-top: 10px; }
-.items th, .items td { border-bottom: 1px solid #eee; padding: 10px 6px; vertical-align: top; }
-.items th { text-align: left; font-size: 12px; color: #333; }
-.qty { width: 60px; text-align: right; }
-.money { width: 110px; text-align: right; }
-.itemName { font-weight: 800; }
-.itemMeta { margin-top: 4px; font-size: 12px; color: #555; }
-.totalRow { display: flex; justify-content: space-between; margin-top: 14px; font-weight: 900; }
-.total { font-size: 18px; }
-.footer { margin-top: 16px; }
-`;
-
-    const body = buildReceiptHtml({ order, language });
-    openPrintWindow({
-      title: `Receipt ${order?.orderNumber || ""}`,
-      bodyHtml: body,
-      cssText: css,
-      autoPrint: true,
-    });
-  }
 
   // getInventoryCount
   function getInventoryCount(productId) {
@@ -4676,25 +4510,35 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatModeBody}</p>
           </div>
 
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="text-sm font-bold text-zinc-900">{t.adminStatManagement}</div>
+          {/* Dashboard card: Profit / Loss (go to AdminProfit page) */}
+          <button
+            type="button"
+            onClick={() => (typeof onGoProfit === "function" ? onGoProfit() : null)}
+            className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
+          >
+            <div className="text-sm font-bold text-zinc-900">{t.profitTitle}</div>
 
-            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
-              CRUD
-            </div>
+            <div className="mt-2 text-3xl font-extrabold text-zinc-900">P/L</div>
 
-            <p className="mt-1 text-sm text-zinc-600">{t.adminStatManagementBody}</p>
-          </div>
+            <p className="mt-1 text-sm text-zinc-600">{t.adminProfitCardBody}</p>
+          </button>
 
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="text-sm font-bold text-zinc-900">{t.adminStatOrdersPending}</div>
+          {/* Dashboard card: Orders (go to AdminOrders page) */}
+          <button
+            type="button"
+            onClick={() => (typeof onGoOrders === "function" ? onGoOrders() : null)}
+            className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
+          >
+            <div className="text-sm font-bold text-zinc-900">{t.ordersTitle}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
               {openOrders.length}
             </div>
 
-            <p className="mt-1 text-sm text-zinc-600">{t.adminStatOrdersPendingBody}</p>
-          </div>
+            <p className="mt-1 text-sm text-zinc-600">
+              {t.adminStatOrdersPendingBody} · {t.ordersTotal}: {ordersList.length}
+            </p>
+          </button>
         </div>
 
         {/* Admin: Checkout Settings */}
@@ -4759,350 +4603,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                 normalizedCheckoutConfig.prTaxMunicipalRatePct
             )}%)
           </div>
-        </div>
-
-        {/* Dashboard: Orders */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-          <SectionTitle title={t.ordersTitle} subtitle={t.ordersSubtitle} />
-
-          <div className="grid gap-3 md:grid-cols-2">
-            <Stat label={t.ordersStatusPending} value={String(openOrders.length)} />
-            <Stat label={t.ordersTotal} value={String(ordersList.length)} />
-          </div>
-
-          <div className="mt-3 text-xs text-zinc-500">{t.ordersReceiptHint}</div>
-
-          {ordersList.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
-              {t.ordersEmpty}
-            </div>
-          ) : (
-            <div className="mt-4 grid gap-3">
-              {ordersList
-                .slice()
-.sort((a, b) => {
-                  const aStatus = normalizeOrderStatus(a?.status);
-                  const bStatus = normalizeOrderStatus(b?.status);
-
-                  const rank = (s) => (s === "cancelled" ? 2 : s === "shipped" ? 1 : 0);
-
-                  const aRank = rank(aStatus);
-                  const bRank = rank(bStatus);
-                  if (aRank !== bRank) return aRank - bRank;
-
-                  const aTime = typeof a?.createdAt === "number" ? a.createdAt : 0;
-                  const bTime = typeof b?.createdAt === "number" ? b.createdAt : 0;
-                  return bTime - aTime;
-                })
-                .slice(0, 200)
-                .map((o) => {
-                  const status = normalizeOrderStatus(o?.status);
-                  const statusText = orderStatusLabel(status, t);
-                  const statusClass = orderStatusBadgeClass(status);
-
-                  const createdLabel =
-                    typeof o?.createdAt === "number"
-                      ? new Date(o.createdAt).toLocaleString(
-                          language === "es" ? "es-US" : "en-US"
-                        )
-                      : "";
-
-                  const paymentText =
-                    o?.paymentMethod === "whatsapp"
-                      ? t.ordersPaymentWhatsApp
-                      : t.ordersPaymentCard;
-
-                  const ship = o?.shipping || {};
-                  const shipLines = [
-                    ship.addressLine1,
-                    ship.addressLine2,
-                    [ship.city, ship.stateRegion].filter(Boolean).join(", "),
-                    ship.postalCode,
-                    ship.country,
-                  ]
-                    .map((x) => String(x || "").trim())
-                    .filter(Boolean)
-                    .join("\n");
-
-                  const itemsCount = Array.isArray(o?.items)
-                    ? o.items.reduce((acc, it) => acc + (Number(it?.qty) || 0), 0)
-                    : 0;
-
-                  const isExpanded = Boolean(expandedOrders?.[o.id]);
-
-                  const draft = orderStatusDrafts?.[o.id] || {};
-                  const nextStatusDraft = normalizeOrderStatus(draft.nextStatus || status);
-                  const showCancelReason = nextStatusDraft === "cancelled";
-                  const statusError = String(orderStatusErrors?.[o.id] || "").trim();
-
-                  const hasCustomerCancelRequest =
-                    Boolean(o?.customerCancelRequestedAt) && Boolean(o?.customerCancelRequestReason);
-
-                  const customerCancelRequestedAtLabel =
-                    typeof o?.customerCancelRequestedAt === "number"
-                      ? new Date(o.customerCancelRequestedAt).toLocaleString(
-                          language === "es" ? "es-US" : "en-US"
-                        )
-                      : "";
-
-                  return (
-                    <div
-                      key={o.id}
-                      className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
-                    >
-                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <div className="text-sm font-extrabold text-zinc-900">
-                              {t.ordersOrder} {o.orderNumber || o.id}
-                            </div>
-                            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
-                              {statusText}
-                            </span>
-                          </div>
-
-                          <div className="mt-1 text-xs text-zinc-600">
-                            {(o?.customer?.name || "—")}
-                            {createdLabel ? ` · ${t.ordersPlacedAt}: ${createdLabel}` : ""}
-                            {` · ${t.ordersItems}: ${itemsCount}`}
-                            {` · ${t.ordersTotal}: ${money(Number(o?.total) || 0, language)}`}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 md:justify-end">
-                          <Button variant="secondary" onClick={() => toggleOrderDetails(o.id)}>
-                            {isExpanded ? t.ordersHideDetails : t.ordersViewDetails}
-                          </Button>
-                          <Button variant="secondary" onClick={() => printShippingLabel(o)}>
-                            {t.ordersPrintLabel}
-                          </Button>
-                          <Button variant="secondary" onClick={() => printReceiptPdf(o)}>
-                            {t.ordersPrintReceipt}
-                          </Button>
-                        </div>
-                      </div>
-
-                      {isExpanded ? (
-                        <div className="mt-4 grid gap-3 md:grid-cols-3">
-                          <div className="md:col-span-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                              <div>
-                                <div className="text-sm font-bold text-zinc-900">{t.ordersUpdateStatusLabel}</div>
-                                {statusError ? (
-                                  <div className="mt-2 text-xs font-semibold text-rose-700">{statusError}</div>
-                                ) : null}
-                              </div>
-
-                              <div className="grid gap-3 md:grid-cols-3 md:items-end">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-zinc-600">
-                                    {t.orderStatusCurrentStatus}
-                                  </label>
-                                  <select
-                                    value={nextStatusDraft}
-                                    onChange={(e) =>
-                                      setOrderStatusDraft(o.id, { nextStatus: e.target.value })
-                                    }
-                                    className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
-                                  >
-                                    <option value="pending">{orderStatusLabel("pending", t)}</option>
-                                    <option value="preparing">{orderStatusLabel("preparing", t)}</option>
-                                    <option value="paused">{orderStatusLabel("paused", t)}</option>
-                                    <option value="shipped">{orderStatusLabel("shipped", t)}</option>
-                                    <option value="cancelled">{orderStatusLabel("cancelled", t)}</option>
-                                  </select>
-                                </div>
-
-                                {showCancelReason ? (
-                                  <div>
-                                    <label className="text-[11px] font-semibold text-zinc-600">
-                                      {t.ordersCancelReasonLabel}
-                                    </label>
-                                    <input
-                                      value={String(draft.cancelReason ?? o?.cancelReason ?? "")}
-                                      onChange={(e) =>
-                                        setOrderStatusDraft(o.id, { cancelReason: e.target.value })
-                                      }
-                                      placeholder={t.ordersCancelReasonPlaceholder}
-                                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
-                                    />
-                                  </div>
-                                ) : (
-                                  <div />
-                                )}
-
-                                <div>
-                                  <Button
-                                    variant="primary"
-                                    className="w-full"
-                                    onClick={() => applyOrderStatusUpdate(o)}
-                                  >
-                                    {t.ordersApplyStatus}
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-
-                            {nextStatusDraft === "shipped" && !statusError ? (
-                              <div className="mt-2 text-xs text-zinc-600">
-                                {t.ordersStatusTrackingRequired}
-                              </div>
-                            ) : null}
-
-                            {hasCustomerCancelRequest ? (
-                              <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                                <div className="text-xs font-semibold text-zinc-500">
-                                  {t.orderStatusCancelRequestTitle}
-                                </div>
-                                {customerCancelRequestedAtLabel ? (
-                                  <div className="mt-1 text-[11px] text-zinc-600">
-                                    {customerCancelRequestedAtLabel}
-                                  </div>
-                                ) : null}
-                                <div className="mt-2 text-sm text-zinc-800">
-                                  {o?.customerCancelRequestReason}
-                                </div>
-                              </div>
-                            ) : null}
-                          </div>
-
-                          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                            <div className="text-xs font-semibold text-zinc-500">{t.ordersCustomer}</div>
-                            <div className="mt-1 text-sm font-bold text-zinc-900">
-                              {o?.customer?.name || "—"}
-                            </div>
-                            {o?.customer?.phone ? (
-                              <div className="mt-1 text-xs text-zinc-600">{o.customer.phone}</div>
-                            ) : null}
-                            {o?.customer?.notes ? (
-                              <div className="mt-2 text-xs text-zinc-600">{o.customer.notes}</div>
-                            ) : null}
-
-                            <div className="mt-3 text-xs text-zinc-600">
-                              {t.ordersPaymentMethod}: {paymentText}
-                            </div>
-                          </div>
-
-                          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                            <div className="text-xs font-semibold text-zinc-500">{t.ordersShipping}</div>
-                            <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
-                              {shipLines || "—"}
-                            </pre>
-
-                            <div className="mt-3 grid gap-3">
-                              <div>
-                                <label className="text-[11px] font-semibold text-zinc-600">
-                                  {t.ordersTrackingNumberLabel}
-                                </label>
-                                <input
-                                  value={o?.trackingNumber || ""}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    setOrders((prev) => {
-                                      const base = Array.isArray(prev) ? prev : [];
-                                      return base.map((x) =>
-                                        x?.id === o.id
-                                          ? { ...x, trackingNumber: v, updatedAt: Date.now() }
-                                          : x
-                                      );
-                                    });
-                                  }}
-                                  placeholder={t.ordersTrackingNumberPlaceholder}
-                                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="text-[11px] font-semibold text-zinc-600">
-                                  {t.ordersEtaLabel}
-                                </label>
-                                <input
-                                  value={o?.etaText || ""}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    setOrders((prev) => {
-                                      const base = Array.isArray(prev) ? prev : [];
-                                      return base.map((x) =>
-                                        x?.id === o.id
-                                          ? { ...x, etaText: v, updatedAt: Date.now() }
-                                          : x
-                                      );
-                                    });
-                                  }}
-                                  placeholder={t.ordersEtaPlaceholder}
-                                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                            <div className="text-xs font-semibold text-zinc-500">{t.ordersItems}</div>
-                            <div className="mt-1 text-sm font-bold text-zinc-900">
-                              {itemsCount}
-                            </div>
-                            <div className="mt-1 text-xs text-zinc-600">
-                              {t.ordersTotal}: {money(Number(o?.total) || 0, language)}
-                            </div>
-                          </div>
-
-                          <div className="md:col-span-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                            <div className="text-xs font-semibold text-zinc-500">{t.ordersItems}</div>
-                            <div className="mt-3 grid gap-2">
-                              {(Array.isArray(o?.items) ? o.items : []).map((it) => {
-                                const p = it?.personalization || {};
-                                const fontLabel =
-                                  l10n(FONTS.find((f) => f.id === p.font)?.label, language) ||
-                                  String(p.font || "").trim() ||
-                                  "—";
-                                const colorLabel =
-                                  l10n(COLORS.find((c) => c.id === p.color)?.label, language) ||
-                                  String(p.color || "").trim() ||
-                                  "—";
-
-                                return (
-                                  <div
-                                    key={it.id}
-                                    className="rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
-                                  >
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div>
-                                        <div className="text-sm font-bold text-zinc-900">
-                                          {l10n(it?.name, language)}
-                                        </div>
-                                        <div className="mt-1 text-xs text-zinc-600">
-                                          {t.summaryText} {p.text ? p.text : "—"}
-                                        </div>
-                                        <div className="mt-1 text-xs text-zinc-600">
-                                          {t.summaryVerse} {p.verse ? p.verse : "—"}
-                                        </div>
-                                        <div className="mt-1 text-xs text-zinc-600">
-                                          {t.summaryFont} {fontLabel}
-                                        </div>
-                                        <div className="mt-1 text-xs text-zinc-600">
-                                          {t.summaryColor} {colorLabel}
-                                        </div>
-                                      </div>
-
-                                      <div className="text-right">
-                                        <div className="text-sm font-bold text-zinc-900">×{Number(it?.qty) || 0}</div>
-                                        <div className="mt-1 text-xs text-zinc-600">
-                                          {money(Number(it?.unitPrice) || 0, language)}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-            </div>
-          )}
         </div>
 
         {/* Dashboard: Inventory */}
@@ -5175,103 +4675,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
             ))}
           </div>
         </div>
-
-
-        {/* Dashboard: Profit / Loss */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-          <SectionTitle title={t.profitTitle} subtitle={t.profitSubtitle} />
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-              <div className="grid gap-3">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.profitPeriodLabel}
-                    </label>
-                    <select
-                      value={profitPeriod}
-                      onChange={(e) => setProfitPeriod(e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    >
-                      <option value="day">{t.profitDay}</option>
-                      <option value="week">{t.profitWeek}</option>
-                      <option value="month">{t.profitMonth}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.profitDateLabel}
-                    </label>
-                    <input
-                      type="date"
-                      value={profitDate}
-                      onChange={(e) => setProfitDate(e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Stat label={t.profitRevenue} value={money(profitStats.revenue, language)} />
-                  <Stat label={t.profitCogs} value={money(profitStats.cogs, language)} />
-                  <Stat
-                    label={t.profitGrossProfit}
-                    value={money(profitStats.grossProfit, language)}
-                  />
-                  <Stat
-                    label={t.profitMargin}
-                    value={`${(profitStats.margin * 100).toFixed(1)}%`}
-                  />
-                  <Stat label={t.profitUnits} value={String(profitStats.units)} />
-                  <Stat label={t.profitTaxCollected} value={money(taxCollectedStats.inRange, language)} />
-                  <Stat
-                    label={t.profitTaxCollectedAllTime}
-                    value={money(taxCollectedStats.allTime, language)}
-                  />
-                </div>
-
-                {profitStats.inRange.length === 0 ? (
-                  <div className="text-sm text-zinc-600">{t.profitNoSales}</div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-              <div className="text-sm font-bold text-zinc-900">{t.profitTopProducts}</div>
-              <div className="mt-3 grid gap-2">
-                {profitStats.topProducts.length === 0 ? (
-                  <div className="text-sm text-zinc-600">{t.profitNoSales}</div>
-                ) : (
-                  profitStats.topProducts.map((x) => (
-                    <div
-                      key={x.productId}
-                      className="flex items-center justify-between rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
-                    >
-                      <div>
-                        <div className="text-sm font-semibold text-zinc-900">{x.name}</div>
-                        <div className="mt-1 text-xs text-zinc-600">
-                          {t.profitUnits}: {x.units}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold text-zinc-900">
-                          {money(x.profit, language)}
-                        </div>
-                        <div className="mt-1 text-xs text-zinc-600">
-                          {money(x.revenue, language)}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-
         {/* Admin: Home Hero Promotion */}
         <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.heroAdminTitle} subtitle={t.heroAdminSubtitle} />
@@ -5969,6 +5372,737 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
   );
 }
 
+// Page: AdminProfit
+function AdminProfit({ products = [], sales, orders, t, language, onBack }) {
+  const [profitPeriod, setProfitPeriod] = useState("week");
+  const [profitDate, setProfitDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate()
+    ).padStart(2, "0")}`;
+  });
+
+  const profitRange = useMemo(() => {
+    const base = new Date(`${profitDate}T00:00:00`);
+    if (Number.isNaN(base.getTime())) {
+      const now = new Date();
+      return { startMs: now.getTime(), endMs: now.getTime() };
+    }
+
+    if (profitPeriod === "day") {
+      const start = new Date(base);
+      const end = new Date(base);
+      end.setDate(end.getDate() + 1);
+      return { startMs: start.getTime(), endMs: end.getTime() };
+    }
+
+    if (profitPeriod === "month") {
+      const start = new Date(base.getFullYear(), base.getMonth(), 1);
+      const end = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+      return { startMs: start.getTime(), endMs: end.getTime() };
+    }
+
+    // week (Mon-Sun)
+    const day = base.getDay(); // 0 Sun ... 6 Sat
+    const diffToMonday = (day + 6) % 7;
+    const start = new Date(base);
+    start.setDate(start.getDate() - diffToMonday);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return { startMs: start.getTime(), endMs: end.getTime() };
+  }, [profitDate, profitPeriod]);
+
+  const profitStats = useMemo(() => {
+    const rows = Array.isArray(sales) ? sales : [];
+    const inRange = rows.filter(
+      (s) =>
+        typeof s?.createdAt === "number" &&
+        s.createdAt >= profitRange.startMs &&
+        s.createdAt < profitRange.endMs
+    );
+
+    let revenue = 0;
+    let cogs = 0;
+    let units = 0;
+
+    const byProduct = new Map();
+
+    for (const s of inRange) {
+      const qty = Number(s.qty) || 0;
+      const unitPrice = Number(s.unitPrice) || 0;
+      const unitCost = Number(s.unitCost) || 0;
+      const productId = String(s.productId ?? "");
+
+      units += qty;
+      revenue += qty * unitPrice;
+      cogs += qty * unitCost;
+
+      if (!byProduct.has(productId)) {
+        byProduct.set(productId, {
+          productId,
+          units: 0,
+          revenue: 0,
+          profit: 0,
+        });
+      }
+
+      const agg = byProduct.get(productId);
+      agg.units += qty;
+      agg.revenue += qty * unitPrice;
+      agg.profit += qty * (unitPrice - unitCost);
+    }
+
+    const grossProfit = revenue - cogs;
+    const margin = revenue > 0 ? grossProfit / revenue : 0;
+
+    const topProducts = Array.from(byProduct.values())
+      .filter((x) => x.productId)
+      .sort((a, b) => b.profit - a.profit)
+      .slice(0, 5)
+      .map((x) => {
+        const product = products.find((p) => p.id === x.productId);
+        return {
+          ...x,
+          name: product ? l10n(product.name, language) : x.productId,
+        };
+      });
+
+    return { inRange, revenue, cogs, grossProfit, margin, units, topProducts };
+  }, [sales, profitRange, products, language]);
+
+  const taxCollectedStats = useMemo(() => {
+    const list = Array.isArray(orders) ? orders : [];
+    let inRangeTax = 0;
+    let allTimeTax = 0;
+
+    for (const o of list) {
+      const status = o?.status || "pending";
+      if (status === "cancelled") continue;
+
+      const createdAt = typeof o?.createdAt === "number" ? o.createdAt : null;
+      const prTax = getPrTaxBreakdownFromOrder(o, 0);
+      const tax = Number(prTax?.totalAmount) || 0;
+
+      allTimeTax += tax;
+
+      if (createdAt != null && createdAt >= profitRange.startMs && createdAt < profitRange.endMs) {
+        inRangeTax += tax;
+      }
+    }
+
+    return {
+      inRange: roundMoney(inRangeTax),
+      allTime: roundMoney(allTimeTax),
+    };
+  }, [orders, profitRange]);
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <SectionTitle title={t.profitTitle} subtitle={t.profitSubtitle} />
+          <Button
+            variant="secondary"
+            onClick={() => (typeof onBack === "function" ? onBack() : null)}
+          >
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+            <div className="grid gap-3">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.profitPeriodLabel}</label>
+                  <select
+                    value={profitPeriod}
+                    onChange={(e) => setProfitPeriod(e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  >
+                    <option value="day">{t.profitDay}</option>
+                    <option value="week">{t.profitWeek}</option>
+                    <option value="month">{t.profitMonth}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.profitDateLabel}</label>
+                  <input
+                    type="date"
+                    value={profitDate}
+                    onChange={(e) => setProfitDate(e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <Stat label={t.profitRevenue} value={money(profitStats.revenue, language)} />
+                <Stat label={t.profitCogs} value={money(profitStats.cogs, language)} />
+                <Stat label={t.profitGrossProfit} value={money(profitStats.grossProfit, language)} />
+                <Stat label={t.profitMargin} value={`${(profitStats.margin * 100).toFixed(1)}%`} />
+                <Stat label={t.profitUnits} value={String(profitStats.units)} />
+                <Stat label={t.profitTaxCollected} value={money(taxCollectedStats.inRange, language)} />
+                <Stat label={t.profitTaxCollectedAllTime} value={money(taxCollectedStats.allTime, language)} />
+              </div>
+
+              {profitStats.inRange.length === 0 ? (
+                <div className="text-sm text-zinc-600">{t.profitNoSales}</div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-bold text-zinc-900">{t.profitTopProducts}</div>
+            <div className="mt-3 grid gap-2">
+              {profitStats.topProducts.length === 0 ? (
+                <div className="text-sm text-zinc-600">{t.profitNoSales}</div>
+              ) : (
+                profitStats.topProducts.map((x) => (
+                  <div
+                    key={x.productId}
+                    className="flex items-center justify-between rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-zinc-900">{x.name}</div>
+                      <div className="mt-1 text-xs text-zinc-600">
+                        {t.profitUnits}: {x.units}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-zinc-900">{money(x.profit, language)}</div>
+                      <div className="mt-1 text-xs text-zinc-600">{money(x.revenue, language)}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: AdminOrders
+function AdminOrders({ orders, setOrders, t, language, onBack }) {
+  const ordersList = Array.isArray(orders) ? orders : [];
+  const openOrders = ordersList.filter((o) =>
+    isOpenOrderStatus(normalizeOrderStatus(o?.status))
+  );
+
+  const [expandedOrders, setExpandedOrders] = useState({});
+
+  const [orderStatusDrafts, setOrderStatusDrafts] = useState({});
+  const [orderStatusErrors, setOrderStatusErrors] = useState({});
+
+  // toggleOrderDetails
+  function toggleOrderDetails(orderId) {
+    setExpandedOrders((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [orderId]: !Boolean(prev?.[orderId]),
+    }));
+  }
+
+  // Draft setter: setOrderStatusDraft
+  function setOrderStatusDraft(orderId, patch) {
+    setOrderStatusErrors((prev) => ({ ...(prev || {}), [orderId]: "" }));
+    setOrderStatusDrafts((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [orderId]: {
+        ...(prev?.[orderId] || {}),
+        ...(patch && typeof patch === "object" ? patch : {}),
+      },
+    }));
+  }
+
+  // Action: applyOrderStatusUpdate
+  function applyOrderStatusUpdate(order) {
+    if (!order?.id || typeof setOrders !== "function") return;
+
+    const draft = orderStatusDrafts?.[order.id] || {};
+    const nextStatus = normalizeOrderStatus(draft.nextStatus || order.status);
+
+    const trackingNumber = String(order?.trackingNumber || "").trim();
+
+    const cancelReason = String(
+      (draft.cancelReason || "").trim() ||
+        (order?.cancelReason || "").trim() ||
+        (order?.customerCancelRequestReason || "").trim()
+    ).trim();
+
+    if (nextStatus === "cancelled" && !cancelReason) {
+      setOrderStatusErrors((prev) => ({
+        ...(prev || {}),
+        [order.id]: t.ordersStatusCancelReasonRequired,
+      }));
+      return;
+    }
+
+    if (nextStatus === "shipped" && !trackingNumber) {
+      setOrderStatusErrors((prev) => ({
+        ...(prev || {}),
+        [order.id]: t.ordersStatusTrackingRequired,
+      }));
+      return;
+    }
+
+    const now = Date.now();
+
+    setOrders((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.map((o) => {
+        if (o?.id !== order.id) return o;
+
+        const next = {
+          ...o,
+          status: nextStatus,
+          statusUpdatedAt: now,
+          updatedAt: now,
+          shippedAt:
+            nextStatus === "shipped"
+              ? typeof o?.shippedAt === "number"
+                ? o.shippedAt
+                : now
+              : null,
+          cancelledAt: nextStatus === "cancelled" ? now : null,
+          cancelReason: nextStatus === "cancelled" ? cancelReason : "",
+        };
+
+        return next;
+      });
+    });
+  }
+
+  // printShippingLabel
+  function printShippingLabel(order) {
+    const css = `
+@page { size: 4in 6in; margin: 0; }
+html, body { width: 4in; height: 6in; margin: 0; padding: 0; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+.page { box-sizing: border-box; width: 100%; height: 100%; padding: 0.25in; }
+.row { display: flex; justify-content: space-between; gap: 12px; }
+.brand { font-size: 18px; font-weight: 800; }
+.muted { color: #555; font-size: 12px; }
+.orderNo { font-size: 16px; font-weight: 800; }
+.box { margin-top: 16px; border: 2px solid #000; border-radius: 10px; padding: 14px; }
+.name { margin-top: 6px; font-size: 22px; font-weight: 800; }
+.address { margin-top: 10px; font-size: 18px; line-height: 1.2; font-weight: 700; }
+.phone { margin-top: 10px; font-size: 16px; font-weight: 700; }
+.footer { position: absolute; left: 0.25in; right: 0.25in; bottom: 0.25in; }
+.small { font-size: 11px; }
+`;
+
+    const body = buildShippingLabelHtml({ order, language });
+    openPrintWindow({
+      title: `${t.ordersPrintLabel} ${order?.orderNumber || ""}`.trim(),
+      bodyHtml: body,
+      cssText: css,
+      autoPrint: true,
+    });
+  }
+
+  // printReceiptPdf
+  function printReceiptPdf(order) {
+    const css = `
+@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+
+@page { size: letter; margin: 0.6in; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
+.muted { color: #555; font-size: 12px; }
+
+.receipt { max-width: 760px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.right { text-align: right; }
+.orderNo { font-size: 16px; font-weight: 800; }
+
+.brandRow { display: flex; align-items: center; gap: 10px; }
+.brandLogo { width: 42px; height: 42px; object-fit: contain; }
+.brandName { font-family: 'Allura', cursive; font-size: 34px; line-height: 1; color: #7a6f69; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; }
+.cardTitle { font-size: 12px; font-weight: 800; color: #111; margin-bottom: 6px; }
+.items { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.items th, .items td { border-bottom: 1px solid #eee; padding: 10px 6px; vertical-align: top; }
+.items th { text-align: left; font-size: 12px; color: #333; }
+.qty { width: 60px; text-align: right; }
+.money { width: 110px; text-align: right; }
+.itemName { font-weight: 800; }
+.itemMeta { margin-top: 4px; font-size: 12px; color: #555; }
+.totalRow { display: flex; justify-content: space-between; margin-top: 14px; font-weight: 900; }
+.total { font-size: 18px; }
+.footer { margin-top: 16px; }
+`;
+
+    const body = buildReceiptHtml({ order, language });
+    openPrintWindow({
+      title: `${t.ordersPrintReceipt} ${order?.orderNumber || ""}`.trim(),
+      bodyHtml: body,
+      cssText: css,
+      autoPrint: true,
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <SectionTitle title={t.ordersTitle} subtitle={t.ordersSubtitle} />
+          <Button
+            variant="secondary"
+            onClick={() => (typeof onBack === "function" ? onBack() : null)}
+          >
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Stat label={t.ordersStatusPending} value={String(openOrders.length)} />
+          <Stat label={t.ordersTotal} value={String(ordersList.length)} />
+        </div>
+
+        <div className="mt-3 text-xs text-zinc-500">{t.ordersReceiptHint}</div>
+
+        {ordersList.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+            {t.ordersEmpty}
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3">
+            {ordersList
+              .slice()
+              .sort((a, b) => {
+                const aStatus = normalizeOrderStatus(a?.status);
+                const bStatus = normalizeOrderStatus(b?.status);
+
+                const rank = (s) => (s === "cancelled" ? 2 : s === "shipped" ? 1 : 0);
+
+                const aRank = rank(aStatus);
+                const bRank = rank(bStatus);
+                if (aRank !== bRank) return aRank - bRank;
+
+                const aTime = typeof a?.createdAt === "number" ? a.createdAt : 0;
+                const bTime = typeof b?.createdAt === "number" ? b.createdAt : 0;
+                return bTime - aTime;
+              })
+              .slice(0, 200)
+              .map((o) => {
+                const status = normalizeOrderStatus(o?.status);
+                const statusText = orderStatusLabel(status, t);
+                const statusClass = orderStatusBadgeClass(status);
+
+                const createdLabel =
+                  typeof o?.createdAt === "number"
+                    ? new Date(o.createdAt).toLocaleString(
+                        language === "es" ? "es-US" : "en-US"
+                      )
+                    : "";
+
+                const paymentText =
+                  o?.paymentMethod === "whatsapp"
+                    ? t.ordersPaymentWhatsApp
+                    : t.ordersPaymentCard;
+
+                const ship = o?.shipping || {};
+                const shipLines = [
+                  ship.addressLine1,
+                  ship.addressLine2,
+                  [ship.city, ship.stateRegion].filter(Boolean).join(", "),
+                  ship.postalCode,
+                  ship.country,
+                ]
+                  .map((x) => String(x || "").trim())
+                  .filter(Boolean)
+                  .join("\n");
+
+                const itemsCount = Array.isArray(o?.items)
+                  ? o.items.reduce((acc, it) => acc + (Number(it?.qty) || 0), 0)
+                  : 0;
+
+                const isExpanded = Boolean(expandedOrders?.[o.id]);
+
+                const draft = orderStatusDrafts?.[o.id] || {};
+                const nextStatusDraft = normalizeOrderStatus(draft.nextStatus || status);
+                const showCancelReason = nextStatusDraft === "cancelled";
+                const statusError = String(orderStatusErrors?.[o.id] || "").trim();
+
+                const hasCustomerCancelRequest =
+                  Boolean(o?.customerCancelRequestedAt) && Boolean(o?.customerCancelRequestReason);
+
+                const customerCancelRequestedAtLabel =
+                  typeof o?.customerCancelRequestedAt === "number"
+                    ? new Date(o.customerCancelRequestedAt).toLocaleString(
+                        language === "es" ? "es-US" : "en-US"
+                      )
+                    : "";
+
+                return (
+                  <div
+                    key={o.id}
+                    className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
+                  >
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="text-sm font-extrabold text-zinc-900">
+                            {t.ordersOrder} {o.orderNumber || o.id}
+                          </div>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                            {statusText}
+                          </span>
+                        </div>
+
+                        <div className="mt-1 text-xs text-zinc-600">
+                          {(o?.customer?.name || "—")}
+                          {createdLabel ? ` · ${t.ordersPlacedAt}: ${createdLabel}` : ""}
+                          {` · ${t.ordersItems}: ${itemsCount}`}
+                          {` · ${t.ordersTotal}: ${money(Number(o?.total) || 0, language)}`}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 md:justify-end">
+                        <Button variant="secondary" onClick={() => toggleOrderDetails(o.id)}>
+                          {isExpanded ? t.ordersHideDetails : t.ordersViewDetails}
+                        </Button>
+                        <Button variant="secondary" onClick={() => printShippingLabel(o)}>
+                          {t.ordersPrintLabel}
+                        </Button>
+                        <Button variant="secondary" onClick={() => printReceiptPdf(o)}>
+                          {t.ordersPrintReceipt}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {isExpanded ? (
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <div className="md:col-span-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                            <div>
+                              <div className="text-sm font-bold text-zinc-900">{t.ordersUpdateStatusLabel}</div>
+                              {statusError ? (
+                                <div className="mt-2 text-xs font-semibold text-rose-700">{statusError}</div>
+                              ) : null}
+                            </div>
+
+                            <div className="grid gap-3 md:grid-cols-3 md:items-end">
+                              <div>
+                                <label className="text-[11px] font-semibold text-zinc-600">
+                                  {t.orderStatusCurrentStatus}
+                                </label>
+                                <select
+                                  value={nextStatusDraft}
+                                  onChange={(e) =>
+                                    setOrderStatusDraft(o.id, { nextStatus: e.target.value })
+                                  }
+                                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                                >
+                                  <option value="pending">{orderStatusLabel("pending", t)}</option>
+                                  <option value="preparing">{orderStatusLabel("preparing", t)}</option>
+                                  <option value="paused">{orderStatusLabel("paused", t)}</option>
+                                  <option value="shipped">{orderStatusLabel("shipped", t)}</option>
+                                  <option value="cancelled">{orderStatusLabel("cancelled", t)}</option>
+                                </select>
+                              </div>
+
+                              {showCancelReason ? (
+                                <div>
+                                  <label className="text-[11px] font-semibold text-zinc-600">
+                                    {t.ordersCancelReasonLabel}
+                                  </label>
+                                  <input
+                                    value={String(draft.cancelReason ?? o?.cancelReason ?? "")}
+                                    onChange={(e) =>
+                                      setOrderStatusDraft(o.id, { cancelReason: e.target.value })
+                                    }
+                                    placeholder={t.ordersCancelReasonPlaceholder}
+                                    className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                                  />
+                                </div>
+                              ) : (
+                                <div />
+                              )}
+
+                              <div>
+                                <Button
+                                  variant="primary"
+                                  className="w-full"
+                                  onClick={() => applyOrderStatusUpdate(o)}
+                                >
+                                  {t.ordersApplyStatus}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {nextStatusDraft === "shipped" && !statusError ? (
+                            <div className="mt-2 text-xs text-zinc-600">
+                              {t.ordersStatusTrackingRequired}
+                            </div>
+                          ) : null}
+
+                          {hasCustomerCancelRequest ? (
+                            <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                              <div className="text-xs font-semibold text-zinc-500">
+                                {t.orderStatusCancelRequestTitle}
+                              </div>
+                              {customerCancelRequestedAtLabel ? (
+                                <div className="mt-1 text-[11px] text-zinc-600">
+                                  {customerCancelRequestedAtLabel}
+                                </div>
+                              ) : null}
+                              <div className="mt-2 text-sm text-zinc-800">
+                                {o?.customerCancelRequestReason}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                          <div className="text-xs font-semibold text-zinc-500">{t.ordersCustomer}</div>
+                          <div className="mt-1 text-sm font-bold text-zinc-900">
+                            {o?.customer?.name || "—"}
+                          </div>
+                          {o?.customer?.phone ? (
+                            <div className="mt-1 text-xs text-zinc-600">{o.customer.phone}</div>
+                          ) : null}
+                          {o?.customer?.notes ? (
+                            <div className="mt-2 text-xs text-zinc-600">{o.customer.notes}</div>
+                          ) : null}
+
+                          <div className="mt-3 text-xs text-zinc-600">
+                            {t.ordersPaymentMethod}: {paymentText}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                          <div className="text-xs font-semibold text-zinc-500">{t.ordersShipping}</div>
+                          <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
+                            {shipLines || "—"}
+                          </pre>
+
+                          <div className="mt-3 grid gap-3">
+                            <div>
+                              <label className="text-[11px] font-semibold text-zinc-600">
+                                {t.ordersTrackingNumberLabel}
+                              </label>
+                              <input
+                                value={o?.trackingNumber || ""}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setOrders((prev) => {
+                                    const base = Array.isArray(prev) ? prev : [];
+                                    return base.map((x) =>
+                                      x?.id === o.id
+                                        ? { ...x, trackingNumber: v, updatedAt: Date.now() }
+                                        : x
+                                    );
+                                  });
+                                }}
+                                placeholder={t.ordersTrackingNumberPlaceholder}
+                                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[11px] font-semibold text-zinc-600">
+                                {t.ordersEtaLabel}
+                              </label>
+                              <input
+                                value={o?.etaText || ""}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setOrders((prev) => {
+                                    const base = Array.isArray(prev) ? prev : [];
+                                    return base.map((x) =>
+                                      x?.id === o.id
+                                        ? { ...x, etaText: v, updatedAt: Date.now() }
+                                        : x
+                                    );
+                                  });
+                                }}
+                                placeholder={t.ordersEtaPlaceholder}
+                                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-400"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                          <div className="text-xs font-semibold text-zinc-500">{t.ordersItems}</div>
+                          <div className="mt-1 text-sm font-bold text-zinc-900">{itemsCount}</div>
+                          <div className="mt-1 text-xs text-zinc-600">
+                            {t.ordersTotal}: {money(Number(o?.total) || 0, language)}
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                          <div className="text-xs font-semibold text-zinc-500">{t.ordersItems}</div>
+                          <div className="mt-3 grid gap-2">
+                            {(Array.isArray(o?.items) ? o.items : []).map((it) => {
+                              const p = it?.personalization || {};
+                              const fontLabel =
+                                l10n(FONTS.find((f) => f.id === p.font)?.label, language) ||
+                                String(p.font || "").trim() ||
+                                "—";
+                              const colorLabel =
+                                l10n(COLORS.find((c) => c.id === p.color)?.label, language) ||
+                                String(p.color || "").trim() ||
+                                "—";
+
+                              return (
+                                <div
+                                  key={it.id}
+                                  className="rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <div className="text-sm font-bold text-zinc-900">
+                                        {l10n(it?.name, language)}
+                                      </div>
+                                      <div className="mt-1 text-xs text-zinc-600">
+                                        {t.summaryText} {p.text ? p.text : "—"}
+                                      </div>
+                                      <div className="mt-1 text-xs text-zinc-600">
+                                        {t.summaryVerse} {p.verse ? p.verse : "—"}
+                                      </div>
+                                      <div className="mt-1 text-xs text-zinc-600">
+                                        {t.summaryFont} {fontLabel}
+                                      </div>
+                                      <div className="mt-1 text-xs text-zinc-600">
+                                        {t.summaryColor} {colorLabel}
+                                      </div>
+                                    </div>
+
+                                    <div className="text-right">
+                                      <div className="text-sm font-bold text-zinc-900">×{Number(it?.qty) || 0}</div>
+                                      <div className="mt-1 text-xs text-zinc-600">
+                                        {money(Number(it?.unitPrice) || 0, language)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+          </div>
+        )}
+      </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
 // Component: Footer
 function Footer({ t }) {
   return (
@@ -6393,6 +6527,9 @@ export default function App() {
     return { orderId, orderNumber };
   }
 
+  const orderFlowStep =
+    route === "cart" ? 1 : route === "checkout" ? 2 : route === "checkout_review" ? 3 : 0;
+
   return (
     <div className="min-h-screen bg-zinc-50">
       <TopBar
@@ -6403,6 +6540,9 @@ export default function App() {
         language={language}
         setLanguage={setLanguage}
       />
+
+      {/* Order flow progress (Cart → Checkout → Review) */}
+      {orderFlowStep ? <OrderFlowStepper currentStep={orderFlowStep} t={t} /> : null}
 
       {/* Route: home */}
       {route === "home" ? (
@@ -6524,8 +6664,33 @@ export default function App() {
           setOrders={setOrders}
           checkoutConfig={checkoutConfig}
           setCheckoutConfig={setCheckoutConfig}
+          onGoOrders={() => setRoute("admin_orders")}
+          onGoProfit={() => setRoute("admin_profit")}
           t={t}
           language={language}
+        />
+      ) : null}
+
+      {/* Route: admin orders */}
+      {route === "admin_orders" ? (
+        <AdminOrders
+          orders={orders}
+          setOrders={setOrders}
+          t={t}
+          language={language}
+          onBack={() => setRoute("admin")}
+        />
+      ) : null}
+
+      {/* Route: admin profit/loss */}
+      {route === "admin_profit" ? (
+        <AdminProfit
+          products={products}
+          sales={sales}
+          orders={orders}
+          t={t}
+          language={language}
+          onBack={() => setRoute("admin")}
         />
       ) : null}
 
