@@ -323,6 +323,18 @@ const translations = {
     profitNoSales: "No hay ventas registradas en este período.",
     profitTopProducts: "Productos top",
 
+    profitReportPdfButton: "Reporte (PDF)",
+    profitReportPeriodValueDay: "Día",
+    profitReportPeriodValueWeek: "Semana",
+    profitReportPeriodValueMonth: "Mes",
+    profitReportRangeLabel: "Rango",
+    profitReportGeneratedAt: "Generado",
+    profitReportTopProductsTableProduct: "Producto",
+    profitReportTopProductsTableUnits: "Unidades",
+    profitReportTopProductsTableRevenue: "Ingresos",
+    profitReportTopProductsTableProfit: "Ganancia",
+    profitReportFooterHint: "En la ventana de imprimir, selecciona 'Guardar como PDF' para descargar el reporte.",
+
     adminStatOrdersPending: "Órdenes pendientes",
     adminStatOrdersPendingBody: "Pedidos por empacar / enviar.",
 
@@ -699,6 +711,18 @@ const translations = {
     adminCheckoutTaxMunicipalRateLabel: "PR municipal tax — rate (%)",
     profitNoSales: "No sales recorded for this period.",
     profitTopProducts: "Top products",
+
+    profitReportPdfButton: "Report (PDF)",
+    profitReportPeriodValueDay: "Day",
+    profitReportPeriodValueWeek: "Week",
+    profitReportPeriodValueMonth: "Month",
+    profitReportRangeLabel: "Range",
+    profitReportGeneratedAt: "Generated",
+    profitReportTopProductsTableProduct: "Product",
+    profitReportTopProductsTableUnits: "Units",
+    profitReportTopProductsTableRevenue: "Revenue",
+    profitReportTopProductsTableProfit: "Profit",
+    profitReportFooterHint: "In the print dialog, choose 'Save as PDF' to download the report.",
 
     adminStatOrdersPending: "Pending orders",
     adminStatOrdersPendingBody: "Orders waiting to be packed / shipped.",
@@ -1589,6 +1613,154 @@ function buildReceiptHtml({ order, language }) {
     <div class="muted footer">
       ${lang === "es" ? "Imprime y guarda como PDF para archivarlo." : "Print and save as PDF to archive."}
     </div>
+  </div>`;
+}
+
+
+// Helper: buildProfitReportHtml
+function buildProfitReportHtml({
+  language,
+  profitPeriod,
+  profitDate,
+  profitRange,
+  profitStats,
+  taxCollectedStats,
+}) {
+  const lang = language === "es" ? "es" : "en";
+  const tr = translations[lang];
+
+  const periodLabel =
+    profitPeriod === "day"
+      ? tr.profitReportPeriodValueDay
+      : profitPeriod === "month"
+      ? tr.profitReportPeriodValueMonth
+      : tr.profitReportPeriodValueWeek;
+
+  const start =
+    typeof profitRange?.startMs === "number" ? new Date(profitRange.startMs) : null;
+  const endExclusive =
+    typeof profitRange?.endMs === "number" ? new Date(profitRange.endMs) : null;
+  const endInclusive = endExclusive ? new Date(endExclusive.getTime() - 1) : null;
+
+  const dateFmt = (d) =>
+    d instanceof Date && !Number.isNaN(d.getTime())
+      ? d.toLocaleDateString(lang === "es" ? "es-US" : "en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+        })
+      : "";
+
+  const rangeText =
+    start && endInclusive
+      ? `${dateFmt(start)} — ${dateFmt(endInclusive)}`
+      : profitDate
+      ? String(profitDate)
+      : "";
+
+  const generatedAt = new Date().toLocaleString(lang === "es" ? "es-US" : "en-US");
+
+  const revenue = Number(profitStats?.revenue) || 0;
+  const cogs = Number(profitStats?.cogs) || 0;
+  const grossProfit = Number(profitStats?.grossProfit) || 0;
+  const margin = Number(profitStats?.margin) || 0;
+  const units = Number(profitStats?.units) || 0;
+
+  const taxInRange = Number(taxCollectedStats?.inRange) || 0;
+  const taxAllTime = Number(taxCollectedStats?.allTime) || 0;
+
+  const topProducts = Array.isArray(profitStats?.topProducts) ? profitStats.topProducts : [];
+
+  const topRows = topProducts
+    .map((p) => {
+      const name = escapeHtml(p?.name || p?.productId || "");
+      const pUnits = Number(p?.units) || 0;
+      const pRevenue = Number(p?.revenue) || 0;
+      const pProfit = Number(p?.profit) || 0;
+
+      return `
+        <tr>
+          <td class="name">${name || "—"}</td>
+          <td class="num">${escapeHtml(String(pUnits))}</td>
+          <td class="money">${escapeHtml(money(pRevenue, lang))}</td>
+          <td class="money">${escapeHtml(money(pProfit, lang))}</td>
+        </tr>`;
+    })
+    .join("");
+
+  const hasSales = Array.isArray(profitStats?.inRange) ? profitStats.inRange.length > 0 : false;
+
+  return `
+  <div class="report">
+    <div class="header">
+      <div class="brandRow">
+        <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith" />
+        <div>
+          <div class="brandName">Grow by Faith</div>
+          <div class="muted">${escapeHtml(tr.profitTitle)}</div>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div><span class="label">${escapeHtml(tr.profitPeriodLabel)}:</span> ${escapeHtml(periodLabel)}</div>
+        <div><span class="label">${escapeHtml(tr.profitDateLabel)}:</span> ${escapeHtml(profitDate || "")}</div>
+        <div><span class="label">${escapeHtml(tr.profitReportRangeLabel)}:</span> ${escapeHtml(rangeText)}</div>
+        <div class="muted"><span class="label">${escapeHtml(tr.profitReportGeneratedAt)}:</span> ${escapeHtml(generatedAt)}</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitRevenue)}</div>
+        <div class="cardValue">${escapeHtml(money(revenue, lang))}</div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitCogs)}</div>
+        <div class="cardValue">${escapeHtml(money(cogs, lang))}</div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitGrossProfit)}</div>
+        <div class="cardValue">${escapeHtml(money(grossProfit, lang))}</div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitMargin)}</div>
+        <div class="cardValue">${escapeHtml(`${(margin * 100).toFixed(1)}%`)}</div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitUnits)}</div>
+        <div class="cardValue">${escapeHtml(String(units))}</div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitTaxCollected)}</div>
+        <div class="cardValue">${escapeHtml(money(taxInRange, lang))}</div>
+      </div>
+      <div class="card">
+        <div class="cardLabel">${escapeHtml(tr.profitTaxCollectedAllTime)}</div>
+        <div class="cardValue">${escapeHtml(money(taxAllTime, lang))}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectionTitle">${escapeHtml(tr.profitTopProducts)}</div>
+
+      ${!hasSales ? `<div class="muted">${escapeHtml(tr.profitNoSales)}</div>` : ""}
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>${escapeHtml(tr.profitReportTopProductsTableProduct)}</th>
+            <th class="num">${escapeHtml(tr.profitReportTopProductsTableUnits)}</th>
+            <th class="money">${escapeHtml(tr.profitReportTopProductsTableRevenue)}</th>
+            <th class="money">${escapeHtml(tr.profitReportTopProductsTableProfit)}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${topRows || `<tr><td colspan="4" class="muted">${escapeHtml(tr.profitNoSales)}</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer muted">${escapeHtml(tr.profitReportFooterHint)}</div>
   </div>`;
 }
 
@@ -5496,17 +5668,82 @@ function AdminProfit({ products = [], sales, orders, t, language, onBack }) {
     };
   }, [orders, profitRange]);
 
+  // printProfitReportPdf
+  function printProfitReportPdf() {
+    const css = `
+@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+
+@page { size: letter; margin: 0.7in; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
+
+.report { max-width: 860px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb; }
+.brandRow { display: flex; align-items: center; gap: 12px; }
+.brandLogo { width: 44px; height: 44px; object-fit: contain; }
+.brandName { font-family: 'Allura', cursive; font-size: 34px; line-height: 1; color: #7a6f69; }
+.muted { color: #555; font-size: 12px; }
+.meta { font-size: 12px; line-height: 1.55; }
+.label { font-weight: 800; color: #111; }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+.card { border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; }
+.cardLabel { font-size: 12px; color: #555; font-weight: 700; }
+.cardValue { margin-top: 6px; font-size: 16px; font-weight: 900; }
+
+.section { margin-top: 18px; }
+.sectionTitle { font-size: 14px; font-weight: 900; margin-bottom: 8px; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { border-bottom: 1px solid #eee; padding: 10px 6px; vertical-align: top; }
+.table th { text-align: left; font-size: 12px; color: #333; }
+.table td { font-size: 12px; }
+.name { font-weight: 700; }
+.num { text-align: right; width: 70px; }
+.money { text-align: right; width: 120px; }
+
+.footer { margin-top: 14px; }
+
+@media print {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+`;
+
+    const body = buildProfitReportHtml({
+      language,
+      profitPeriod,
+      profitDate,
+      profitRange,
+      profitStats,
+      taxCollectedStats,
+    });
+
+    const title = `${t.profitTitle} — ${profitDate || ""}`.trim();
+
+    openPrintWindow({
+      title,
+      bodyHtml: body,
+      cssText: css,
+      autoPrint: true,
+    });
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <SectionTitle title={t.profitTitle} subtitle={t.profitSubtitle} />
-          <Button
-            variant="secondary"
-            onClick={() => (typeof onBack === "function" ? onBack() : null)}
-          >
-            {t.back}
-          </Button>
+
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={printProfitReportPdf}>
+              {t.profitReportPdfButton}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => (typeof onBack === "function" ? onBack() : null)}
+            >
+              {t.back}
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
