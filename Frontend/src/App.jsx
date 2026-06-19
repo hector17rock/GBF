@@ -209,10 +209,22 @@ const translations = {
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
-      "Pronto: pagos con tarjeta (Stripe). Demo UI por ahora.",
+      "Pronto: pagos con tarjeta (Stripe) y PayPal. Demo UI por ahora.",
     paymentMethod: "Método de pago",
-    payByWhatsApp: "WhatsApp",
+    payByPayPal: "PayPal",
+    payByWhatsApp: "PayPal",
     payByCard: "Tarjeta (Stripe)",
+    payPalDisclaimer: "PayPal (próximamente) — demo frontend.",
+    checkoutContinueToReview: "Continuar a revisión",
+
+    cardAcceptedLabel: "Tarjetas aceptadas",
+    cardTypeLabel: "Tipo de tarjeta",
+    cardTypeUnknown: "No identificada",
+    cardTypeVisa: "Visa",
+    cardTypeMastercard: "Mastercard",
+    cardTypeAmex: "American Express",
+    cardTypeDiscover: "Discover",
+
     cardDisclaimer: "Demo frontend — no se procesa el pago todavía.",
     cardNameLabel: "Nombre en la tarjeta",
     cardNamePlaceholder: "Nombre y apellido",
@@ -235,7 +247,7 @@ const translations = {
     cardNotReady:
       "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
     checkoutCompleteHint:
-      "Para completar tu orden, llena la tarjeta y presiona “Pagar ahora”.",
+      "Para completar tu orden, revisa los detalles y presiona “Someter orden”.",
 
     shippingTitle: "Dirección de envío",
     shippingSubtitle: "Para calcular envío y completar la orden.",
@@ -254,7 +266,7 @@ const translations = {
 
     waShippingAddress: "Dirección de envío:",
 
-    sendWhatsApp: "Enviar por WhatsApp",
+    sendWhatsApp: "Continuar con PayPal",
     backToCart: "Volver al carrito",
     nextStep:
       "Siguiente paso (luego): integrar pagos y órdenes reales.",
@@ -364,7 +376,8 @@ const translations = {
 
     ordersPaymentMethod: "Método de pago",
     ordersPaymentCard: "Tarjeta",
-    ordersPaymentWhatsApp: "WhatsApp",
+    ordersPaymentPayPal: "PayPal",
+    ordersPaymentWhatsApp: "PayPal",
 
     ordersTrackingNumberLabel: "Tracking #",
     ordersTrackingNumberPlaceholder: "Ej: 9400 1000 0000 0000 0000 00",
@@ -600,10 +613,22 @@ const translations = {
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
-      "Coming soon: credit card payments (Stripe). UI demo for now.",
+      "Coming soon: card payments (Stripe) and PayPal. UI demo for now.",
     paymentMethod: "Payment method",
-    payByWhatsApp: "WhatsApp",
+    payByPayPal: "PayPal",
+    payByWhatsApp: "PayPal",
     payByCard: "Card (Stripe)",
+    payPalDisclaimer: "PayPal (coming soon) — frontend demo.",
+    checkoutContinueToReview: "Continue to review",
+
+    cardAcceptedLabel: "Cards accepted",
+    cardTypeLabel: "Card type",
+    cardTypeUnknown: "Unknown",
+    cardTypeVisa: "Visa",
+    cardTypeMastercard: "Mastercard",
+    cardTypeAmex: "American Express",
+    cardTypeDiscover: "Discover",
+
     cardDisclaimer: "Frontend demo — no payment is processed yet.",
     cardNameLabel: "Name on card",
     cardNamePlaceholder: "Full name",
@@ -626,7 +651,7 @@ const translations = {
     cardNotReady:
       "Card payments will be available once the backend is connected to Stripe.",
     checkoutCompleteHint:
-      "To complete your order, fill the card form and press “Pay now”.",
+      "To complete your order, review the details and press “Submit order”.",
 
     shippingTitle: "Shipping address",
     shippingSubtitle: "For shipping estimates and order completion.",
@@ -645,7 +670,7 @@ const translations = {
 
     waShippingAddress: "Shipping address:",
 
-    sendWhatsApp: "Send via WhatsApp",
+    sendWhatsApp: "Continue with PayPal",
     backToCart: "Back to cart",
     nextStep: "Next step (later): integrate payments and real orders.",
     finish: "Finish",
@@ -753,7 +778,8 @@ const translations = {
 
     ordersPaymentMethod: "Payment method",
     ordersPaymentCard: "Card",
-    ordersPaymentWhatsApp: "WhatsApp",
+    ordersPaymentPayPal: "PayPal",
+    ordersPaymentWhatsApp: "PayPal",
 
     ordersTrackingNumberLabel: "Tracking #",
     ordersTrackingNumberPlaceholder: "e.g. 9400 1000 0000 0000 0000 00",
@@ -926,7 +952,7 @@ function normalizeCheckoutConfig(cfg) {
 // -----------------------------
 function buildDefaultCheckoutDraft() {
   return {
-    paymentMethod: "card", // card | whatsapp
+    paymentMethod: "card", // card | paypal
     customer: {
       name: "",
       phone: "",
@@ -958,7 +984,8 @@ function normalizeCheckoutDraft(draft) {
   const base = buildDefaultCheckoutDraft();
   const cfg = draft && typeof draft === "object" ? draft : {};
 
-  const paymentMethod = cfg.paymentMethod === "whatsapp" ? "whatsapp" : "card";
+  const paymentMethod =
+    cfg.paymentMethod === "paypal" || cfg.paymentMethod === "whatsapp" ? "paypal" : "card";
 
   return {
     ...base,
@@ -968,6 +995,170 @@ function normalizeCheckoutDraft(draft) {
     shipping: { ...base.shipping, ...(cfg.shipping || {}) },
     card: { ...base.card, ...(cfg.card || {}) },
   };
+}
+
+
+// -----------------------------
+// Card brand helpers (simple client-side detection)
+// -----------------------------
+function detectCardBrand(number) {
+  const digits = String(number || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  // Amex: 34, 37
+  if (/^3[47]/.test(digits)) return "amex";
+
+  // Visa: 4
+  if (/^4/.test(digits)) return "visa";
+
+  // MasterCard: 51-55, 2221-2720
+  if (/^(5[1-5]|222[1-9]|22[3-9]\d|2[3-6]\d{2}|27[01]\d|2720)/.test(digits)) return "mastercard";
+
+  // Discover: 6011, 65, 644-649
+  if (/^(6011|65|64[4-9])/.test(digits)) return "discover";
+
+  // JCB: 3528-3589
+  if (/^35(2[89]|[3-8]\d)/.test(digits)) return "jcb";
+
+  // Diners (optional): 300-305, 36, 38-39
+  if (/^(30[0-5]|36|3[89])/.test(digits)) return "diners";
+
+  return "";
+}
+
+function formatCardNumberForDisplay(number, brand) {
+  const digits = String(number || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (brand === "amex") {
+    const p1 = digits.slice(0, 4);
+    const p2 = digits.slice(4, 10);
+    const p3 = digits.slice(10, 15);
+    return [p1, p2, p3].filter(Boolean).join(" ");
+  }
+
+  // Default: group in 4s (supports 16-19 digits)
+  return digits
+    .match(/.{1,4}/g)
+    ?.join(" ")
+    .trim() || digits;
+}
+
+function sanitizeCardNumberInput(raw) {
+  const digits = String(raw || "").replace(/\D/g, "");
+  const brand = detectCardBrand(digits);
+
+  const maxLen = brand === "amex" ? 15 : 19;
+  const capped = digits.slice(0, maxLen);
+
+  return {
+    brand,
+    digits: capped,
+    formatted: formatCardNumberForDisplay(capped, brand),
+  };
+}
+
+function sanitizeExpiryInput(raw) {
+  const digits = String(raw || "").replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
+}
+
+function sanitizeCvcInput(raw, brand) {
+  const maxLen = brand === "amex" ? 4 : 3;
+  return String(raw || "").replace(/\D/g, "").slice(0, maxLen);
+}
+
+// Component: CreditCardBrandLogo
+function CreditCardBrandLogo({ brand, active = false, className = "" }) {
+  const base = "inline-flex h-9 w-[78px] items-center justify-center rounded-xl border bg-white";
+  const border = active ? "border-zinc-900" : "border-zinc-200";
+
+  const title =
+    brand === "visa"
+      ? "Visa"
+      : brand === "mastercard"
+      ? "Mastercard"
+      : brand === "amex"
+      ? "American Express"
+      : brand === "discover"
+      ? "Discover"
+      : "";
+
+  const commonSvgProps = {
+    viewBox: "0 0 72 32",
+    preserveAspectRatio: "xMidYMid meet",
+    role: "img",
+    "aria-label": title,
+    className: "block h-7 w-[70px]",
+  };
+
+  const textProps = {
+    textAnchor: "middle",
+    dominantBaseline: "middle",
+    x: 36,
+    y: 16,
+    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+    fontWeight: 900,
+    letterSpacing: 1,
+  };
+
+  const logo =
+    brand === "visa" ? (
+      <svg {...commonSvgProps}>
+        <rect x="2" y="6" width="68" height="20" rx="6" fill="#1A1F71" />
+        <text {...textProps} fill="#fff" fontSize="13">
+          VISA
+        </text>
+      </svg>
+    ) : brand === "mastercard" ? (
+      <svg {...commonSvgProps}>
+        <rect x="2" y="6" width="68" height="20" rx="6" fill="#ffffff" stroke="#e5e7eb" />
+        <circle cx="34" cy="16" r="7" fill="#EB001B" opacity="0.95" />
+        <circle cx="40" cy="16" r="7" fill="#F79E1B" opacity="0.95" />
+        <text
+          x="14"
+          y="16"
+          dominantBaseline="middle"
+          fill="#111"
+          fontSize="8"
+          fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+          fontWeight="900"
+        >
+          MC
+        </text>
+      </svg>
+    ) : brand === "amex" ? (
+      <svg {...commonSvgProps}>
+        <rect x="2" y="6" width="68" height="20" rx="6" fill="#2E77BC" />
+        <text {...textProps} fill="#fff" fontSize="11">
+          AMEX
+        </text>
+      </svg>
+    ) : brand === "discover" ? (
+      <svg {...commonSvgProps}>
+        <rect x="2" y="6" width="68" height="20" rx="6" fill="#ffffff" stroke="#e5e7eb" />
+        <path d="M46 23c10-3 18-8 22-10" fill="none" stroke="#FF6A00" strokeWidth="3" />
+        <circle cx="36" cy="16" r="5" fill="#FF6A00" opacity="0.9" />
+        <text
+          x="14"
+          y="16"
+          dominantBaseline="middle"
+          fill="#111"
+          fontSize="9"
+          fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+          fontWeight="900"
+        >
+          DISC
+        </text>
+      </svg>
+    ) : null;
+
+  return (
+    <span title={title} className={`${base} ${border} ${className}`.trim()}>
+      {logo}
+    </span>
+  );
 }
 
 
@@ -1521,13 +1712,9 @@ function buildReceiptHtml({ order, language }) {
   const shippingFee = Number.isFinite(Number(order?.shippingFee)) ? Number(order.shippingFee) : 0;
 
   const paymentText =
-    order?.paymentMethod === "whatsapp"
-      ? lang === "es"
-        ? "WhatsApp"
-        : "WhatsApp"
-      : lang === "es"
-      ? "Tarjeta"
-      : "Card";
+    order?.paymentMethod === "paypal" || order?.paymentMethod === "whatsapp"
+      ? tr.ordersPaymentPayPal
+      : tr.ordersPaymentCard;
 
   const tracking = escapeHtml(order?.trackingNumber || "");
   const etaText = escapeHtml(order?.etaText || "");
@@ -2941,12 +3128,29 @@ function Checkout({
   const cardCvc = String(draft.card?.cvc || "");
   const cardZip = String(draft.card?.zip || "");
 
+  const cardNumberMeta = useMemo(() => sanitizeCardNumberInput(cardNumber), [cardNumber]);
+  const cardBrand = cardNumberMeta.brand;
+  const cardNumberFormatted = cardNumberMeta.formatted;
+
+  const acceptedCardBrands = ["visa", "mastercard", "amex", "discover"];
+
+  const cardBrandLabel =
+    cardBrand === "visa"
+      ? t.cardTypeVisa
+      : cardBrand === "mastercard"
+      ? t.cardTypeMastercard
+      : cardBrand === "amex"
+      ? t.cardTypeAmex
+      : cardBrand === "discover"
+      ? t.cardTypeDiscover
+      : t.cardTypeUnknown;
+
   // Draft setter: setDraftPaymentMethod
   function setDraftPaymentMethod(value) {
     if (typeof setCheckoutDraft !== "function") return;
     setCheckoutDraft((prev) => ({
       ...normalizeCheckoutDraft(prev),
-      paymentMethod: value === "whatsapp" ? "whatsapp" : "card",
+      paymentMethod: value === "paypal" || value === "whatsapp" ? "paypal" : "card",
     }));
   }
 
@@ -3013,89 +3217,18 @@ function Checkout({
   }
 
 
-  // handleWhatsAppPay
-  function handleWhatsAppPay() {
+  // handlePayPalContinue
+  function handlePayPalContinue() {
     setPaymentMessage("");
 
-    const customer = {
-      name: name.trim(),
-      phone: phone.trim(),
-      notes: notes.trim(),
-    };
-
-    const shippingInfo = {
-      addressLine1: addressLine1.trim(),
-      addressLine2: addressLine2.trim(),
-      city: city.trim(),
-      stateRegion: stateRegion.trim(),
-      postalCode: postalCode.trim(),
-      country: country.trim(),
-    };
-
-    if (!customer.name || !customer.phone) {
-      setPaymentMessage(
-        language === "es"
-          ? "Completa nombre y teléfono para enviar por WhatsApp."
-          : "Please enter name and phone to send via WhatsApp."
-      );
+    if (!validateCustomerAndShipping()) {
+      setPaymentMessage(t.checkoutDetailsRequired);
       return;
     }
 
-    if (!shippingInfo.addressLine1 || !shippingInfo.city) {
-      setPaymentMessage(
-        language === "es"
-          ? "Completa la dirección y ciudad para envío."
-          : "Please enter shipping address and city."
-      );
-      return;
+    if (typeof onGoReview === "function") {
+      onGoReview();
     }
-
-    let orderNumber = "";
-    if (typeof onPlaceOrder === "function") {
-      const res = onPlaceOrder({
-        customer,
-        shipping: shippingInfo,
-        paymentMethod: "whatsapp",
-        taxRatePct: taxRate,
-        taxStateRatePct: taxStateRate,
-        taxMunicipalRatePct: taxMunicipalRate,
-        shippingFee: shippingFeeAmount,
-      });
-      orderNumber = String(res?.orderNumber || "");
-    }
-
-    const lines = [];
-    lines.push(t.waGreeting);
-    if (orderNumber) lines.push(`${t.orderConfirmationOrderNumber}: ${orderNumber}`);
-    lines.push(`${t.waTotalEstimated} ${money(grandTotal, language)}`);
-    lines.push(`${t.checkoutSubtotal}: ${money(subtotal, language)}`);
-    lines.push(`${t.taxPrState} (${formatRatePct(taxStateRate)}%): ${money(taxStateAmount, language)}`);
-    lines.push(
-      `${t.taxPrMunicipal} (${formatRatePct(taxMunicipalRate)}%): ${money(taxMunicipalAmount, language)}`
-    );
-    lines.push(`${t.taxPrTotal} (${formatRatePct(taxRate)}%): ${money(taxAmount, language)}`);
-    lines.push(`${t.checkoutShippingFee}: ${money(shippingFeeAmount, language)}`);
-    lines.push("");
-    lines.push(`${t.waName} ${customer.name}`);
-    lines.push(`${t.waPhone} ${customer.phone}`);
-    if (customer.notes) lines.push(`${t.waNotes} ${customer.notes}`);
-    lines.push("");
-    lines.push(t.waShippingAddress);
-    const shipParts = [
-      shippingInfo.addressLine1,
-      shippingInfo.addressLine2,
-      [shippingInfo.city, shippingInfo.stateRegion].filter(Boolean).join(", "),
-      shippingInfo.postalCode,
-      shippingInfo.country,
-    ]
-      .map((x) => String(x || "").trim())
-      .filter(Boolean);
-    lines.push(...shipParts);
-
-    const msg = lines.join("\n");
-    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-
-    window.open(url, "_blank", "noopener,noreferrer");
   }
 
 
@@ -3233,14 +3366,14 @@ function Checkout({
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setDraftPaymentMethod("whatsapp")}
+                    onClick={() => setDraftPaymentMethod("paypal")}
                     className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-                      paymentMethod === "whatsapp"
+                      paymentMethod === "paypal"
                         ? "border-zinc-900 bg-zinc-900 text-white"
                         : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                     }`}
                   >
-                    {t.payByWhatsApp}
+                    {t.payByPayPal}
                   </button>
                   <button
                     type="button"
@@ -3255,6 +3388,19 @@ function Checkout({
                   </button>
                 </div>
 
+                <div className="mt-3">
+                  <div className="text-xs font-semibold text-zinc-600">{t.cardAcceptedLabel}</div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {acceptedCardBrands.map((b) => (
+                      <CreditCardBrandLogo
+                        key={b}
+                        brand={b}
+                        active={paymentMethod === "card" && cardBrand === b}
+                      />
+                    ))}
+                  </div>
+                </div>
+
                 {paymentMessage ? (
                   <div className="mt-2 text-xs font-semibold text-amber-700">
                     {paymentMessage}
@@ -3262,16 +3408,12 @@ function Checkout({
                 ) : null}
               </div>
 
-              {paymentMethod === "whatsapp" ? (
+              {paymentMethod === "paypal" ? (
                 <div className="mt-4 grid gap-3">
-                  <Button variant="primary" onClick={handleWhatsAppPay} className="w-full">
+                  <Button variant="primary" onClick={handlePayPalContinue} className="w-full">
                     {t.sendWhatsApp}
                   </Button>
-                  <div className="text-xs leading-5 text-zinc-500">
-                    {language === "es"
-                      ? "Se abrirá WhatsApp con el resumen de tu orden."
-                      : "WhatsApp will open with your order summary."}
-                  </div>
+                  <div className="text-xs leading-5 text-zinc-500">{t.payPalDisclaimer}</div>
                 </div>
               ) : (
                 <form onSubmit={handleGoToReview} className="mt-4 grid gap-3">
@@ -3289,27 +3431,40 @@ function Checkout({
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t.cardNumberLabel}
-                  </label>
-                  <input
-                    value={cardNumber}
-                    onChange={(e) => setDraftCardField("number", e.target.value)}
-                    placeholder={t.cardNumberPlaceholder}
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-semibold text-zinc-600">{t.cardAcceptedLabel}</div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {acceptedCardBrands.map((b) => (
+                        <CreditCardBrandLogo key={b} brand={b} active={cardBrand === b} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <label className="text-xs font-semibold text-zinc-700">{t.cardNumberLabel}</label>
+                    <input
+                      value={cardNumberFormatted}
+                      onChange={(e) => {
+                        const next = sanitizeCardNumberInput(e.target.value);
+                        setDraftCardField("number", next.formatted);
+                      }}
+                      placeholder={t.cardNumberPlaceholder}
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                    <div className="mt-2 text-xs text-zinc-600">
+                      {t.cardTypeLabel}: <span className="font-semibold">{cardBrandLabel}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="md:col-span-1">
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.cardExpiryLabel}
-                    </label>
+                    <label className="text-xs font-semibold text-zinc-700">{t.cardExpiryLabel}</label>
                     <input
                       value={cardExpiry}
-                      onChange={(e) => setDraftCardField("expiry", e.target.value)}
+                      onChange={(e) => setDraftCardField("expiry", sanitizeExpiryInput(e.target.value))}
                       placeholder={t.cardExpiryPlaceholder}
                       inputMode="numeric"
                       autoComplete="cc-exp"
@@ -3318,23 +3473,20 @@ function Checkout({
                   </div>
 
                   <div className="md:col-span-1">
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.cardCvcLabel}
-                    </label>
+                    <label className="text-xs font-semibold text-zinc-700">{t.cardCvcLabel}</label>
                     <input
                       value={cardCvc}
-                      onChange={(e) => setDraftCardField("cvc", e.target.value)}
-                      placeholder={t.cardCvcPlaceholder}
+                      onChange={(e) => setDraftCardField("cvc", sanitizeCvcInput(e.target.value, cardBrand))}
+                      placeholder={cardBrand === "amex" ? "1234" : t.cardCvcPlaceholder}
                       inputMode="numeric"
                       autoComplete="cc-csc"
+                      maxLength={cardBrand === "amex" ? 4 : 3}
                       className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                     />
                   </div>
 
                   <div className="md:col-span-1">
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.cardZipLabel}
-                    </label>
+                    <label className="text-xs font-semibold text-zinc-700">{t.cardZipLabel}</label>
                     <input
                       value={cardZip}
                       onChange={(e) => setDraftCardField("zip", e.target.value)}
@@ -3512,7 +3664,7 @@ function CheckoutReview({
       return;
     }
 
-    if (draft.paymentMethod !== "card") {
+    if (draft.paymentMethod !== "card" && draft.paymentMethod !== "paypal") {
       setMessage(t.checkoutDetailsRequired);
       return;
     }
@@ -3541,7 +3693,7 @@ function CheckoutReview({
           postalCode: String(draft.shipping?.postalCode || "").trim(),
           country: String(draft.shipping?.country || "").trim(),
         },
-        paymentMethod: "card",
+        paymentMethod: draft.paymentMethod,
         taxRatePct: taxRate,
         taxStateRatePct: taxStateRate,
         taxMunicipalRatePct: taxMunicipalRate,
@@ -3741,7 +3893,9 @@ function OrderConfirmation({ order, onGoHome, t, language }) {
   }, [orderSentToken]);
 
   const paymentText =
-    order?.paymentMethod === "whatsapp" ? t.ordersPaymentWhatsApp : t.ordersPaymentCard;
+    order?.paymentMethod === "paypal" || order?.paymentMethod === "whatsapp"
+      ? t.ordersPaymentPayPal
+      : t.ordersPaymentCard;
 
   const createdLabel =
     typeof order?.createdAt === "number"
@@ -6040,8 +6194,8 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                     : "";
 
                 const paymentText =
-                  o?.paymentMethod === "whatsapp"
-                    ? t.ordersPaymentWhatsApp
+                  o?.paymentMethod === "paypal" || o?.paymentMethod === "whatsapp"
+                    ? t.ordersPaymentPayPal
                     : t.ordersPaymentCard;
 
                 const ship = o?.shipping || {};
@@ -6639,7 +6793,7 @@ export default function App() {
     const orderNumber = getNextOrderNumber();
 
     const nextPaymentMethod =
-      paymentMethod === "whatsapp" ? "whatsapp" : "card";
+      paymentMethod === "paypal" || paymentMethod === "whatsapp" ? "paypal" : "card";
 
     const orderItems = cart.map((it) => ({
       id: crypto.randomUUID(),
@@ -6693,7 +6847,7 @@ export default function App() {
       status: "pending", // pending | preparing | paused | shipped | cancelled
       customer,
       shipping,
-      paymentMethod: nextPaymentMethod, // card | whatsapp
+      paymentMethod: nextPaymentMethod, // card | paypal
       trackingNumber: "",
       shippedAt: null,
       etaText: "",
