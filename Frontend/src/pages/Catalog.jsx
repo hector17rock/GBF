@@ -7,6 +7,8 @@ import SectionTitle from "../components/SectionTitle";
 export default function Catalog({
   products = [],
   categories = [],
+  favorites = [],
+  onToggleFavorite,
   onOpenProduct,
   t,
   language,
@@ -51,7 +53,14 @@ export default function Catalog({
 
       <div className="mt-6 grid gap-3 md:grid-cols-2">
         {filtered.map((p) => (
-          <ProductCard key={p.id} p={p} onOpen={onOpenProduct} language={language} />
+          <ProductCard
+            key={p.id}
+            p={p}
+            onOpen={onOpenProduct}
+            language={language}
+            isFavorite={Array.isArray(favorites) ? favorites.includes(String(p.id)) : false}
+            onToggleFavorite={onToggleFavorite}
+          />
         ))}
       </div>
 

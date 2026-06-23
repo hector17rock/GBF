@@ -57,15 +57,32 @@ export default function ProductDetail({ product, onBack, onAddToCart, t, languag
                 src={product.image}
                 className="h-80 w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
 
-              <div className="absolute bottom-4 left-4 right-4">
-                <div className="rounded-[22px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                  <div className="text-xs font-semibold text-zinc-500">{t.preview}</div>
-                  <div className={`mt-1 text-base font-bold ${fontClass} ${colorClass}`}>
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+                <div className="w-full max-w-[92%] text-center">
+                  <div className="inline-flex items-center rounded-full border border-white/60 bg-white/55 px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm backdrop-blur-xl">
+                    {t.preview}
+                  </div>
+
+                  <div
+                    className={`mx-auto mt-4 max-w-[520px] text-balance text-2xl font-extrabold leading-tight md:text-3xl ${fontClass} ${colorClass} opacity-70`}
+                    style={{
+                      mixBlendMode: "multiply",
+                      textShadow:
+                        "0 1px 0 rgba(255,255,255,0.55), 0 -1px 0 rgba(0,0,0,0.22), 0 10px 22px rgba(0,0,0,0.25)",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
                     {personalization.text.length > 0 ? personalization.text : t.previewFallbackText}
                   </div>
-                  <div className="mt-1 text-xs text-zinc-600">{personalization.verse}</div>
+
+                  <div
+                    className="mx-auto mt-2 max-w-[520px] text-pretty text-sm font-semibold text-zinc-900/60"
+                    style={{ mixBlendMode: "multiply", textShadow: "0 1px 10px rgba(0,0,0,0.25)" }}
+                  >
+                    {personalization.verse}
+                  </div>
                 </div>
               </div>
             </div>

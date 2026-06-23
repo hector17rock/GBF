@@ -13,11 +13,17 @@ import Button from "./components/Button";
 import Footer from "./components/Footer";
 import Pill from "./components/Pill";
 import ProductCard from "./components/ProductCard";
+import DailyVerseCard from "./components/DailyVerseCard";
+import NewsletterSignup from "./components/NewsletterSignup";
 import SectionTitle from "./components/SectionTitle";
+import TestimonialCard from "./components/TestimonialCard";
+import ToastStack from "./components/ToastStack";
 import TopBar from "./components/TopBar";
+import { TESTIMONIALS } from "./data/testimonials";
 import Catalog from "./pages/Catalog";
 import Cart from "./pages/Cart";
 import ProductDetail from "./pages/ProductDetail";
+import Wishlist from "./pages/Wishlist";
 import {
   buildDefaultCheckoutConfig,
   normalizeCheckoutConfig,
@@ -73,6 +79,9 @@ const ORDER_COUNTER_STORAGE_KEY = "gbf.orderCounter.v1";
 const CHECKOUT_CONFIG_STORAGE_KEY = "gbf.checkoutConfig.v1";
 const CATEGORIES_STORAGE_KEY = "gbf.categories.v1";
 const PRODUCTS_STORAGE_KEY = "gbf.products.v1";
+const FAVORITES_STORAGE_KEY = "gbf.favorites.v1";
+const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
+const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -1125,9 +1134,13 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
 // Page: Home
 function Home({
   products,
+  favorites = [],
   onGoCatalog,
   onOpenProduct,
   onPickCollection,
+  onToggleFavorite,
+  notify,
+  onSubmitNewsletterEmail,
   t,
   language,
   heroConfig,
@@ -1144,6 +1157,10 @@ function Home({
       />
 
       <div className="mt-8">
+        <DailyVerseCard verses={VERSES} t={t} notify={notify} />
+      </div>
+
+      <div className="mt-8">
         <SectionTitle title={t.collectionsTitle} subtitle={t.collectionsSubtitle} />
         <CollectionCards onPick={onPickCollection} t={t} language={language} />
       </div>
@@ -1152,9 +1169,29 @@ function Home({
         <SectionTitle title={t.featuredTitle} subtitle={t.featuredSubtitle} />
         <div className="grid gap-3 md:grid-cols-2">
           {products.map((p) => (
-            <ProductCard key={p.id} p={p} onOpen={onOpenProduct} language={language} />
+            <ProductCard
+              key={p.id}
+              p={p}
+              onOpen={onOpenProduct}
+              language={language}
+              isFavorite={Array.isArray(favorites) ? favorites.includes(String(p.id)) : false}
+              onToggleFavorite={onToggleFavorite}
+            />
           ))}
         </div>
+      </div>
+
+      <div className="mt-10">
+        <SectionTitle title={t.testimonialsTitle} subtitle={t.testimonialsSubtitle} />
+        <div className="grid gap-3 md:grid-cols-3">
+          {TESTIMONIALS.map((x) => (
+            <TestimonialCard key={x.id} testimonial={x} language={language} />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <NewsletterSignup t={t} onSubmitEmail={onSubmitNewsletterEmail} />
       </div>
 
       <div className="mt-10 rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
@@ -1730,6 +1767,7 @@ function CheckoutReview({
   onBack,
   onRemove,
   onPlaceOrder,
+  notify,
   t,
   language,
 }) {
@@ -1789,6 +1827,10 @@ function CheckoutReview({
     }
 
     setSubmitToken(Date.now());
+
+    if (typeof notify === "function") {
+      notify(t.checkoutOrderSubmittedToast, "success");
+    }
 
     window.setTimeout(() => {
       if (typeof onPlaceOrder !== "function") return;
@@ -1958,34 +2000,6 @@ function CheckoutReview({
         </div>
       </div>
 
-      {submitToken ? (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-          <div
-            key={submitToken}
-            className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
-            style={{ animation: "gbfPop 280ms ease-out" }}
-          >
-            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70 animate-ping" />
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="relative h-6 w-6"
-              >
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </span>
-            <span>{t.checkoutOrderSubmittedToast}</span>
-          </div>
-
-          <style>{`@keyframes gbfPop { from { transform: translateY(10px) scale(0.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
-        </div>
-      ) : null}
-
       <Footer t={t} />
     </div>
   );
@@ -1993,7 +2007,6 @@ function CheckoutReview({
 
 // Page: OrderConfirmation
 function OrderConfirmation({ order, onGoHome, t, language }) {
-  const toastKey = order?.id || order?.orderNumber || "";
 
   const paymentText =
     order?.paymentMethod === "paypal" || order?.paymentMethod === "whatsapp"
@@ -2034,6 +2047,19 @@ function OrderConfirmation({ order, onGoHome, t, language }) {
   const orderTotal = Number.isFinite(Number(order?.total))
     ? Number(order.total)
     : roundMoney(subtotal + prTax.totalAmount + shippingFee);
+
+  const nextSteps =
+    language === "es"
+      ? [
+          "Guarda tu número de orden por si necesitas ayuda.",
+          "Prepararemos tu pedido y te enviaremos el tracking cuando esté listo.",
+          "Si deseas hacer cambios, escríbenos con tu número de orden.",
+        ]
+      : [
+          "Save your order number in case you need help.",
+          "We'll prepare your order and share tracking once it's ready.",
+          "If you need changes, message us with your order number.",
+        ];
 
   // printReceipt
   function printReceipt() {
@@ -2089,24 +2115,73 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
           </div>
         ) : (
           <div className="grid gap-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <Stat
-                label={t.orderConfirmationOrderNumber}
-                value={order.orderNumber || order.id}
-              />
-              <Stat label={t.orderConfirmationPaymentMethod} value={paymentText} />
-              <Stat label={t.ordersItems} value={String(itemsCount)} />
+            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-900">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-6 w-6"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </span>
+
+                  <div>
+                    <div className="text-sm font-extrabold text-zinc-900">
+                      {language === "es" ? "¡Gracias por tu orden!" : "Thanks for your order!"}
+                    </div>
+                    {createdLabel ? (
+                      <div className="mt-1 text-xs text-zinc-600">
+                        {t.ordersPlacedAt}: {createdLabel}
+                      </div>
+                    ) : null}
+                    <div className="mt-3 grid gap-1 text-sm text-zinc-700">
+                      <div>
+                        <span className="font-semibold text-zinc-900">{t.orderConfirmationOrderNumber}:</span>{" "}
+                        {order.orderNumber || order.id}
+                      </div>
+                      <div>
+                        <span className="font-semibold text-zinc-900">{t.orderConfirmationPaymentMethod}:</span>{" "}
+                        {paymentText}
+                      </div>
+                      <div>
+                        <span className="font-semibold text-zinc-900">{t.ordersItems}:</span> {String(itemsCount)}
+                      </div>
+                      <div>
+                        <span className="font-semibold text-zinc-900">{t.checkoutGrandTotal}:</span>{" "}
+                        {money(orderTotal, language)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                  <div className="text-xs font-semibold text-zinc-500">
+                    {language === "es" ? "Próximos pasos" : "Next steps"}
+                  </div>
+                  <ul className="mt-2 grid gap-2 text-sm text-zinc-700">
+                    {nextSteps.map((s) => (
+                      <li key={s} className="flex gap-2">
+                        <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-zinc-900" />
+                        <span className="leading-5">{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
-                  {createdLabel ? (
-                    <div className="text-xs text-zinc-500">
-                      {t.ordersPlacedAt}: {createdLabel}
-                    </div>
-                  ) : null}
-                  <div className="mt-2 text-sm font-bold text-zinc-900">
+                  <div className="text-sm font-bold text-zinc-900">
                     {t.total}: {money(orderTotal, language)}
                   </div>
 
@@ -2225,63 +2300,18 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
         )}
       </div>
 
-      {order ? (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-          <div
-            key={toastKey}
-            className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
-            style={{ animation: "gbfToast 3000ms ease-out forwards" }}
-          >
-            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70" style={{ animation: "gbfPing 1200ms ease-out 1" }} />
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="relative h-6 w-6"
-              >
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </span>
-            <span>{t.orderConfirmationToastOrderSent}</span>
-          </div>
-
-          <style>{`
-@keyframes gbfToast {
-  0% { transform: translateY(10px) scale(0.98); opacity: 0; }
-  10% { transform: translateY(0) scale(1); opacity: 1; }
-  85% { transform: translateY(0) scale(1); opacity: 1; }
-  100% { transform: translateY(-6px) scale(0.99); opacity: 0; }
-}
-@keyframes gbfPing {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  100% { transform: scale(1.6); opacity: 0; }
-}`}</style>
-        </div>
-      ) : null}
-
       <Footer t={t} />
     </div>
   );
 }
 
 // Page: OrderStatus
-function OrderStatus({ orders, setOrders, t, language }) {
+function OrderStatus({ orders, setOrders, notify, t, language }) {
   const [orderNumber, setOrderNumber] = useState("");
   const [searchedOrderNumber, setSearchedOrderNumber] = useState("");
 
   const [cancelReason, setCancelReason] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancelSuccessToken, setCancelSuccessToken] = useState(0);
-
-  useEffect(() => {
-    if (!cancelSuccessToken) return;
-    const timer = window.setTimeout(() => setCancelSuccessToken(0), 3000);
-    return () => window.clearTimeout(timer);
-  }, [cancelSuccessToken]);
 
   const normalizedQuery = String(searchedOrderNumber || "").trim().toLowerCase();
 
@@ -2343,7 +2373,10 @@ function OrderStatus({ orders, setOrders, t, language }) {
 
     setCancelReason("");
     setShowCancelModal(false);
-    setCancelSuccessToken(Date.now());
+
+    if (typeof notify === "function") {
+      notify(t.orderStatusCancelRequestSent, "success");
+    }
   }
 
   return (
@@ -2482,34 +2515,6 @@ function OrderStatus({ orders, setOrders, t, language }) {
           </div>
         )}
       </div>
-
-      {cancelSuccessToken ? (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-          <div
-            key={cancelSuccessToken}
-            className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
-            style={{ animation: "gbfPop 280ms ease-out" }}
-          >
-            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70 animate-ping" />
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="relative h-6 w-6"
-              >
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </span>
-            <span>{t.orderStatusCancelRequestSent}</span>
-          </div>
-
-          <style>{`@keyframes gbfPop { from { transform: translateY(10px) scale(0.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
-        </div>
-      ) : null}
 
       <Footer t={t} />
     </div>
@@ -2663,6 +2668,10 @@ function AdminPanel({
   orders,
   checkoutConfig,
   setCheckoutConfig,
+  notify,
+  activityLog = [],
+  onClearActivityLog,
+  logActivity,
   onGoOrders,
   onGoProfit,
   t,
@@ -2680,6 +2689,28 @@ function AdminPanel({
   const openOrders = ordersList.filter((o) =>
     isOpenOrderStatus(normalizeOrderStatus(o?.status))
   );
+
+  const activityItems = Array.isArray(activityLog) ? activityLog : [];
+
+  function formatActivityTs(ts) {
+    const n = Number(ts);
+    if (!Number.isFinite(n)) return "";
+
+    const d = new Date(n);
+    if (Number.isNaN(d.getTime())) return "";
+
+    try {
+      return d.toLocaleString(language === "es" ? "es-PR" : "en-US", {
+        year: "2-digit",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return d.toLocaleString();
+    }
+  }
 
   // getInventoryCount
   function getInventoryCount(productId) {
@@ -2880,6 +2911,18 @@ function AdminPanel({
     });
 
     cancelEditingProduct();
+
+    if (typeof notify === "function") {
+      notify(t.toastChangesSaved, "success");
+    }
+
+    if (typeof logActivity === "function") {
+      logActivity({
+        kind: "admin",
+        messageEs: `Producto actualizado: ${nextName}`,
+        messageEn: `Product updated: ${nextName}`,
+      });
+    }
   }
 
   function handleDeleteProduct(product) {
@@ -2900,6 +2943,22 @@ function AdminPanel({
     }
 
     setProducts((prev) => (Array.isArray(prev) ? prev.filter((p) => p?.id !== id) : []));
+
+    if (typeof notify === "function") {
+      if (typeof t.toastProductDeleted === "function") {
+        notify(t.toastProductDeleted(displayName), "success");
+      } else {
+        notify(language === "es" ? "Producto eliminado" : "Product deleted", "success");
+      }
+    }
+
+    if (typeof logActivity === "function") {
+      logActivity({
+        kind: "admin",
+        messageEs: `Producto eliminado: ${displayName}`,
+        messageEn: `Product deleted: ${displayName}`,
+      });
+    }
 
     if (typeof setInventory === "function") {
       setInventory((prev) => {
@@ -2937,6 +2996,22 @@ function AdminPanel({
 
     setCategories((prev) => [...prev, candidate]);
 
+    if (typeof notify === "function") {
+      if (typeof t.toastCategoryCreated === "function") {
+        notify(t.toastCategoryCreated(candidate), "success");
+      } else {
+        notify(language === "es" ? "Categoría creada" : "Category created", "success");
+      }
+    }
+
+    if (typeof logActivity === "function") {
+      logActivity({
+        kind: "admin",
+        messageEs: `Categoría creada: ${candidate}`,
+        messageEn: `Category created: ${candidate}`,
+      });
+    }
+
     // If there were no categories yet, make sure the product form uses this one.
     if (categories.length === 0) {
       setNewProduct((prev) => ({ ...prev, category: candidate }));
@@ -2954,6 +3029,14 @@ function AdminPanel({
     const nextFallback = nextCategories[0] ?? "Yeti";
 
     setCategories(nextCategories);
+
+    if (typeof logActivity === "function") {
+      logActivity({
+        kind: "admin",
+        messageEs: `Categoría eliminada: ${categoryToDelete}`,
+        messageEn: `Category deleted: ${categoryToDelete}`,
+      });
+    }
 
     // Re-assign any products using the deleted category.
     setProducts((prev) =>
@@ -3002,6 +3085,24 @@ function AdminPanel({
     };
 
     setProducts((prev) => [...prev, productToAdd]);
+
+    if (typeof notify === "function") {
+      const displayName = String(newProduct.name || "").trim() || l10n(productToAdd.name, language) || "";
+      if (typeof t.toastProductCreated === "function") {
+        notify(t.toastProductCreated(displayName || "Producto"), "success");
+      } else {
+        notify(language === "es" ? "Producto creado" : "Product created", "success");
+      }
+    }
+
+    if (typeof logActivity === "function") {
+      const displayName = String(newProduct.name || "").trim() || l10n(productToAdd.name, language) || "";
+      logActivity({
+        kind: "admin",
+        messageEs: `Producto creado: ${displayName || "Producto"}`,
+        messageEn: `Product created: ${displayName || "Product"}`,
+      });
+    }
 
     setNewProduct({
       name: "",
@@ -3082,6 +3183,41 @@ function AdminPanel({
               {t.adminStatOrdersPendingBody} · {t.ordersTotal}: {ordersList.length}
             </p>
           </button>
+        </div>
+
+        {/* Admin: Activity log */}
+        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <SectionTitle title={t.activityLogTitle} subtitle={t.activityLogSubtitle} />
+
+            <Button
+              variant="secondary"
+              onClick={() => (typeof onClearActivityLog === "function" ? onClearActivityLog() : null)}
+              disabled={!activityItems.length}
+            >
+              {t.activityLogClear}
+            </Button>
+          </div>
+
+          {!activityItems.length ? (
+            <div className="mt-3 text-sm text-zinc-600">{t.activityLogEmpty}</div>
+          ) : (
+            <div className="mt-3 grid gap-2">
+              {activityItems.slice(0, 25).map((it, idx) => (
+                <div
+                  key={it?.id || `${it?.ts || "0"}-${idx}`}
+                  className="flex items-start justify-between gap-4 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3"
+                >
+                  <div className="text-sm font-semibold text-zinc-900">
+                    {language === "es"
+                      ? it?.message?.es || it?.message?.en
+                      : it?.message?.en || it?.message?.es}
+                  </div>
+                  <div className="shrink-0 text-xs text-zinc-500">{formatActivityTs(it?.ts)}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Admin: Checkout Settings */}
@@ -4816,6 +4952,157 @@ export default function App() {
 
   const t = translations[language];
 
+  const [toasts, setToasts] = useState([]);
+
+  const [favorites, setFavorites] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.map((x) => String(x)) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+    } catch {
+      // ignore
+    }
+  }, [favorites]);
+
+  const [newsletterEmails, setNewsletterEmails] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(NEWSLETTER_EMAILS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.map((x) => String(x)) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(NEWSLETTER_EMAILS_STORAGE_KEY, JSON.stringify(newsletterEmails));
+    } catch {
+      // ignore
+    }
+  }, [newsletterEmails]);
+
+  const [activityLog, setActivityLog] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(ACTIVITY_LOG_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACTIVITY_LOG_STORAGE_KEY, JSON.stringify(activityLog));
+    } catch {
+      // ignore
+    }
+  }, [activityLog]);
+
+  function dismissToast(id) {
+    setToasts((prev) => (Array.isArray(prev) ? prev.filter((x) => x?.id !== id) : []));
+  }
+
+  function pushToast(message, tone = "success", durationMs = 2600) {
+    const text = String(message || "").trim();
+    if (!text) return;
+
+    const id = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
+    setToasts((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      const next = [...base, { id, message: text, tone }];
+      return next.slice(-3);
+    });
+
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        setToasts((prev) => (Array.isArray(prev) ? prev.filter((x) => x?.id !== id) : []));
+      }, Math.max(800, Number(durationMs) || 2600));
+    }
+  }
+
+  function logActivity({ kind = "info", messageEs = "", messageEn = "" }) {
+    const es = String(messageEs || "").trim();
+    const en = String(messageEn || "").trim();
+    if (!es && !en) return;
+
+    const id = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
+    setActivityLog((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      const next = [{ id, ts: Date.now(), kind, message: { es, en } }, ...base];
+      return next.slice(0, 200);
+    });
+  }
+
+  function clearActivityLog() {
+    setActivityLog([]);
+    pushToast(language === "es" ? "Log limpiado" : "Log cleared", "info");
+  }
+
+  function toggleFavorite(productId) {
+    const id = String(productId || "").trim();
+    if (!id) return;
+
+    const base = Array.isArray(favorites) ? favorites.map((x) => String(x)) : [];
+    const has = base.includes(id);
+    const next = has ? base.filter((x) => x !== id) : [...base, id];
+
+    setFavorites(next);
+
+    const product = products.find((p) => String(p?.id ?? "") === id);
+    const displayName = product ? l10n(product.name, language) : id;
+
+    pushToast(has ? t.toastFavoriteRemoved : t.toastFavoriteAdded, "success");
+    logActivity({
+      kind: "favorite",
+      messageEs: has
+        ? `Favorito removido: ${displayName}`
+        : `Favorito añadido: ${displayName}`,
+      messageEn: has
+        ? `Favorite removed: ${displayName}`
+        : `Favorite added: ${displayName}`,
+    });
+  }
+
+  function submitNewsletterEmail(email) {
+    const value = String(email || "").trim().toLowerCase();
+    if (!value) return;
+
+    setNewsletterEmails((prev) => {
+      const base = Array.isArray(prev) ? prev.map((x) => String(x).trim().toLowerCase()) : [];
+      const next = base.includes(value) ? base : [value, ...base];
+      return next.slice(0, 2000);
+    });
+
+    pushToast(t.toastSubscribed, "success");
+    logActivity({
+      kind: "newsletter",
+      messageEs: `Newsletter signup: ${value}`,
+      messageEn: `Newsletter signup: ${value}`,
+    });
+  }
+
   const [heroConfig, setHeroConfig] = useState(() => {
     if (typeof window === "undefined") return buildDefaultHeroConfig();
     try {
@@ -5043,6 +5330,14 @@ export default function App() {
   // addToCart
   function addToCart(product, personalization) {
     const key = `${product.id}-${personalization.text}-${personalization.verse}-${personalization.font}-${personalization.color}`;
+
+    const name = l10n(product?.name, language) || "";
+    if (typeof t.toastProductAdded === "function") {
+      pushToast(t.toastProductAdded(name || "Producto"));
+    } else {
+      pushToast(language === "es" ? "Producto añadido" : "Added to cart");
+    }
+
     setCart((prev) => {
       const found = prev.find((x) => x.key === key);
       if (found) {
@@ -5216,6 +5511,8 @@ export default function App() {
     setLastOrderId(orderId);
     setRoute("order_confirmation");
 
+    pushToast(t.orderConfirmationToastOrderSent, "success");
+
     return { orderId, orderNumber };
   }
 
@@ -5240,6 +5537,10 @@ export default function App() {
       {route === "home" ? (
         <Home
           products={products}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+          notify={pushToast}
+          onSubmitNewsletterEmail={submitNewsletterEmail}
           t={t}
           language={language}
           heroConfig={heroConfig}
@@ -5255,6 +5556,8 @@ export default function App() {
         <Catalog
           products={products}
           categories={categories}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
           onOpenProduct={openProduct}
           t={t}
           language={language}
@@ -5287,6 +5590,18 @@ export default function App() {
         />
       ) : null}
 
+      {/* Route: wishlist */}
+      {route === "wishlist" ? (
+        <Wishlist
+          favorites={favorites}
+          products={products}
+          onOpenProduct={openProduct}
+          onToggleFavorite={toggleFavorite}
+          t={t}
+          language={language}
+        />
+      ) : null}
+
 
       {/* Route: checkout */}
       {route === "checkout" ? (
@@ -5311,6 +5626,7 @@ export default function App() {
           onBack={() => setRoute("checkout")}
           onRemove={removeFromCart}
           onPlaceOrder={placeOrder}
+          notify={pushToast}
           t={t}
           language={language}
         />
@@ -5328,7 +5644,7 @@ export default function App() {
 
       {/* Route: order status */}
       {route === "order_status" ? (
-        <OrderStatus orders={orders} setOrders={setOrders} t={t} language={language} />
+        <OrderStatus orders={orders} setOrders={setOrders} notify={pushToast} t={t} language={language} />
       ) : null}
 
       {/* Route: blog */}
@@ -5353,6 +5669,10 @@ export default function App() {
           orders={orders}
           checkoutConfig={checkoutConfig}
           setCheckoutConfig={setCheckoutConfig}
+          notify={pushToast}
+          activityLog={activityLog}
+          onClearActivityLog={clearActivityLog}
+          logActivity={logActivity}
           onGoOrders={() => setRoute("admin_orders")}
           onGoProfit={() => setRoute("admin_profit")}
           t={t}
@@ -5383,6 +5703,7 @@ export default function App() {
         />
       ) : null}
 
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
       <div className="pb-10" />
     </div>
   );

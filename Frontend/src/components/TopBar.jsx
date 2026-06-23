@@ -26,7 +26,7 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
 
   return (
     <div className="sticky top-0 z-40 border-b border-zinc-200/60 bg-white/55 backdrop-blur-xl shadow-sm">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center">
             <img src="/gbficon.png" alt="Grow by Faith" className="h-10 w-10 object-contain" />
@@ -42,7 +42,9 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
           </div>
         </div>
 
+
         <div className="flex items-center gap-2">
+
           <Button variant="ghost" className="p-2" onClick={() => go("cart")}>
             <span className="sr-only">{t.cart}</span>
             <span className="relative inline-flex items-center">
@@ -172,6 +174,14 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
                 {t.navCatalog}
               </button>
               <button
+                onClick={() => go("wishlist")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "wishlist" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navWishlist}
+              </button>
+              <button
                 onClick={() => go("blog")}
                 className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                   route === "blog" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
@@ -214,6 +224,9 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
               <Button variant="secondary" onClick={() => go("catalog")}>
                 {t.explore}
               </Button>
+              <Button variant="secondary" onClick={() => go("wishlist")}>
+                {t.navWishlist}
+              </Button>
               <Button variant="secondary" onClick={() => go("cart")}>
                 {t.cart}
               </Button>
@@ -222,5 +235,19 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
         </div>
       ) : null}
     </div>
+  );
+}
+
+function DesktopNavButton({ active, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-2 text-sm font-semibold transition ${
+        active ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

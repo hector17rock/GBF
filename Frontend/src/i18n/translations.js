@@ -14,6 +14,7 @@ export const translations = {
     navBlog: "Blog",
     navValues: "Valores",
     navOrderStatus: "Estatus de Orden",
+    navWishlist: "Favoritos",
     navAdmin: "Admin",
 
     explore: "Explorar",
@@ -49,6 +50,32 @@ export const translations = {
 
     featuredTitle: "Productos destacados",
     featuredSubtitle: "Arranca con dos líneas claras: Yeti y Journals.",
+
+    testimonialsTitle: "Testimonios",
+    testimonialsSubtitle: "Lo que nos comparten clientes de la comunidad.",
+
+    dailyVerseTitle: "Versículo del día",
+    dailyVerseSubtitle: "Una palabra para hoy.",
+    dailyVerseCopy: "Copiar",
+    toastCopied: "Copiado",
+
+    newsletterTitle: "Devocional semanal",
+    newsletterSubtitle: "Recibe un devocional semanal en tu email.",
+    newsletterPlaceholder: "tuemail@ejemplo.com",
+    newsletterCta: "Suscribirme",
+    newsletterInvalid: "Escribe un email válido.",
+    toastSubscribed: "Suscripción guardada",
+
+    wishlistTitle: "Favoritos",
+    wishlistSubtitle: "Guarda productos para comprarlos después.",
+    wishlistEmpty: "Todavía no has guardado favoritos.",
+    toastFavoriteAdded: "Añadido a favoritos",
+    toastFavoriteRemoved: "Eliminado de favoritos",
+
+    activityLogTitle: "Registro de actividad",
+    activityLogSubtitle: "Historial de cambios recientes (solo local).",
+    activityLogEmpty: "Aún no hay actividad registrada.",
+    activityLogClear: "Limpiar",
 
     stepsTitle: "Personaliza en 3 pasos",
     stepsSubtitle: "Un flujo simple que se siente como app.",
@@ -95,6 +122,11 @@ export const translations = {
 
     addToCart: "Añadir al carrito",
     continueExploring: "Seguir explorando",
+    toastProductAdded: (name) => `Producto añadido: ${name}`,
+    toastCategoryCreated: (name) => `Categoría creada: ${name}`,
+    toastProductCreated: (name) => `Producto creado: ${name}`,
+    toastProductDeleted: (name) => `Producto eliminado: ${name}`,
+    toastChangesSaved: "Cambios guardados",
     mvpNote:
       "Este MVP es solo frontend: luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
 
@@ -421,6 +453,7 @@ export const translations = {
     navBlog: "Blog",
     navValues: "Values",
     navOrderStatus: "Order Status",
+    navWishlist: "Wishlist",
     navAdmin: "Admin",
 
     explore: "Explore",
@@ -456,6 +489,32 @@ export const translations = {
 
     featuredTitle: "Featured products",
     featuredSubtitle: "Start with two clear lines: Yeti and Journals.",
+
+    testimonialsTitle: "Testimonials",
+    testimonialsSubtitle: "What customers are sharing with our community.",
+
+    dailyVerseTitle: "Daily Verse",
+    dailyVerseSubtitle: "A word for today.",
+    dailyVerseCopy: "Copy",
+    toastCopied: "Copied",
+
+    newsletterTitle: "Weekly devotional",
+    newsletterSubtitle: "Get a weekly devotional in your email.",
+    newsletterPlaceholder: "you@example.com",
+    newsletterCta: "Sign up",
+    newsletterInvalid: "Please enter a valid email.",
+    toastSubscribed: "Signup saved",
+
+    wishlistTitle: "Wishlist",
+    wishlistSubtitle: "Save products to buy later.",
+    wishlistEmpty: "You haven't saved any favorites yet.",
+    toastFavoriteAdded: "Added to favorites",
+    toastFavoriteRemoved: "Removed from favorites",
+
+    activityLogTitle: "Activity log",
+    activityLogSubtitle: "Recent changes (local-only).",
+    activityLogEmpty: "No activity yet.",
+    activityLogClear: "Clear",
 
     stepsTitle: "Customize in 3 steps",
     stepsSubtitle: "A simple flow that feels like an app.",
@@ -501,9 +560,14 @@ export const translations = {
     summaryColor: "Color:",
 
     addToCart: "Add to cart",
-    continueExploring: "Keep browsing",
+    continueExploring: "Keep exploring",
+    toastProductAdded: (name) => `Added to cart: ${name}`,
+    toastCategoryCreated: (name) => `Category created: ${name}`,
+    toastProductCreated: (name) => `Product created: ${name}`,
+    toastProductDeleted: (name) => `Product deleted: ${name}`,
+    toastChangesSaved: "Changes saved",
     mvpNote:
-      "This MVP is frontend-only: later we'll add card payments (Stripe) and real orders.",
+      "This MVP is frontend-only: later we'll integrate card payments (Stripe) and real orders.",
 
     cartTitle: "Cart",
     cartSubtitle: "Review your order before checkout.",
