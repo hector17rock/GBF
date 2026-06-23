@@ -1,0 +1,12 @@
+{
+  "name": "gbf",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "npm --prefix Frontend run dev",
+    "build": "npm --prefix Frontend run build",
+    "lint": "npm --prefix Frontend run lint",
+    "preview": "npm --prefix Frontend run preview",
+    "clean:frontend": "rm -rf Frontend/node_modules Frontend/dist && npm --prefix Frontend ci"
+  }
+}

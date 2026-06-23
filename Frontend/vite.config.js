@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import process from 'node:process'
+import { Buffer } from 'node:buffer'
 
 // Helper: extFromMime
 function extFromMime(mime) {

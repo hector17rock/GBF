@@ -1,4 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { translations } from "./i18n/translations";
+import { COLLECTIONS, VERSES, FONTS, COLORS } from "./data/catalog";
+import {
+  buildDefaultCategories,
+  normalizeCategories,
+  buildDefaultProducts,
+  normalizeProducts,
+} from "./data/defaultCatalog";
+import { escapeHtml, openPrintWindow } from "./utils/print";
 
 // =====================================================
 // App.jsx (single-file MVP) — Sections & Functions Index
@@ -14,882 +23,14 @@ import React, { useEffect, useMemo, useState } from "react";
 
 // -----------------------------
 // Data: COLLECTIONS / VERSES / FONTS / COLORS
+// (moved to src/data/catalog.js)
 // -----------------------------
-const COLLECTIONS = [
-  {
-    id: "identidad",
-    name: { es: "Identidad", en: "Identity" },
-    desc: {
-      es: "Recordar quién eres en Cristo en tu rutina diaria.",
-      en: "Remember who you are in Christ in your daily routine.",
-    },
-  },
-  {
-    id: "paz",
-    name: { es: "Paz", en: "Peace" },
-    desc: {
-      es: "Calma para el corazón: frases y versículos de descanso.",
-      en: "Calm for the heart: phrases and verses for rest.",
-    },
-  },
-  {
-    id: "gratitud",
-    name: { es: "Gratitud", en: "Gratitude" },
-    desc: {
-      es: "Un hábito simple que transforma el día.",
-      en: "A simple habit that transforms your day.",
-    },
-  },
-];
-
-const VERSES = [
-  "Jeremías 29:11",
-  "Filipenses 4:6-7",
-  "Salmos 23:1",
-  "Proverbios 3:5-6",
-  "Isaías 41:10",
-];
-
-const FONTS = [
-  {
-    id: "sans",
-    label: { es: "Moderna", en: "Modern" },
-    className: "font-sans",
-  },
-  {
-    id: "serif",
-    label: { es: "Clásica", en: "Classic" },
-    className: "font-serif",
-  },
-  {
-    id: "mono",
-    label: { es: "Minimal", en: "Minimal" },
-    className: "font-mono",
-  },
-];
-
-const COLORS = [
-  { id: "ink", label: { es: "Tinta", en: "Ink" }, swatch: "bg-zinc-900" },
-  { id: "gold", label: { es: "Dorado", en: "Gold" }, swatch: "bg-amber-500" },
-  {
-    id: "sage",
-    label: { es: "Sage", en: "Sage" },
-    swatch: "bg-emerald-600",
-  },
-  { id: "sky", label: { es: "Cielo", en: "Sky" }, swatch: "bg-sky-600" },
-  { id: "rose", label: { es: "Rosa", en: "Rose" }, swatch: "bg-rose-600" },
-];
 
 // -----------------------------
 // i18n: translations (ES/EN)
 // -----------------------------
-const translations = {
-  es: {
-    tagline: "Productos con propósito",
+// (moved to src/i18n/translations.js)
 
-    navHome: "Inicio",
-    navCatalog: "Catálogo",
-    navBlog: "Blog",
-    navValues: "Valores",
-    navOrderStatus: "Estatus de Orden",
-    navAdmin: "Admin",
-
-    explore: "Explorar",
-    cart: "Carrito",
-
-    orderFlowProgress: (current, total) => `Paso ${current} de ${total}`,
-    orderFlowStepCart: "Carrito",
-    orderFlowStepCheckout: "Checkout",
-    orderFlowStepReview: "Revisar y someter",
-
-    adminProfitCardBody: "Ver reportes de ganancias y pérdidas.",
-
-    heroPill: "Evangelio para todos",
-    heroTitleOne: "Productos con propósito,",
-    heroTitleTwo: "fe que transforma.",
-    heroText:
-      "Una tienda cristiana moderna para regalos y hábitos espirituales. Personaliza tu Yeti o tu Journal con nombre, frase o versículo.",
-    heroPrimary: "Personalizar ahora",
-    heroSecondary: "Ver colección",
-
-    heroFeature1Title: "Personalización",
-    heroFeature1Body: "Texto, tipografía, color y versículo.",
-    heroFeature2Title: "Listo para regalar",
-    heroFeature2Body: "Diseños limpios y mensajes claros.",
-
-    heroCountdownEndsIn: "Termina en",
-    heroCountdownDays: (n) => `${n} ${n === 1 ? "día" : "días"}`,
-
-    collectionsTitle: "Colecciones temáticas",
-    collectionsSubtitle:
-      "Temas actuales y desafíos espirituales para conectar con el corazón.",
-    viewProducts: "Ver productos",
-
-    featuredTitle: "Productos destacados",
-    featuredSubtitle: "Arranca con dos líneas claras: Yeti y Journals.",
-
-    stepsTitle: "Personaliza en 3 pasos",
-    stepsSubtitle: "Un flujo simple que se siente como app.",
-    step1Title: "Elige el producto",
-    step1Desc: "Yeti o Journal según ocasión y estilo.",
-    step2Title: "Personaliza",
-    step2Desc: "Nombre, frase, tipografía, color y versículo.",
-    step3Title: "Envía tu pedido",
-    step3Desc: "Carrito + checkout con tarjeta.",
-
-    mottoTitle: "Lema",
-    mottoQuote: "\"Productos con propósito, fe que transforma.\"",
-
-    quickCtaTitle: "CTA rápido",
-    quickCtaBody:
-      "Lanza con pre-orden y cobra con tarjeta mientras validas demanda.",
-
-    catalogTitle: "Catálogo",
-    catalogSubtitle: "Explora por categoría y entra a personalizar.",
-    all: "Todo",
-    searchPlaceholder: "Buscar",
-
-    back: "Volver",
-    preview: "Vista previa",
-    previewFallbackText: "Tu frase o nombre aquí",
-
-    personalizationTitle: "Personalización",
-    personalizationSubtitle:
-      "Ajusta texto, tipografía y color. Esto es el corazón del MVP.",
-
-    labelText: "Texto",
-    textPlaceholder: "Ej: Hogar de la familia Rodríguez",
-    textRecommendation: "Recomendación: 20–35 caracteres.",
-
-    labelVerse: "Versículo",
-    labelFont: "Tipografía",
-    labelColor: "Color",
-
-    summary: "Resumen",
-    summaryText: "Texto:",
-    summaryVerse: "Versículo:",
-    summaryFont: "Tipografía:",
-    summaryColor: "Color:",
-
-    addToCart: "Añadir al carrito",
-    continueExploring: "Seguir explorando",
-    mvpNote:
-      "Este MVP es solo frontend: luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
-
-    cartTitle: "Carrito",
-    cartSubtitle: "Revisa tu pedido antes del checkout.",
-    continueShopping: "Seguir comprando",
-    emptyCart: "Tu carrito está vacío.",
-    remove: "Eliminar",
-    qty: "Cant.",
-    total: "Total",
-    estimatedTotal: "Este total es estimado para el MVP.",
-    goToCheckout: "Ir a checkout",
-
-    taxPrState: "IVU estatal (PR)",
-    taxPrMunicipal: "IVU municipal (PR)",
-    taxPrTotal: "IVU total (PR)",
-
-    checkoutSubtotal: "Subtotal",
-    checkoutTaxPr: "IVU (PR)",
-    checkoutTaxStateLabel: "Estatal",
-    checkoutTaxMunicipalLabel: "Municipal",
-    checkoutTaxRateLabel: "Tasa (%)",
-    checkoutShippingFee: "Costo de envío",
-    checkoutGrandTotal: "Total",
-    checkoutEditTaxesShippingHint:
-      "El IVU y el envío se calculan automáticamente.",
-
-    checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pago con tarjeta (Stripe) — demo frontend, sin backend todavía.",
-    yourDetails: "Tus datos",
-    namePlaceholder: "Nombre",
-    phonePlaceholder: "Teléfono",
-    notesPlaceholder: "Notas (ej: para regalo, fecha, etc.)",
-
-    checkoutPaymentTitle: "Pago",
-    checkoutPaymentSubtitle:
-      "Pronto: pagos con tarjeta (Stripe) y PayPal. Demo UI por ahora.",
-    paymentMethod: "Método de pago",
-    payByPayPal: "PayPal",
-    payByWhatsApp: "PayPal",
-    payByCard: "Tarjeta (Stripe)",
-    payPalDisclaimer: "PayPal (próximamente) — demo frontend.",
-    checkoutContinueToReview: "Continuar a revisión",
-
-    cardAcceptedLabel: "Tarjetas aceptadas",
-    cardTypeLabel: "Tipo de tarjeta",
-    cardTypeUnknown: "No identificada",
-    cardTypeVisa: "Visa",
-    cardTypeMastercard: "Mastercard",
-    cardTypeAmex: "American Express",
-    cardTypeDiscover: "Discover",
-
-    cardDisclaimer: "Demo frontend — no se procesa el pago todavía.",
-    cardNameLabel: "Nombre en la tarjeta",
-    cardNamePlaceholder: "Nombre y apellido",
-    cardNumberLabel: "Número de tarjeta",
-    cardNumberPlaceholder: "1234 5678 9012 3456",
-    cardExpiryLabel: "Expiración (MM/AA)",
-    cardExpiryPlaceholder: "MM/AA",
-    cardCvcLabel: "CVC",
-    cardCvcPlaceholder: "123",
-    cardZipLabel: "ZIP / Postal",
-    cardZipPlaceholder: "12345",
-    payNow: "Pagar ahora",
-    checkoutReviewTitle: "Revisar tu orden",
-    checkoutReviewSubtitle: "Confirma los detalles antes de someter la orden.",
-    checkoutEditDetails: "Editar datos",
-    checkoutSubmitOrder: "Someter orden",
-    checkoutDetailsRequired: "Completa nombre, teléfono y dirección de envío.",
-    checkoutOrderSubmittedToast: "Orden sometida",
-    cardRequired: "Completa todos los campos de tarjeta.",
-    cardNotReady:
-      "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
-    checkoutCompleteHint:
-      "Para completar tu orden, revisa los detalles y presiona “Someter orden”.",
-
-    shippingTitle: "Dirección de envío",
-    shippingSubtitle: "Para calcular envío y completar la orden.",
-    addressLine1Label: "Dirección (línea 1)",
-    addressLine1Placeholder: "Calle, número, apartamento, etc.",
-    addressLine2Label: "Dirección (línea 2)",
-    addressLine2Placeholder: "Opcional",
-    cityLabel: "Ciudad",
-    cityPlaceholder: "Ej: San Juan",
-    stateLabel: "Estado / Provincia",
-    statePlaceholder: "Ej: PR",
-    postalLabel: "ZIP / Postal",
-    postalPlaceholder: "Ej: 00901",
-    countryLabel: "País",
-    countryPlaceholder: "Ej: Puerto Rico / USA",
-
-    waShippingAddress: "Dirección de envío:",
-
-    sendWhatsApp: "Continuar con PayPal",
-    backToCart: "Volver al carrito",
-    nextStep:
-      "Siguiente paso (luego): integrar pagos y órdenes reales.",
-    finish: "Finalizar",
-
-    waGreeting: "Hola, quiero hacer un pedido:",
-    waTotalEstimated: "Total estimado:",
-    waName: "Nombre:",
-    waPhone: "Teléfono:",
-    waNotes: "Notas:",
-    waText: "Texto:",
-    waVerse: "Versículo:",
-    waFont: "Tipografía:",
-    waColor: "Color:",
-
-    blogTitle: "Blog",
-    blogSubtitle:
-      "Contenido de lectura corta para enganchar y nutrir a la audiencia.",
-    read: "Leer",
-
-    valuesTitle: "Valores",
-    valuesSubtitle: "Nuestro fundamento",
-    missionTitle: "Misión",
-    missionText:
-      "Compartir el amor de Cristo a través de cada producto. Que cada artículo sea una herramienta de evangelismo, esperanza y fe.",
-
-    adminTitle: "Panel de administración",
-    adminSubtitle: "Gestiona visualmente los productos de la tienda.",
-    adminStatProducts: "Productos",
-    adminStatProductsBody: "Artículos activos en catálogo.",
-    adminStatMode: "Modo",
-    adminStatModeBody: "Datos simulados en frontend.",
-    adminStatManagement: "Gestión",
-    adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
-
-    inventoryTitle: "Inventario",
-    inventorySubtitle:
-      "Mantén el conteo de stock por producto y el costo para calcular márgenes.",
-    inventoryInStock: "En stock",
-    inventoryUnitCost: "Costo unitario",
-    inventoryAdjustMinus: "-1",
-    inventoryAdjustPlus: "+1",
-
-    profitTitle: "Ganancias / Pérdidas",
-    profitSubtitle:
-      "Análisis por día, semana o mes basado en ventas registradas (demo frontend).",
-    profitPeriodLabel: "Periodo",
-    profitDay: "Día",
-    profitWeek: "Semana",
-    profitMonth: "Mes",
-    profitDateLabel: "Fecha",
-    profitRevenue: "Ingresos",
-    profitCogs: "Costo (COGS)",
-    profitGrossProfit: "Ganancia bruta",
-    profitMargin: "Margen",
-    profitUnits: "Unidades vendidas",
-    profitTaxCollected: "IVU recaudado",
-    profitTaxCollectedAllTime: "IVU recaudado (total)",
-
-    adminCheckoutSettingsTitle: "Ajustes de Checkout",
-    adminCheckoutSettingsSubtitle:
-      "Solo el administrador puede cambiar IVU y envío. Aplica a artículos nuevos y existentes.",
-    adminCheckoutDefaultShippingLabel: "Costo de envío",
-    adminCheckoutTaxStateRateLabel: "IVU estatal (PR) — tasa (%)",
-    adminCheckoutTaxMunicipalRateLabel: "IVU municipal (PR) — tasa (%)",
-    profitNoSales: "No hay ventas registradas en este período.",
-    profitTopProducts: "Productos top",
-
-    profitReportPdfButton: "Reporte (PDF)",
-    profitReportPeriodValueDay: "Día",
-    profitReportPeriodValueWeek: "Semana",
-    profitReportPeriodValueMonth: "Mes",
-    profitReportRangeLabel: "Rango",
-    profitReportGeneratedAt: "Generado",
-    profitReportTopProductsTableProduct: "Producto",
-    profitReportTopProductsTableUnits: "Unidades",
-    profitReportTopProductsTableRevenue: "Ingresos",
-    profitReportTopProductsTableProfit: "Ganancia",
-    profitReportFooterHint: "En la ventana de imprimir, selecciona 'Guardar como PDF' para descargar el reporte.",
-
-    adminStatOrdersPending: "Órdenes pendientes",
-    adminStatOrdersPendingBody: "Pedidos por empacar / enviar.",
-
-    ordersTitle: "Órdenes",
-    ordersSubtitle: "Gestiona pedidos: imprime etiquetas y recibos.",
-    ordersEmpty: "No hay órdenes todavía.",
-    ordersStatusPending: "Pendiente",
-    ordersStatusFulfilled: "Completada",
-    ordersStatusCancelled: "Cancelada",
-    ordersOrder: "Orden",
-    ordersPlacedAt: "Creada",
-    ordersCustomer: "Cliente",
-    ordersShipping: "Envío",
-    ordersItems: "Artículos",
-    ordersTotal: "Total",
-    ordersPrintLabel: "Imprimir etiqueta de envío",
-    ordersPrintReceipt: "Recibo (PDF)",
-    shippingLabelOrder: "Orden",
-    shippingLabelShipTo: "ENVIAR A",
-    shippingLabelPrintedFromAdmin: "Impreso desde Admin",
-    ordersViewDetails: "Ver detalle de la orden",
-    ordersHideDetails: "Ocultar detalle de la orden",
-    ordersReceiptHint:
-      "Tip: En la ventana de imprimir, selecciona 'Guardar como PDF' para archivarlo.",
-    ordersMarkFulfilled: "Marcar completada",
-    ordersMarkPending: "Marcar pendiente",
-
-    ordersPaymentMethod: "Método de pago",
-    ordersPaymentCard: "Tarjeta",
-    ordersPaymentPayPal: "PayPal",
-    ordersPaymentWhatsApp: "PayPal",
-
-    ordersTrackingNumberLabel: "Tracking #",
-    ordersTrackingNumberPlaceholder: "Ej: 9400 1000 0000 0000 0000 00",
-    ordersEtaLabel: "Tiempo estimado",
-    ordersEtaPlaceholder: "Ej: 3-5 días",
-
-    orderConfirmationTitle: "Confirmación de orden",
-    orderConfirmationSubtitle:
-      "Gracias. Recibimos tu pedido. Guarda esta información por si surge alguna situación.",
-    orderConfirmationOrderNumber: "Número de orden",
-    orderConfirmationPaymentMethod: "Método de pago",
-    orderConfirmationPrintReceipt: "Imprimir recibo (PDF)",
-    orderConfirmationGoHome: "Volver al inicio",
-    orderConfirmationGoAdmin: "Ir a Admin",
-    orderConfirmationNotFound: "No encontramos esa orden.",
-    orderConfirmationToastOrderSent: "Orden enviada",
-
-    orderStatusTitle: "Estatus de Orden",
-    orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estatus en tiempo real.",
-    orderStatusOrderNumberLabel: "Número de confirmación",
-    orderStatusOrderNumberPlaceholder: "Ej: GBF-000123",
-    orderStatusLookup: "Buscar",
-    orderStatusNotFound: "No encontramos una orden con ese número.",
-    orderStatusCurrentStatus: "Estatus actual",
-    orderStatusUpdatedAt: "Actualizado",
-    orderStatusTracking: "Tracking",
-    orderStatusEta: "Tiempo estimado",
-    orderStatusCancelRequestTitle: "Solicitud de cancelación",
-    orderStatusRequestCancelButton: "Solicitar cancelación",
-    orderStatusCancelRequestReasonLabel: "Razón de la cancelación",
-    orderStatusCancelRequestReasonPlaceholder: "Explica brevemente por qué deseas cancelar.",
-    orderStatusSendCancelRequest: "Enviar solicitud",
-    orderStatusCancelModalClose: "Cerrar",
-    orderStatusCancelRequestSent: "Solicitud enviada.",
-
-    ordersStatusPreparing: "Preparar orden",
-    ordersStatusPaused: "Pausar orden",
-    ordersStatusShipped: "Orden enviada",
-    ordersCancelReasonLabel: "Causa de cancelación",
-    ordersCancelReasonPlaceholder: "Ej: Cliente solicitó cancelación / producto sin stock",
-    ordersUpdateStatusLabel: "Actualizar estatus",
-    ordersApplyStatus: "Aplicar",
-    ordersStatusTrackingRequired: "Para marcar como 'Orden enviada' debes escribir el tracking.",
-    ordersStatusCancelReasonRequired: "Para cancelar la orden debes escribir la causa de cancelación.",
-
-    heroAdminTitle: "Promoción del Home",
-    heroAdminSubtitle:
-      "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin programador.",
-    heroAdminEnabled: "Activar cuadro del Home",
-    heroAdminReset: "Restablecer",
-    heroAdminEs: "Español (ES)",
-    heroAdminEn: "Inglés (EN)",
-    heroAdminPill: "Etiqueta (pill)",
-    heroAdminTitleOne: "Título línea 1",
-    heroAdminTitleTwo: "Título línea 2",
-    heroAdminText: "Texto",
-    heroAdminPrimary: "Botón principal",
-    heroAdminSecondary: "Botón secundario",
-    heroAdminHeroImage: "Imagen principal",
-    heroAdminImage1: "Imagen 1",
-    heroAdminImage2: "Imagen 2",
-
-    uploadImageLabel: "Subir imagen",
-    uploading: "Subiendo...",
-    uploadFailed: "Error al subir:",
-    uploadDevOnlyHint: "Funciona solo en desarrollo (npm run dev).",
-
-    heroAdminTypeLabel: "Tipo",
-    heroAdminTypeContent: "Solo actualizar contenido",
-    heroAdminTypePromo: "Promoción (con fechas)",
-    heroAdminScheduleTitle: "Fechas de promoción",
-    heroAdminStartLabel: "Inicio",
-    heroAdminEndLabel: "Fin",
-    heroAdminScheduleHint: "Hora local",
-    heroAdminStatusActive: "Activa ahora",
-    heroAdminStatusInactive: "Inactiva ahora",
-
-    categoriesTitle: "Categorías",
-    categoriesSubtitle:
-      "Crea o elimina categorías disponibles para los productos.",
-    deleteCategoryAria: (c) => `Eliminar categoría ${c}`,
-    deleteCategoryTitleMinOne: "Debes tener al menos 1 categoría",
-    deleteCategoryTitle: "Eliminar",
-    newCategoryLabel: "Nueva categoría",
-    newCategoryPlaceholder: "Ej: Biblias",
-    addCategory: "Añadir categoría",
-
-    addProductTitle: "Añadir producto",
-    addProductSubtitle: "Crea un nuevo producto visualmente en el catálogo.",
-    productNameLabel: "Nombre",
-    productNamePlaceholder: "Ej: Yeti personalizado 30oz",
-    productCategoryLabel: "Categoría",
-    productPriceLabel: "Precio",
-    productImageLabel: "Imagen URL",
-    productImagePlaceholder: "https://...",
-    productShortLabel: "Descripción corta",
-    productShortPlaceholder: "Ej: Vaso premium con mensaje de fe.",
-    productDescriptionLabel: "Descripción completa",
-    productDescriptionPlaceholder:
-      "Describe el producto, su propósito y detalles importantes.",
-    addProduct: "Añadir producto",
-
-    currentProductsTitle: "Productos actuales",
-    currentProductsSubtitle: "Vista administrativa del catálogo.",
-    edit: "Editar",
-    delete: "Eliminar",
-
-    footerNote: "MVP visual (solo frontend) para validar interés.",
-    footerWhatsAppCheckout: "Pago con tarjeta",
-  },
-  en: {
-    tagline: "Products with purpose",
-
-    navHome: "Home",
-    navCatalog: "Catalog",
-    navBlog: "Blog",
-    navValues: "Values",
-    navOrderStatus: "Order Status",
-    navAdmin: "Admin",
-
-    explore: "Explore",
-    cart: "Cart",
-
-    orderFlowProgress: (current, total) => `Step ${current} of ${total}`,
-    orderFlowStepCart: "Cart",
-    orderFlowStepCheckout: "Checkout",
-    orderFlowStepReview: "Review & submit",
-
-    adminProfitCardBody: "View profit/loss reports.",
-
-    heroPill: "Gospel for everyone",
-    heroTitleOne: "Products with purpose,",
-    heroTitleTwo: "faith that transforms.",
-    heroText:
-      "A modern Christian store for meaningful gifts and spiritual habits. Customize your Yeti or Journal with a name, phrase, or verse.",
-    heroPrimary: "Customize now",
-    heroSecondary: "View collection",
-
-    heroFeature1Title: "Customization",
-    heroFeature1Body: "Text, typography, color, and verse.",
-    heroFeature2Title: "Ready to gift",
-    heroFeature2Body: "Clean designs and clear messages.",
-
-    heroCountdownEndsIn: "Ends in",
-    heroCountdownDays: (n) => `${n} ${n === 1 ? "day" : "days"}`,
-
-    collectionsTitle: "Themed collections",
-    collectionsSubtitle:
-      "Current themes and spiritual challenges that connect with the heart.",
-    viewProducts: "View products",
-
-    featuredTitle: "Featured products",
-    featuredSubtitle: "Start with two clear lines: Yeti and Journals.",
-
-    stepsTitle: "Customize in 3 steps",
-    stepsSubtitle: "A simple flow that feels like an app.",
-    step1Title: "Choose the product",
-    step1Desc: "Pick a Yeti or Journal based on the occasion and style.",
-    step2Title: "Customize",
-    step2Desc: "Name, phrase, typography, color, and verse.",
-    step3Title: "Place your order",
-    step3Desc: "Cart + card checkout.",
-
-    mottoTitle: "Motto",
-    mottoQuote: "\"Products with purpose, faith that transforms.\"",
-
-    quickCtaTitle: "Quick CTA",
-    quickCtaBody:
-      "Launch with pre-orders and charge cards while validating demand.",
-
-    catalogTitle: "Catalog",
-    catalogSubtitle: "Browse by category and jump into customization.",
-    all: "All",
-    searchPlaceholder: "Search",
-
-    back: "Back",
-    preview: "Preview",
-    previewFallbackText: "Your phrase or name here",
-
-    personalizationTitle: "Customization",
-    personalizationSubtitle:
-      "Adjust text, typography, and color. This is the heart of the MVP.",
-
-    labelText: "Text",
-    textPlaceholder: "e.g. The Rodriguez family home",
-    textRecommendation: "Recommendation: 20–35 characters.",
-
-    labelVerse: "Verse",
-    labelFont: "Typography",
-    labelColor: "Color",
-
-    summary: "Summary",
-    summaryText: "Text:",
-    summaryVerse: "Verse:",
-    summaryFont: "Typography:",
-    summaryColor: "Color:",
-
-    addToCart: "Add to cart",
-    continueExploring: "Keep browsing",
-    mvpNote:
-      "This MVP is frontend-only: later we'll add card payments (Stripe) and real orders.",
-
-    cartTitle: "Cart",
-    cartSubtitle: "Review your order before checkout.",
-    continueShopping: "Continue shopping",
-    emptyCart: "Your cart is empty.",
-    remove: "Remove",
-    qty: "Qty",
-    total: "Total",
-    estimatedTotal: "This total is estimated for the MVP.",
-    goToCheckout: "Go to checkout",
-
-    taxPrState: "PR state tax",
-    taxPrMunicipal: "PR municipal tax",
-    taxPrTotal: "PR tax total",
-
-    checkoutSubtotal: "Subtotal",
-    checkoutTaxPr: "PR tax",
-    checkoutTaxStateLabel: "State",
-    checkoutTaxMunicipalLabel: "Municipal",
-    checkoutTaxRateLabel: "Rate (%)",
-    checkoutShippingFee: "Shipping",
-    checkoutGrandTotal: "Total",
-    checkoutEditTaxesShippingHint:
-      "Tax and shipping are calculated automatically.",
-
-    checkoutTitle: "Checkout",
-    checkoutSubtitle: "Card payment (Stripe) — frontend demo, no backend yet.",
-    yourDetails: "Your details",
-    namePlaceholder: "Name",
-    phonePlaceholder: "Phone",
-    notesPlaceholder: "Notes (e.g. gift, date, etc.)",
-
-    checkoutPaymentTitle: "Payment",
-    checkoutPaymentSubtitle:
-      "Coming soon: card payments (Stripe) and PayPal. UI demo for now.",
-    paymentMethod: "Payment method",
-    payByPayPal: "PayPal",
-    payByWhatsApp: "PayPal",
-    payByCard: "Card (Stripe)",
-    payPalDisclaimer: "PayPal (coming soon) — frontend demo.",
-    checkoutContinueToReview: "Continue to review",
-
-    cardAcceptedLabel: "Cards accepted",
-    cardTypeLabel: "Card type",
-    cardTypeUnknown: "Unknown",
-    cardTypeVisa: "Visa",
-    cardTypeMastercard: "Mastercard",
-    cardTypeAmex: "American Express",
-    cardTypeDiscover: "Discover",
-
-    cardDisclaimer: "Frontend demo — no payment is processed yet.",
-    cardNameLabel: "Name on card",
-    cardNamePlaceholder: "Full name",
-    cardNumberLabel: "Card number",
-    cardNumberPlaceholder: "1234 5678 9012 3456",
-    cardExpiryLabel: "Expiry (MM/YY)",
-    cardExpiryPlaceholder: "MM/YY",
-    cardCvcLabel: "CVC",
-    cardCvcPlaceholder: "123",
-    cardZipLabel: "ZIP / Postal",
-    cardZipPlaceholder: "12345",
-    payNow: "Pay now",
-    checkoutReviewTitle: "Review your order",
-    checkoutReviewSubtitle: "Confirm the details before submitting your order.",
-    checkoutEditDetails: "Edit details",
-    checkoutSubmitOrder: "Submit order",
-    checkoutDetailsRequired: "Please enter your name, phone, and shipping address.",
-    checkoutOrderSubmittedToast: "Order submitted",
-    cardRequired: "Complete all card fields.",
-    cardNotReady:
-      "Card payments will be available once the backend is connected to Stripe.",
-    checkoutCompleteHint:
-      "To complete your order, review the details and press “Submit order”.",
-
-    shippingTitle: "Shipping address",
-    shippingSubtitle: "For shipping estimates and order completion.",
-    addressLine1Label: "Address (line 1)",
-    addressLine1Placeholder: "Street, number, apartment, etc.",
-    addressLine2Label: "Address (line 2)",
-    addressLine2Placeholder: "Optional",
-    cityLabel: "City",
-    cityPlaceholder: "e.g. San Juan",
-    stateLabel: "State / Province",
-    statePlaceholder: "e.g. PR",
-    postalLabel: "ZIP / Postal",
-    postalPlaceholder: "e.g. 00901",
-    countryLabel: "Country",
-    countryPlaceholder: "e.g. Puerto Rico / USA",
-
-    waShippingAddress: "Shipping address:",
-
-    sendWhatsApp: "Continue with PayPal",
-    backToCart: "Back to cart",
-    nextStep: "Next step (later): integrate payments and real orders.",
-    finish: "Finish",
-
-    waGreeting: "Hi, I'd like to place an order:",
-    waTotalEstimated: "Estimated total:",
-    waName: "Name:",
-    waPhone: "Phone:",
-    waNotes: "Notes:",
-    waText: "Text:",
-    waVerse: "Verse:",
-    waFont: "Typography:",
-    waColor: "Color:",
-
-    blogTitle: "Blog",
-    blogSubtitle: "Short reads to attract and nurture your audience.",
-    read: "Read",
-
-    valuesTitle: "Values",
-    valuesSubtitle: "Our foundation",
-    missionTitle: "Mission",
-    missionText:
-      "Share the love of Christ through every product. May each item be a tool for evangelism, hope, and faith.",
-
-    adminTitle: "Admin panel",
-    adminSubtitle: "Visually manage the store's products.",
-    adminStatProducts: "Products",
-    adminStatProductsBody: "Active items in the catalog.",
-    adminStatMode: "Mode",
-    adminStatModeBody: "Frontend-only mock data.",
-    adminStatManagement: "Management",
-    adminStatManagementBody: "Next: add, edit, and delete products.",
-
-    inventoryTitle: "Inventory",
-    inventorySubtitle:
-      "Track stock counts per product and unit costs to calculate margins.",
-    inventoryInStock: "In stock",
-    inventoryUnitCost: "Unit cost",
-    inventoryAdjustMinus: "-1",
-    inventoryAdjustPlus: "+1",
-
-    profitTitle: "Profit / Loss",
-    profitSubtitle:
-      "Analyze by day, week, or month based on recorded sales (frontend demo).",
-    profitPeriodLabel: "Period",
-    profitDay: "Day",
-    profitWeek: "Week",
-    profitMonth: "Month",
-    profitDateLabel: "Date",
-    profitRevenue: "Revenue",
-    profitCogs: "COGS",
-    profitGrossProfit: "Gross profit",
-    profitMargin: "Margin",
-    profitUnits: "Units sold",
-    profitTaxCollected: "Tax collected",
-    profitTaxCollectedAllTime: "Tax collected (all time)",
-
-    adminCheckoutSettingsTitle: "Checkout settings",
-    adminCheckoutSettingsSubtitle:
-      "Only the admin can change taxes and shipping. Applies to new and existing items.",
-    adminCheckoutDefaultShippingLabel: "Shipping cost",
-    adminCheckoutTaxStateRateLabel: "PR state tax — rate (%)",
-    adminCheckoutTaxMunicipalRateLabel: "PR municipal tax — rate (%)",
-    profitNoSales: "No sales recorded for this period.",
-    profitTopProducts: "Top products",
-
-    profitReportPdfButton: "Report (PDF)",
-    profitReportPeriodValueDay: "Day",
-    profitReportPeriodValueWeek: "Week",
-    profitReportPeriodValueMonth: "Month",
-    profitReportRangeLabel: "Range",
-    profitReportGeneratedAt: "Generated",
-    profitReportTopProductsTableProduct: "Product",
-    profitReportTopProductsTableUnits: "Units",
-    profitReportTopProductsTableRevenue: "Revenue",
-    profitReportTopProductsTableProfit: "Profit",
-    profitReportFooterHint: "In the print dialog, choose 'Save as PDF' to download the report.",
-
-    adminStatOrdersPending: "Pending orders",
-    adminStatOrdersPendingBody: "Orders waiting to be packed / shipped.",
-
-    ordersTitle: "Orders",
-    ordersSubtitle: "Manage orders: print shipping labels and receipts.",
-    ordersEmpty: "No orders yet.",
-    ordersStatusPending: "Pending",
-    ordersStatusFulfilled: "Fulfilled",
-    ordersStatusCancelled: "Cancelled",
-    ordersOrder: "Order",
-    ordersPlacedAt: "Placed",
-    ordersCustomer: "Customer",
-    ordersShipping: "Shipping",
-    ordersItems: "Items",
-    ordersTotal: "Total",
-    ordersPrintLabel: "Print label",
-    ordersPrintReceipt: "Receipt (PDF)",
-    shippingLabelOrder: "Order",
-    shippingLabelShipTo: "SHIP TO",
-    shippingLabelPrintedFromAdmin: "Printed from Admin",
-    ordersViewDetails: "View order details",
-    ordersHideDetails: "Hide order details",
-    ordersReceiptHint:
-      "Tip: In the print dialog, choose 'Save as PDF' to archive it.",
-    ordersMarkFulfilled: "Mark fulfilled",
-    ordersMarkPending: "Mark pending",
-
-    ordersPaymentMethod: "Payment method",
-    ordersPaymentCard: "Card",
-    ordersPaymentPayPal: "PayPal",
-    ordersPaymentWhatsApp: "PayPal",
-
-    ordersTrackingNumberLabel: "Tracking #",
-    ordersTrackingNumberPlaceholder: "e.g. 9400 1000 0000 0000 0000 00",
-    ordersEtaLabel: "Estimated time",
-    ordersEtaPlaceholder: "e.g. 3–5 days",
-
-    orderConfirmationTitle: "Order confirmation",
-    orderConfirmationSubtitle:
-      "Thank you. We received your order. Save this info in case you need it later.",
-    orderConfirmationOrderNumber: "Order number",
-    orderConfirmationPaymentMethod: "Payment method",
-    orderConfirmationPrintReceipt: "Print receipt (PDF)",
-    orderConfirmationGoHome: "Back to home",
-    orderConfirmationGoAdmin: "Go to Admin",
-    orderConfirmationNotFound: "We couldn't find that order.",
-    orderConfirmationToastOrderSent: "Order sent",
-
-    orderStatusTitle: "Order status",
-    orderStatusSubtitle: "Enter your confirmation number to see real-time status.",
-    orderStatusOrderNumberLabel: "Confirmation number",
-    orderStatusOrderNumberPlaceholder: "e.g. GBF-000123",
-    orderStatusLookup: "Search",
-    orderStatusNotFound: "We couldn't find an order with that number.",
-    orderStatusCurrentStatus: "Current status",
-    orderStatusUpdatedAt: "Updated",
-    orderStatusTracking: "Tracking",
-    orderStatusEta: "Estimated time",
-    orderStatusCancelRequestTitle: "Cancellation request",
-    orderStatusRequestCancelButton: "Request cancellation",
-    orderStatusCancelRequestReasonLabel: "Cancellation reason",
-    orderStatusCancelRequestReasonPlaceholder: "Briefly explain why you want to cancel.",
-    orderStatusSendCancelRequest: "Send request",
-    orderStatusCancelModalClose: "Close",
-    orderStatusCancelRequestSent: "Request sent.",
-
-    ordersStatusPreparing: "Preparing order",
-    ordersStatusPaused: "Order paused",
-    ordersStatusShipped: "Order shipped",
-    ordersCancelReasonLabel: "Cancellation reason",
-    ordersCancelReasonPlaceholder: "e.g. Customer requested cancellation / out of stock",
-    ordersUpdateStatusLabel: "Update status",
-    ordersApplyStatus: "Apply",
-    ordersStatusTrackingRequired: "To mark as 'Order shipped' you must enter a tracking number.",
-    ordersStatusCancelReasonRequired: "To cancel the order you must enter a cancellation reason.",
-
-    heroAdminTitle: "Homepage promotion",
-    heroAdminSubtitle:
-      "Edit the main homepage hero for promotions or content updates without needing a developer.",
-    heroAdminEnabled: "Enable homepage hero",
-    heroAdminReset: "Reset",
-    heroAdminEs: "Spanish (ES)",
-    heroAdminEn: "English (EN)",
-    heroAdminPill: "Badge (pill)",
-    heroAdminTitleOne: "Title line 1",
-    heroAdminTitleTwo: "Title line 2",
-    heroAdminText: "Text",
-    heroAdminPrimary: "Primary button",
-    heroAdminSecondary: "Secondary button",
-    heroAdminHeroImage: "Main image",
-    heroAdminImage1: "Image 1",
-    heroAdminImage2: "Image 2",
-
-    uploadImageLabel: "Upload image",
-    uploading: "Uploading...",
-    uploadFailed: "Upload error:",
-    uploadDevOnlyHint: "Only works in development (npm run dev).",
-
-    heroAdminTypeLabel: "Type",
-    heroAdminTypeContent: "Content update only",
-    heroAdminTypePromo: "Promotion (with dates)",
-    heroAdminScheduleTitle: "Promotion dates",
-    heroAdminStartLabel: "Start",
-    heroAdminEndLabel: "End",
-    heroAdminScheduleHint: "Local time",
-    heroAdminStatusActive: "Active now",
-    heroAdminStatusInactive: "Inactive now",
-
-    categoriesTitle: "Categories",
-    categoriesSubtitle: "Create or remove available product categories.",
-    deleteCategoryAria: (c) => `Delete category ${c}`,
-    deleteCategoryTitleMinOne: "You must keep at least 1 category",
-    deleteCategoryTitle: "Delete",
-    newCategoryLabel: "New category",
-    newCategoryPlaceholder: "e.g. Bibles",
-    addCategory: "Add category",
-
-    addProductTitle: "Add product",
-    addProductSubtitle: "Create a new product visually in the catalog.",
-    productNameLabel: "Name",
-    productNamePlaceholder: "e.g. Custom 30oz Yeti",
-    productCategoryLabel: "Category",
-    productPriceLabel: "Price",
-    productImageLabel: "Image URL",
-    productImagePlaceholder: "https://...",
-    productShortLabel: "Short description",
-    productShortPlaceholder: "e.g. Premium tumbler with a faith message.",
-    productDescriptionLabel: "Full description",
-    productDescriptionPlaceholder:
-      "Describe the product, its purpose, and important details.",
-    addProduct: "Add product",
-
-    currentProductsTitle: "Current products",
-    currentProductsSubtitle: "Administrative view of the catalog.",
-    edit: "Edit",
-    delete: "Delete",
-
-    footerNote: "Visual MVP (frontend-only) to validate interest.",
-    footerWhatsAppCheckout: "Card checkout",
-  },
-};
 
 // -----------------------------
 // Local images folder
@@ -906,6 +47,8 @@ const SALES_STORAGE_KEY = "gbf.sales.v1";
 const ORDERS_STORAGE_KEY = "gbf.orders.v1";
 const ORDER_COUNTER_STORAGE_KEY = "gbf.orderCounter.v1";
 const CHECKOUT_CONFIG_STORAGE_KEY = "gbf.checkoutConfig.v1";
+const CATEGORIES_STORAGE_KEY = "gbf.categories.v1";
+const PRODUCTS_STORAGE_KEY = "gbf.products.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -997,6 +140,11 @@ function normalizeCheckoutDraft(draft) {
   };
 }
 
+
+// -----------------------------
+// Catalog defaults + persistence helpers
+// -----------------------------
+// (moved to src/data/defaultCatalog.js)
 
 // -----------------------------
 // Card brand helpers (simple client-side detection)
@@ -1493,16 +641,7 @@ function orderStatusBadgeClass(status) {
 }
 
 
-// Helper: escapeHtml
-function escapeHtml(value) {
-  const s = String(value ?? "");
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+// Print helpers moved to src/utils/print.js
 
 
 // Helper: getNextOrderNumber
@@ -1519,98 +658,6 @@ function getNextOrderNumber() {
     return `GBF-${String(next).padStart(6, "0")}`;
   } catch {
     return fallback;
-  }
-}
-
-
-// Helper: openPrintWindow
-function openPrintWindow({ title, bodyHtml, cssText, autoPrint = true }) {
-  if (typeof window === "undefined") return;
-
-  const safeTitle = escapeHtml(title || "Print");
-  const html = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${safeTitle}</title>
-    <style>
-      ${cssText || ""}
-    </style>
-  </head>
-  <body>
-    ${bodyHtml || ""}
-  </body>
-</html>`;
-
-  // Try opening a new tab/window (best UX when allowed).
-  const w = window.open("", "_blank");
-
-  if (w) {
-    try {
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
-
-      if (autoPrint) {
-        const tryPrint = () => {
-          try {
-            w.focus();
-            w.print();
-          } catch {
-            // ignore
-          }
-        };
-
-        // Some browsers need a little extra time for layout/fonts.
-        w.addEventListener?.("load", () => window.setTimeout(tryPrint, 200));
-        window.setTimeout(tryPrint, 500);
-      }
-
-      return;
-    } catch {
-      // Fall through to iframe-based printing.
-    }
-  }
-
-  // Fallback: print via an in-page hidden iframe (avoids popup blockers).
-  const iframe = document.createElement("iframe");
-  iframe.style.position = "fixed";
-  iframe.style.right = "0";
-  iframe.style.bottom = "0";
-  iframe.style.width = "0";
-  iframe.style.height = "0";
-  iframe.style.border = "0";
-  iframe.style.opacity = "0";
-  iframe.setAttribute("aria-hidden", "true");
-
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentDocument;
-  const win = iframe.contentWindow;
-  if (!doc || !win) {
-    iframe.remove();
-    return;
-  }
-
-  doc.open();
-  doc.write(html);
-  doc.close();
-
-  if (autoPrint) {
-    const doPrint = () => {
-      try {
-        win.focus();
-        win.print();
-      } catch {
-        // ignore
-      } finally {
-        window.setTimeout(() => iframe.remove(), 500);
-      }
-    };
-
-    // Wait a moment to ensure the iframe has rendered.
-    window.setTimeout(doPrint, 500);
   }
 }
 
@@ -2035,10 +1082,6 @@ function TopBar({
   setLanguage,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [route]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -3107,7 +2150,6 @@ function Checkout({
   setCheckoutDraft,
   onBack,
   onGoReview,
-  onPlaceOrder,
   t,
   language,
 }) {
@@ -3896,18 +2938,7 @@ function CheckoutReview({
 
 // Page: OrderConfirmation
 function OrderConfirmation({ order, onGoHome, t, language }) {
-  const [orderSentToken, setOrderSentToken] = useState(0);
-
-  useEffect(() => {
-    if (!order) return;
-    setOrderSentToken(Date.now());
-  }, [order?.id]);
-
-  useEffect(() => {
-    if (!orderSentToken) return;
-    const timer = window.setTimeout(() => setOrderSentToken(0), 3000);
-    return () => window.clearTimeout(timer);
-  }, [orderSentToken]);
+  const toastKey = order?.id || order?.orderNumber || "";
 
   const paymentText =
     order?.paymentMethod === "paypal" || order?.paymentMethod === "whatsapp"
@@ -4139,15 +3170,15 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
         )}
       </div>
 
-      {orderSentToken ? (
+      {order ? (
         <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
           <div
-            key={orderSentToken}
+            key={toastKey}
             className="pointer-events-none inline-flex max-w-xl items-center gap-3 rounded-[22px] border border-emerald-200 bg-white px-5 py-4 text-base font-extrabold text-emerald-900 shadow-xl"
-            style={{ animation: "gbfPop 280ms ease-out" }}
+            style={{ animation: "gbfToast 3000ms ease-out forwards" }}
           >
             <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70 animate-ping" />
+              <span className="absolute inset-0 rounded-full bg-emerald-200 opacity-70" style={{ animation: "gbfPing 1200ms ease-out 1" }} />
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -4163,7 +3194,17 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
             <span>{t.orderConfirmationToastOrderSent}</span>
           </div>
 
-          <style>{`@keyframes gbfPop { from { transform: translateY(10px) scale(0.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
+          <style>{`
+@keyframes gbfToast {
+  0% { transform: translateY(10px) scale(0.98); opacity: 0; }
+  10% { transform: translateY(0) scale(1); opacity: 1; }
+  85% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-6px) scale(0.99); opacity: 0; }
+}
+@keyframes gbfPing {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}`}</style>
         </div>
       ) : null}
 
@@ -4178,7 +3219,6 @@ function OrderStatus({ orders, setOrders, t, language }) {
   const [searchedOrderNumber, setSearchedOrderNumber] = useState("");
 
   const [cancelReason, setCancelReason] = useState("");
-  const [cancelRequestMessage, setCancelRequestMessage] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelSuccessToken, setCancelSuccessToken] = useState(0);
 
@@ -4225,13 +3265,11 @@ function OrderStatus({ orders, setOrders, t, language }) {
   // Handler: submitLookup
   function submitLookup(e) {
     e.preventDefault();
-    setCancelRequestMessage("");
     setSearchedOrderNumber(orderNumber.trim());
   }
 
   // Handler: sendCancelRequest
   function sendCancelRequest() {
-    setCancelRequestMessage("");
     const reason = cancelReason.trim();
     if (!order || !reason || typeof setOrders !== "function") return;
 
@@ -4250,7 +3288,6 @@ function OrderStatus({ orders, setOrders, t, language }) {
 
     setCancelReason("");
     setShowCancelModal(false);
-    setCancelRequestMessage(t.orderStatusCancelRequestSent);
     setCancelSuccessToken(Date.now());
   }
 
@@ -4339,7 +3376,6 @@ function OrderStatus({ orders, setOrders, t, language }) {
                   variant="primary"
                   className="w-full md:w-auto"
                   onClick={() => {
-                    setCancelRequestMessage("");
                     setShowCancelModal(true);
                   }}
                 >
@@ -4569,9 +3605,7 @@ function AdminPanel({
   setInventory,
   productCosts,
   setProductCosts,
-  sales,
   orders,
-  setOrders,
   checkoutConfig,
   setCheckoutConfig,
   onGoOrders,
@@ -4719,6 +3753,117 @@ function AdminPanel({
     description: "",
     image: "",
   });
+
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [editingProductDraft, setEditingProductDraft] = useState(null);
+
+  function startEditingProduct(product) {
+    if (!product?.id) return;
+
+    const id = String(product.id);
+    setEditingProductId(id);
+    setEditingProductDraft({
+      id,
+      name: l10n(product.name, language),
+      category: String(product.category || fallbackCategory),
+      price: String(product.price ?? ""),
+      short: l10n(product.short, language),
+      description: l10n(product.description, language),
+      image: String(product.image || ""),
+    });
+  }
+
+  function cancelEditingProduct() {
+    setEditingProductId(null);
+    setEditingProductDraft(null);
+  }
+
+  function updateEditingProductDraft(patch) {
+    setEditingProductDraft((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      ...(patch && typeof patch === "object" ? patch : {}),
+    }));
+  }
+
+  function saveEditingProduct() {
+    if (typeof setProducts !== "function") return;
+    const id = editingProductId;
+    const draft = editingProductDraft;
+    if (!id || !draft) return;
+
+    const langKey = language === "es" ? "es" : "en";
+
+    const nextName = String(draft.name ?? "").trim();
+    const nextShort = String(draft.short ?? "").trim();
+    const nextDescription = String(draft.description ?? "").trim();
+    const nextImage = String(draft.image ?? "").trim();
+
+    const nextCategoryCandidate = String(draft.category ?? "").trim();
+    const nextCategory =
+      nextCategoryCandidate && categories.includes(nextCategoryCandidate)
+        ? nextCategoryCandidate
+        : fallbackCategory;
+
+    const nextPrice = parseNumberOr(draft.price, Number.NaN);
+    if (!nextName || !Number.isFinite(nextPrice)) return;
+
+    setProducts((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return base.map((p) => {
+        if (p?.id !== id) return p;
+
+        return {
+          ...p,
+          category: nextCategory,
+          price: Math.max(0, nextPrice),
+          image: nextImage || p.image,
+          name: { ...(p?.name || {}), [langKey]: nextName },
+          short: { ...(p?.short || {}), [langKey]: nextShort },
+          description: { ...(p?.description || {}), [langKey]: nextDescription },
+        };
+      });
+    });
+
+    cancelEditingProduct();
+  }
+
+  function handleDeleteProduct(product) {
+    const id = String(product?.id ?? "").trim();
+    if (!id || typeof setProducts !== "function") return;
+
+    const displayName = l10n(product?.name, language) || id;
+    const confirmText =
+      typeof t.confirmDeleteProduct === "function"
+        ? t.confirmDeleteProduct(displayName)
+        : language === "es"
+          ? `¿Eliminar "${displayName}"? Esta acción no se puede deshacer.`
+          : `Delete "${displayName}"? This can't be undone.`;
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setProducts((prev) => (Array.isArray(prev) ? prev.filter((p) => p?.id !== id) : []));
+
+    if (typeof setInventory === "function") {
+      setInventory((prev) => {
+        const next = { ...(prev && typeof prev === "object" ? prev : {}) };
+        delete next[id];
+        return next;
+      });
+    }
+
+    if (typeof setProductCosts === "function") {
+      setProductCosts((prev) => {
+        const next = { ...(prev && typeof prev === "object" ? prev : {}) };
+        delete next[id];
+        return next;
+      });
+    }
+
+    if (editingProductId === id) cancelEditingProduct();
+  }
 
   // handleAddCategory
   function handleAddCategory(e) {
@@ -5600,112 +4745,207 @@ function AdminPanel({
           />
 
           <div className="grid gap-3">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {products.map((product) => {
+              const isEditing = editingProductId === product.id;
+              const draft = isEditing ? editingProductDraft : null;
 
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={product.image}
-                      alt={l10n(product.name, language)}
-                      className="h-16 w-16 rounded-2xl object-cover"
-                    />
+              return (
+                <div
+                  key={product.id}
+                  className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={product.image}
+                        alt={l10n(product.name, language)}
+                        className="h-16 w-16 rounded-2xl object-cover"
+                      />
 
-                    <div>
-                      <div className="text-xs font-semibold text-zinc-500">
-                        {product.category}
+                      <div>
+                        <div className="text-xs font-semibold text-zinc-500">
+                          {product.category}
+                        </div>
+
+                        <div className="text-sm font-bold text-zinc-900">
+                          {l10n(product.name, language)}
+                        </div>
+
+                        <div className="mt-1 text-sm text-zinc-600">
+                          {l10n(product.short, language)}
+                        </div>
                       </div>
+                    </div>
 
+                    <div className="text-left md:text-right">
                       <div className="text-sm font-bold text-zinc-900">
-                        {l10n(product.name, language)}
+                        {money(product.price, language)}
                       </div>
 
-                      <div className="mt-1 text-sm text-zinc-600">
-                        {l10n(product.short, language)}
+                      <div className="mt-2 flex gap-2 md:justify-end">
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            isEditing ? cancelEditingProduct() : startEditingProduct(product)
+                          }
+                        >
+                          {isEditing ? t.cancel : t.edit}
+                        </Button>
+
+                        <Button variant="secondary" onClick={() => handleDeleteProduct(product)}>
+                          {t.delete}
+                        </Button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-left md:text-right">
-                    <div className="text-sm font-bold text-zinc-900">
-                      {money(product.price, language)}
+                  {isEditing ? (
+                    <div className="mt-4 grid gap-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700">
+                            {t.productNameLabel} ({language === "es" ? "ES" : "EN"})
+                          </label>
+                          <input
+                            value={draft?.name ?? ""}
+                            onChange={(e) => updateEditingProductDraft({ name: e.target.value })}
+                            placeholder={t.productNamePlaceholder}
+                            className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700">
+                            {t.productCategoryLabel}
+                          </label>
+                          <select
+                            value={draft?.category ?? fallbackCategory}
+                            onChange={(e) => updateEditingProductDraft({ category: e.target.value })}
+                            className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                          >
+                            {categories.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700">
+                            {t.productPriceLabel}
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={draft?.price ?? ""}
+                            onChange={(e) => updateEditingProductDraft({ price: e.target.value })}
+                            className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700">
+                            {t.productImageLabel}
+                          </label>
+                          <input
+                            value={draft?.image ?? ""}
+                            onChange={(e) => updateEditingProductDraft({ image: e.target.value })}
+                            placeholder={t.productImagePlaceholder}
+                            className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700">
+                            {t.uploadImageLabel}
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={Boolean(uploading[`productEdit:${product.id}`])}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = "";
+                              handleUploadImage({
+                                key: `productEdit:${product.id}`,
+                                file,
+                                filenamePrefix: `product-${product.id}`,
+                                onSuccess: (url) => updateEditingProductDraft({ image: url }),
+                              });
+                            }}
+                            className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                          />
+
+                          {uploading[`productEdit:${product.id}`] ? (
+                            <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                          ) : null}
+
+                          {uploadErrors[`productEdit:${product.id}`] ? (
+                            <div className="mt-1 text-xs font-semibold text-red-600">
+                              {t.uploadFailed} {uploadErrors[`productEdit:${product.id}`]}
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-zinc-700">{t.preview}</label>
+                          <div className="mt-2 flex items-center gap-3">
+                            <img
+                              src={draft?.image || product.image}
+                              alt={l10n(product.name, language)}
+                              className="h-14 w-14 rounded-2xl border border-zinc-200 object-cover"
+                            />
+                            <div className="text-xs text-zinc-600">{draft?.image ? draft.image : product.image}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700">
+                          {t.productShortLabel} ({language === "es" ? "ES" : "EN"})
+                        </label>
+                        <input
+                          value={draft?.short ?? ""}
+                          onChange={(e) => updateEditingProductDraft({ short: e.target.value })}
+                          placeholder={t.productShortPlaceholder}
+                          className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700">
+                          {t.productDescriptionLabel} ({language === "es" ? "ES" : "EN"})
+                        </label>
+                        <textarea
+                          value={draft?.description ?? ""}
+                          onChange={(e) => updateEditingProductDraft({ description: e.target.value })}
+                          placeholder={t.productDescriptionPlaceholder}
+                          rows={4}
+                          className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <Button variant="secondary" onClick={cancelEditingProduct}>
+                          {t.cancel}
+                        </Button>
+                        <Button variant="primary" onClick={saveEditingProduct}>
+                          {t.save}
+                        </Button>
+                      </div>
                     </div>
-
-                    <div className="mt-2 flex gap-2 md:justify-end">
-                      <Button variant="secondary">
-                        {t.edit}
-                      </Button>
-
-                      <Button variant="secondary">{t.delete}</Button>
-                    </div>
-                  </div>
-
+                  ) : null}
                 </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.productImageLabel}
-                    </label>
-                    <input
-                      value={product.image}
-                      onChange={(e) => {
-                        const nextUrl = e.target.value;
-                        setProducts((prev) =>
-                          prev.map((p) =>
-                            p.id === product.id ? { ...p, image: nextUrl } : p
-                          )
-                        );
-                      }}
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.uploadImageLabel}
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      disabled={Boolean(uploading[`product:${product.id}`])}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        e.target.value = "";
-                        handleUploadImage({
-                          key: `product:${product.id}`,
-                          file,
-                          filenamePrefix: `product-${product.id}`,
-                          onSuccess: (url) => {
-                            setProducts((prev) =>
-                              prev.map((p) =>
-                                p.id === product.id ? { ...p, image: url } : p
-                              )
-                            );
-                          },
-                        });
-                      }}
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
-                    />
-
-                    {uploading[`product:${product.id}`] ? (
-                      <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
-                    ) : null}
-
-                    {uploadErrors[`product:${product.id}`] ? (
-                      <div className="mt-1 text-xs font-semibold text-red-600">
-                        {t.uploadFailed} {uploadErrors[`product:${product.id}`]}
-                      </div>
-                    ) : (
-                      <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -6011,7 +5251,7 @@ function AdminOrders({ orders, setOrders, t, language, onBack }) {
   function toggleOrderDetails(orderId) {
     setExpandedOrders((prev) => ({
       ...(prev && typeof prev === "object" ? prev : {}),
-      [orderId]: !Boolean(prev?.[orderId]),
+      [orderId]: !prev?.[orderId],
     }));
   }
 
@@ -6692,49 +5932,60 @@ export default function App() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const [categories, setCategories] = useState(["Yeti", "Journals"]);
+  const [categories, setCategories] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultCategories();
+    try {
+      const raw = window.localStorage.getItem(CATEGORIES_STORAGE_KEY);
+      if (!raw) return buildDefaultCategories();
+      return normalizeCategories(JSON.parse(raw));
+    } catch {
+      return buildDefaultCategories();
+    }
+  });
 
-  const [products, setProducts] = useState([
-    {
-      id: "yeti-20",
-      category: "Yeti",
-      name: { es: "Yeti Rambler 20oz", en: "Yeti Rambler 20oz" },
-      price: 40,
-      short: {
-        es: "Vaso premium para regalos con propósito.",
-        en: "Premium tumbler for meaningful gifts.",
-      },
-      description: {
-        es: "Un vaso resistente para el día a día. Personalízalo con nombre, frase o versículo y conviértelo en un regalo memorable.",
-        en: "A durable tumbler for everyday life. Customize it with a name, phrase, or verse and turn it into a memorable gift.",
-      },
-      image:
-        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
-      tags: [
-        { es: "Regalo", en: "Gift" },
-        { es: "Premium", en: "Premium" },
-        { es: "Personalizable", en: "Customizable" },
-      ],
-    },
-    {
-      id: "journal-1",
-      category: "Journals",
-      name: { es: "Libreta Journal (A5)", en: "Journal notebook (A5)" },
-      price: 26,
-      short: { es: "Journaling y devocional diario.", en: "Journaling and daily devotional." },
-      description: {
-        es: "Una libreta para escribir, orar y reflexionar. Perfecta para rutinas de fe, metas y gratitud.",
-        en: "A notebook to write, pray, and reflect. Perfect for faith routines, goals, and gratitude.",
-      },
-      image:
-        "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80",
-      tags: [
-        { es: "Devocional", en: "Devotional" },
-        { es: "Hábitos", en: "Habits" },
-        { es: "Regalo", en: "Gift" },
-      ],
-    },
-  ]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        CATEGORIES_STORAGE_KEY,
+        JSON.stringify(normalizeCategories(categories))
+      );
+    } catch {
+      // ignore storage errors
+    }
+  }, [categories]);
+
+  const [products, setProducts] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultProducts();
+
+    try {
+      const rawCats = window.localStorage.getItem(CATEGORIES_STORAGE_KEY);
+      const cats = rawCats ? normalizeCategories(JSON.parse(rawCats)) : buildDefaultCategories();
+      const fallback = cats[0] || buildDefaultCategories()[0];
+
+      const raw = window.localStorage.getItem(PRODUCTS_STORAGE_KEY);
+      const list = raw ? normalizeProducts(JSON.parse(raw)) : buildDefaultProducts();
+
+      return Array.isArray(list)
+        ? list.map((p) => {
+            const current = String(p?.category ?? "").trim();
+            if (current && cats.includes(current)) return p;
+            return { ...p, category: fallback };
+          })
+        : buildDefaultProducts();
+    } catch {
+      return buildDefaultProducts();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(normalizeProducts(products)));
+    } catch {
+      // ignore storage errors
+    }
+  }, [products]);
 
   const [selected, setSelected] = useState(null);
   const [cart, setCart] = useState([]);
@@ -7013,7 +6264,6 @@ export default function App() {
           setCheckoutDraft={setCheckoutDraft}
           onBack={() => setRoute("cart")}
           onGoReview={() => setRoute("checkout_review")}
-          onPlaceOrder={placeOrder}
           t={t}
           language={language}
         />
@@ -7067,9 +6317,7 @@ export default function App() {
           setInventory={setInventory}
           productCosts={productCosts}
           setProductCosts={setProductCosts}
-          sales={sales}
           orders={orders}
-          setOrders={setOrders}
           checkoutConfig={checkoutConfig}
           setCheckoutConfig={setCheckoutConfig}
           onGoOrders={() => setRoute("admin_orders")}
