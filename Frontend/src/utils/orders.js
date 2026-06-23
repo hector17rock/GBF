@@ -1,8 +1,15 @@
 // Helper: normalizeOrderStatus
 export function normalizeOrderStatus(status) {
   const s = String(status || "").trim().toLowerCase();
-  if (s === "fulfilled") return "shipped";
-  if (s === "preparing" || s === "paused" || s === "cancelled" || s === "shipped" || s === "pending") {
+  if (s === "fulfilled") return "delivered";
+  if (
+    s === "preparing" ||
+    s === "paused" ||
+    s === "cancelled" ||
+    s === "shipped" ||
+    s === "delivered" ||
+    s === "pending"
+  ) {
     return s;
   }
   return "pending";
@@ -11,7 +18,7 @@ export function normalizeOrderStatus(status) {
 // Helper: isOpenOrderStatus
 export function isOpenOrderStatus(status) {
   const s = normalizeOrderStatus(status);
-  return s !== "shipped" && s !== "cancelled";
+  return s !== "shipped" && s !== "delivered" && s !== "cancelled";
 }
 
 // Helper: orderStatusLabel
@@ -20,6 +27,7 @@ export function orderStatusLabel(status, t) {
   if (s === "preparing") return t.ordersStatusPreparing;
   if (s === "paused") return t.ordersStatusPaused;
   if (s === "shipped") return t.ordersStatusShipped;
+  if (s === "delivered") return t.ordersStatusDelivered;
   if (s === "cancelled") return t.ordersStatusCancelled;
   return t.ordersStatusPending;
 }
@@ -27,6 +35,7 @@ export function orderStatusLabel(status, t) {
 // Helper: orderStatusBadgeClass
 export function orderStatusBadgeClass(status) {
   const s = normalizeOrderStatus(status);
+  if (s === "delivered") return "bg-emerald-100 text-emerald-800";
   if (s === "shipped") return "bg-emerald-100 text-emerald-800";
   if (s === "cancelled") return "bg-zinc-200 text-zinc-800";
   if (s === "paused") return "bg-sky-100 text-sky-800";

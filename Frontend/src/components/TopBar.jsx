@@ -198,6 +198,14 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
                 {t.navValues}
               </button>
               <button
+                onClick={() => go("faq")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "faq" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navFaq}
+              </button>
+              <button
                 onClick={() => go("order_status")}
                 className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                   route === "order_status" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
@@ -208,7 +216,10 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
               <button
                 onClick={() => go("admin")}
                 className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "admin" || route === "admin_orders" || route === "admin_profit"
+                  route === "admin" ||
+                  route === "admin_orders" ||
+                  route === "admin_profit" ||
+                  route === "admin_product_preview"
                     ? "bg-zinc-900 text-white"
                     : "text-zinc-800 hover:bg-zinc-100"
                 }`}

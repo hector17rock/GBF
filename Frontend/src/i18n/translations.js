@@ -13,6 +13,7 @@ export const translations = {
     navCatalog: "Catálogo",
     navBlog: "Blog",
     navValues: "Valores",
+    navFaq: "FAQ",
     navOrderStatus: "Estatus de Orden",
     navWishlist: "Favoritos",
     navAdmin: "Admin",
@@ -71,6 +72,29 @@ export const translations = {
     wishlistEmpty: "Todavía no has guardado favoritos.",
     toastFavoriteAdded: "Añadido a favoritos",
     toastFavoriteRemoved: "Eliminado de favoritos",
+
+    favAdd: "Añadir a favoritos",
+    favRemove: "Quitar de favoritos",
+
+    lowStockLeft: (n) => `Quedan ${n} disponibles`,
+
+    recentlyViewedTitle: "Vistos recientemente",
+    recentlyViewedSubtitle: "Vuelve rápido a lo que estabas mirando.",
+
+    relatedTitle: "También te puede gustar",
+    relatedSubtitle: "Productos similares en la misma categoría.",
+
+    reviewsTitle: "Reseñas",
+    reviewsSubtitle: "Estrellas + comentarios para darte confianza.",
+    reviewsEmpty: "Aún no hay reseñas. Sé la primera persona en comentar.",
+    reviewRatingLabel: "Tu calificación",
+    reviewNameLabel: "Nombre (opcional)",
+    reviewNamePlaceholder: "Ej: María",
+    reviewCommentLabel: "Comentario",
+    reviewCommentPlaceholder: "¿Qué te gustó? ¿Cómo se ve en persona?",
+    reviewSubmit: "Publicar reseña",
+    reviewInvalid: "Escribe un comentario y elige una calificación.",
+    toastReviewAdded: "Reseña guardada",
 
     activityLogTitle: "Registro de actividad",
     activityLogSubtitle: "Historial de cambios recientes (solo local).",
@@ -160,6 +184,9 @@ export const translations = {
     namePlaceholder: "Nombre",
     phonePlaceholder: "Teléfono",
     notesPlaceholder: "Notas (ej: para regalo, fecha, etc.)",
+    giftNoteLabel: "Mensaje para regalo (opcional)",
+    giftNotePlaceholder: "Escribe un mensaje corto para la tarjeta o el empaque...",
+    giftNoteHint: "Tip: 1–2 líneas se leen mejor.",
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
@@ -246,6 +273,9 @@ export const translations = {
     missionTitle: "Misión",
     missionText:
       "Compartir el amor de Cristo a través de cada producto. Que cada artículo sea una herramienta de evangelismo, esperanza y fe.",
+
+    faqTitle: "FAQ",
+    faqSubtitle: "Envío, personalización, tiempos y pagos.",
 
     adminTitle: "Panel de administración",
     adminSubtitle: "Gestiona visualmente los productos de la tienda.",
@@ -359,6 +389,12 @@ export const translations = {
     orderStatusUpdatedAt: "Actualizado",
     orderStatusTracking: "Tracking",
     orderStatusEta: "Tiempo estimado",
+
+    orderTrackingTitle: "Seguimiento",
+    orderTrackingStepReceived: "Recibida",
+    orderTrackingStepInProduction: "En producción",
+    orderTrackingStepShipped: "Enviada",
+    orderTrackingStepDelivered: "Entregada",
     orderStatusCancelRequestTitle: "Solicitud de cancelación",
     orderStatusRequestCancelButton: "Solicitar cancelación",
     orderStatusCancelRequestReasonLabel: "Razón de la cancelación",
@@ -370,6 +406,7 @@ export const translations = {
     ordersStatusPreparing: "Preparar orden",
     ordersStatusPaused: "Pausar orden",
     ordersStatusShipped: "Orden enviada",
+    ordersStatusDelivered: "Orden entregada",
     ordersCancelReasonLabel: "Causa de cancelación",
     ordersCancelReasonPlaceholder: "Ej: Cliente solicitó cancelación / producto sin stock",
     ordersUpdateStatusLabel: "Actualizar estatus",
@@ -452,6 +489,7 @@ export const translations = {
     navCatalog: "Catalog",
     navBlog: "Blog",
     navValues: "Values",
+    navFaq: "FAQ",
     navOrderStatus: "Order Status",
     navWishlist: "Wishlist",
     navAdmin: "Admin",
@@ -510,6 +548,29 @@ export const translations = {
     wishlistEmpty: "You haven't saved any favorites yet.",
     toastFavoriteAdded: "Added to favorites",
     toastFavoriteRemoved: "Removed from favorites",
+
+    favAdd: "Add to favorites",
+    favRemove: "Remove from favorites",
+
+    lowStockLeft: (n) => `Only ${n} left`,
+
+    recentlyViewedTitle: "Recently viewed",
+    recentlyViewedSubtitle: "Quickly get back to products you checked out.",
+
+    relatedTitle: "You may also like",
+    relatedSubtitle: "Similar products in the same category.",
+
+    reviewsTitle: "Reviews",
+    reviewsSubtitle: "Stars + comments to build trust.",
+    reviewsEmpty: "No reviews yet. Be the first to leave one.",
+    reviewRatingLabel: "Your rating",
+    reviewNameLabel: "Name (optional)",
+    reviewNamePlaceholder: "e.g. Maria",
+    reviewCommentLabel: "Comment",
+    reviewCommentPlaceholder: "What did you like? How does it look in person?",
+    reviewSubmit: "Post review",
+    reviewInvalid: "Write a comment and select a rating.",
+    toastReviewAdded: "Review saved",
 
     activityLogTitle: "Activity log",
     activityLogSubtitle: "Recent changes (local-only).",
@@ -599,6 +660,9 @@ export const translations = {
     namePlaceholder: "Name",
     phonePlaceholder: "Phone",
     notesPlaceholder: "Notes (e.g. gift, date, etc.)",
+    giftNoteLabel: "Gift note (optional)",
+    giftNotePlaceholder: "Write a short message for the card or packaging...",
+    giftNoteHint: "Tip: 1–2 lines reads best.",
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
@@ -683,6 +747,9 @@ export const translations = {
     missionTitle: "Mission",
     missionText:
       "Share the love of Christ through every product. May each item be a tool for evangelism, hope, and faith.",
+
+    faqTitle: "FAQ",
+    faqSubtitle: "Shipping, customization, timing, and payments.",
 
     adminTitle: "Admin panel",
     adminSubtitle: "Visually manage the store's products.",
@@ -796,6 +863,12 @@ export const translations = {
     orderStatusUpdatedAt: "Updated",
     orderStatusTracking: "Tracking",
     orderStatusEta: "Estimated time",
+
+    orderTrackingTitle: "Tracking",
+    orderTrackingStepReceived: "Received",
+    orderTrackingStepInProduction: "In production",
+    orderTrackingStepShipped: "Shipped",
+    orderTrackingStepDelivered: "Delivered",
     orderStatusCancelRequestTitle: "Cancellation request",
     orderStatusRequestCancelButton: "Request cancellation",
     orderStatusCancelRequestReasonLabel: "Cancellation reason",
@@ -807,6 +880,7 @@ export const translations = {
     ordersStatusPreparing: "Preparing order",
     ordersStatusPaused: "Order paused",
     ordersStatusShipped: "Order shipped",
+    ordersStatusDelivered: "Order delivered",
     ordersCancelReasonLabel: "Cancellation reason",
     ordersCancelReasonPlaceholder: "e.g. Customer requested cancellation / out of stock",
     ordersUpdateStatusLabel: "Update status",

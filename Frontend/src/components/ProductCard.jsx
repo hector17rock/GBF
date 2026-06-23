@@ -5,6 +5,10 @@ export default function ProductCard({
   p,
   onOpen,
   language,
+  t,
+  stockCount,
+  ratingAvg,
+  ratingCount,
   isFavorite = false,
   onToggleFavorite,
 }) {
@@ -12,6 +16,13 @@ export default function ProductCard({
   const short = l10n(p?.short, language);
 
   const canFav = typeof onToggleFavorite === "function" && p?.id != null;
+
+  const stockN = Number(stockCount);
+  const lowStock = Number.isFinite(stockN) && stockN > 0 && stockN <= 3;
+
+  const avg = Number(ratingAvg);
+  const count = Number(ratingCount);
+  const hasRatings = Number.isFinite(avg) && Number.isFinite(count) && count > 0;
 
   function open() {
     if (typeof onOpen === "function") onOpen(p);
@@ -36,6 +47,16 @@ export default function ProductCard({
             className="h-40 w-full object-cover transition group-hover:scale-[1.03]"
           />
         </button>
+
+        {lowStock ? (
+          <div className="absolute left-3 top-3 inline-flex items-center rounded-full border border-amber-200 bg-white/75 px-3 py-1 text-[11px] font-extrabold text-amber-800 shadow-sm backdrop-blur-xl">
+            {typeof t?.lowStockLeft === "function"
+              ? t.lowStockLeft(stockN)
+              : language === "es"
+              ? `Quedan ${stockN}`
+              : `Only ${stockN} left`}
+          </div>
+        ) : null}
 
         {canFav ? (
           <button
@@ -73,6 +94,14 @@ export default function ProductCard({
           <div className="text-sm font-bold text-zinc-900">{money(p?.price, language)}</div>
         </div>
         <div className="mt-2 text-sm text-zinc-600">{short}</div>
+
+        {hasRatings ? (
+          <div className="mt-3 flex items-center gap-2 text-xs text-zinc-600">
+            <StarRow value={avg} />
+            <span className="font-semibold text-zinc-700">{avg.toFixed(1)}</span>
+            <span className="text-zinc-500">({count})</span>
+          </div>
+        ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
           {tags.map((tag, idx) => {
             const key = `${l10n(tag, "en") || l10n(tag, "es") || "tag"}-${idx}`;
@@ -81,5 +110,30 @@ export default function ProductCard({
         </div>
       </button>
     </div>
+  );
+}
+
+function StarRow({ value }) {
+  const v = Number(value);
+  const safe = Number.isFinite(v) ? Math.max(0, Math.min(5, v)) : 0;
+  const filled = Math.round(safe);
+
+  return (
+    <span className="inline-flex items-center gap-0.5" aria-label={`Rating ${safe.toFixed(1)} out of 5`}>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const on = i < filled;
+        return (
+          <svg
+            key={i}
+            viewBox="0 0 24 24"
+            className={`h-4 w-4 ${on ? "text-amber-500" : "text-zinc-300"}`}
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M12 17.3 18.2 21l-1.7-7.1L22 9.2l-7.2-.6L12 2 9.2 8.6 2 9.2l5.5 4.7L5.8 21 12 17.3Z" />
+          </svg>
+        );
+      })}
+    </span>
   );
 }

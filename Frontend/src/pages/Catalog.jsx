@@ -8,6 +8,8 @@ export default function Catalog({
   products = [],
   categories = [],
   favorites = [],
+  stockById,
+  ratingSummaryById,
   onToggleFavorite,
   onOpenProduct,
   t,
@@ -58,6 +60,10 @@ export default function Catalog({
             p={p}
             onOpen={onOpenProduct}
             language={language}
+            t={t}
+            stockCount={stockById?.[p.id]}
+            ratingAvg={ratingSummaryById?.[String(p.id)]?.avg}
+            ratingCount={ratingSummaryById?.[String(p.id)]?.count}
             isFavorite={Array.isArray(favorites) ? favorites.includes(String(p.id)) : false}
             onToggleFavorite={onToggleFavorite}
           />

@@ -24,6 +24,7 @@ import Catalog from "./pages/Catalog";
 import Cart from "./pages/Cart";
 import ProductDetail from "./pages/ProductDetail";
 import Wishlist from "./pages/Wishlist";
+import Faq from "./pages/Faq";
 import {
   buildDefaultCheckoutConfig,
   normalizeCheckoutConfig,
@@ -80,6 +81,8 @@ const CHECKOUT_CONFIG_STORAGE_KEY = "gbf.checkoutConfig.v1";
 const CATEGORIES_STORAGE_KEY = "gbf.categories.v1";
 const PRODUCTS_STORAGE_KEY = "gbf.products.v1";
 const FAVORITES_STORAGE_KEY = "gbf.favorites.v1";
+const RECENTLY_VIEWED_STORAGE_KEY = "gbf.recentlyViewed.v1";
+const REVIEWS_STORAGE_KEY = "gbf.reviews.v1";
 const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
 
@@ -1135,6 +1138,9 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
 function Home({
   products,
   favorites = [],
+  recentlyViewedProducts = [],
+  stockById,
+  ratingSummaryById,
   onGoCatalog,
   onOpenProduct,
   onPickCollection,
@@ -1174,12 +1180,38 @@ function Home({
               p={p}
               onOpen={onOpenProduct}
               language={language}
+              t={t}
+              stockCount={stockById?.[p.id]}
+              ratingAvg={ratingSummaryById?.[String(p.id)]?.avg}
+              ratingCount={ratingSummaryById?.[String(p.id)]?.count}
               isFavorite={Array.isArray(favorites) ? favorites.includes(String(p.id)) : false}
               onToggleFavorite={onToggleFavorite}
             />
           ))}
         </div>
       </div>
+
+      {recentlyViewedProducts.length ? (
+        <div className="mt-10">
+          <SectionTitle title={t.recentlyViewedTitle} subtitle={t.recentlyViewedSubtitle} />
+          <div className="grid gap-3 md:grid-cols-2">
+            {recentlyViewedProducts.map((p) => (
+              <ProductCard
+                key={p.id}
+                p={p}
+                onOpen={onOpenProduct}
+                language={language}
+                t={t}
+                stockCount={stockById?.[p.id]}
+                ratingAvg={ratingSummaryById?.[String(p.id)]?.avg}
+                ratingCount={ratingSummaryById?.[String(p.id)]?.count}
+                isFavorite={Array.isArray(favorites) ? favorites.includes(String(p.id)) : false}
+                onToggleFavorite={onToggleFavorite}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-10">
         <SectionTitle title={t.testimonialsTitle} subtitle={t.testimonialsSubtitle} />
@@ -1415,13 +1447,17 @@ function Checkout({
                 placeholder={t.phonePlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
-              <textarea
-                value={notes}
-                onChange={(e) => setDraftCustomerField("notes", e.target.value)}
-                placeholder={t.notesPlaceholder}
-                rows={4}
-                className="w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-              />
+              <div>
+                <label className="text-xs font-semibold text-zinc-700">{t.giftNoteLabel}</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setDraftCustomerField("notes", e.target.value)}
+                  placeholder={t.giftNotePlaceholder}
+                  rows={4}
+                  className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+                <div className="mt-1 text-[11px] text-zinc-500">{t.giftNoteHint}</div>
+              </div>
             </div>
 
             <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
@@ -1888,7 +1924,10 @@ function CheckoutReview({
                 {String(draft?.customer?.phone || "").trim() || "—"}
               </div>
               {String(draft?.customer?.notes || "").trim() ? (
-                <div className="mt-3 text-xs text-zinc-600">{String(draft.customer.notes)}</div>
+                <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                  <div className="text-[11px] font-semibold text-zinc-500">{t.giftNoteLabel}</div>
+                  <div className="mt-2 text-xs leading-5 text-zinc-700">{String(draft.customer.notes)}</div>
+                </div>
               ) : null}
 
               <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
@@ -2251,7 +2290,10 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                   <div className="mt-1 text-xs text-zinc-600">{order.customer.phone}</div>
                 ) : null}
                 {order?.customer?.notes ? (
-                  <div className="mt-2 text-xs text-zinc-600">{order.customer.notes}</div>
+                  <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                    <div className="text-[11px] font-semibold text-zinc-500">{t.giftNoteLabel}</div>
+                    <div className="mt-2 text-xs leading-5 text-zinc-700">{order.customer.notes}</div>
+                  </div>
                 ) : null}
               </div>
 
@@ -2327,6 +2369,24 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
   const status = normalizeOrderStatus(order?.status);
   const statusText = order ? orderStatusLabel(status, t) : "";
   const statusClass = order ? orderStatusBadgeClass(status) : "";
+
+  const trackingSteps = [
+    { key: "received", label: t.orderTrackingStepReceived },
+    { key: "in_production", label: t.orderTrackingStepInProduction },
+    { key: "shipped", label: t.orderTrackingStepShipped },
+    { key: "delivered", label: t.orderTrackingStepDelivered },
+  ];
+
+  const trackingIndex =
+    status === "delivered"
+      ? 4
+      : status === "shipped"
+      ? 3
+      : status === "preparing" || status === "paused"
+      ? 2
+      : status === "pending"
+      ? 1
+      : 0;
 
   const updatedAtMs =
     typeof order?.statusUpdatedAt === "number"
@@ -2430,7 +2490,56 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
                 </div>
               </div>
 
-              {status === "shipped" && order?.trackingNumber ? (
+              {status !== "cancelled" ? (
+                <div className="mt-5">
+                  <div className="text-xs font-semibold text-zinc-500">{t.orderTrackingTitle}</div>
+
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    {trackingSteps.map((s, idx) => {
+                      const stepNumber = idx + 1;
+                      const isComplete = trackingIndex >= stepNumber;
+                      const isActive = trackingIndex === stepNumber;
+
+                      return (
+                        <div key={s.key} className="flex flex-1 flex-col items-center">
+                          <div className="flex w-full items-center">
+                            <div
+                              className={`h-7 w-7 shrink-0 rounded-full border-2 text-[11px] font-extrabold ${
+                                isComplete
+                                  ? "border-zinc-900 bg-zinc-900 text-white"
+                                  : isActive
+                                  ? "border-zinc-900 bg-white text-zinc-900"
+                                  : "border-zinc-200 bg-white text-zinc-400"
+                              }`}
+                              style={{ display: "grid", placeItems: "center" }}
+                            >
+                              {stepNumber}
+                            </div>
+
+                            {idx < trackingSteps.length - 1 ? (
+                              <div
+                                className={`mx-2 h-[2px] w-full rounded ${
+                                  trackingIndex >= stepNumber + 1 ? "bg-zinc-900" : "bg-zinc-200"
+                                }`}
+                              />
+                            ) : null}
+                          </div>
+
+                          <div
+                            className={`mt-2 text-center text-[11px] font-semibold ${
+                              isComplete || isActive ? "text-zinc-800" : "text-zinc-400"
+                            }`}
+                          >
+                            {s.label}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              {(status === "shipped" || status === "delivered") && order?.trackingNumber ? (
                 <div className="mt-3 text-sm text-zinc-700">
                   <span className="font-semibold">{t.orderStatusTracking}:</span> {order.trackingNumber}
                 </div>
@@ -2669,6 +2778,7 @@ function AdminPanel({
   checkoutConfig,
   setCheckoutConfig,
   notify,
+  onPreviewProduct,
   activityLog = [],
   onClearActivityLog,
   logActivity,
@@ -3973,7 +4083,14 @@ function AdminPanel({
                         {money(product.price, language)}
                       </div>
 
-                      <div className="mt-2 flex gap-2 md:justify-end">
+                      <div className="mt-2 flex flex-wrap gap-2 md:justify-end">
+                        <Button
+                          variant="secondary"
+                          onClick={() => (typeof onPreviewProduct === "function" ? onPreviewProduct(product) : null)}
+                        >
+                          {t.preview}
+                        </Button>
+
                         <Button
                           variant="secondary"
                           onClick={() =>
@@ -4481,7 +4598,7 @@ function AdminOrders({ orders, setOrders, t, language, onBack }) {
       return;
     }
 
-    if (nextStatus === "shipped" && !trackingNumber) {
+    if ((nextStatus === "shipped" || nextStatus === "delivered") && !trackingNumber) {
       setOrderStatusErrors((prev) => ({
         ...(prev || {}),
         [order.id]: t.ordersStatusTrackingRequired,
@@ -4502,9 +4619,15 @@ function AdminOrders({ orders, setOrders, t, language, onBack }) {
           statusUpdatedAt: now,
           updatedAt: now,
           shippedAt:
-            nextStatus === "shipped"
+            nextStatus === "shipped" || nextStatus === "delivered"
               ? typeof o?.shippedAt === "number"
                 ? o.shippedAt
+                : now
+              : null,
+          deliveredAt:
+            nextStatus === "delivered"
+              ? typeof o?.deliveredAt === "number"
+                ? o.deliveredAt
                 : now
               : null,
           cancelledAt: nextStatus === "cancelled" ? now : null,
@@ -4743,6 +4866,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                                   <option value="preparing">{orderStatusLabel("preparing", t)}</option>
                                   <option value="paused">{orderStatusLabel("paused", t)}</option>
                                   <option value="shipped">{orderStatusLabel("shipped", t)}</option>
+                                  <option value="delivered">{orderStatusLabel("delivered", t)}</option>
                                   <option value="cancelled">{orderStatusLabel("cancelled", t)}</option>
                                 </select>
                               </div>
@@ -4777,7 +4901,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                             </div>
                           </div>
 
-                          {nextStatusDraft === "shipped" && !statusError ? (
+                          {(nextStatusDraft === "shipped" || nextStatusDraft === "delivered") && !statusError ? (
                             <div className="mt-2 text-xs text-zinc-600">
                               {t.ordersStatusTrackingRequired}
                             </div>
@@ -4973,6 +5097,113 @@ export default function App() {
       // ignore
     }
   }, [favorites]);
+
+  const [recentlyViewed, setRecentlyViewed] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(RECENTLY_VIEWED_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.map((x) => String(x)) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(RECENTLY_VIEWED_STORAGE_KEY, JSON.stringify(recentlyViewed));
+    } catch {
+      // ignore
+    }
+  }, [recentlyViewed]);
+
+  const [reviewsByProduct, setReviewsByProduct] = useState(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(REVIEWS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviewsByProduct));
+    } catch {
+      // ignore
+    }
+  }, [reviewsByProduct]);
+
+  const ratingSummaryByProductId = useMemo(() => {
+    const out = {};
+    const entries = reviewsByProduct && typeof reviewsByProduct === "object" ? reviewsByProduct : {};
+
+    for (const [productId, list] of Object.entries(entries)) {
+      const rows = Array.isArray(list) ? list : [];
+      let total = 0;
+      let count = 0;
+
+      for (const r of rows) {
+        const v = Number(r?.rating);
+        if (!Number.isFinite(v)) continue;
+        const clamped = Math.max(1, Math.min(5, v));
+        total += clamped;
+        count += 1;
+      }
+
+      if (count > 0) {
+        out[String(productId)] = { avg: total / count, count };
+      }
+    }
+
+    return out;
+  }, [reviewsByProduct]);
+
+  function addProductReview({ productId, rating, name, text }) {
+    const id = String(productId || "").trim();
+    if (!id) return;
+
+    const r = Math.round(Number(rating));
+    const safeRating = Number.isFinite(r) ? Math.max(1, Math.min(5, r)) : 0;
+    const safeName = String(name || "").trim();
+    const safeText = String(text || "").trim();
+
+    if (!safeRating || safeText.length < 3) return;
+
+    setReviewsByProduct((prev) => {
+      const base = prev && typeof prev === "object" ? prev : {};
+      const current = Array.isArray(base[id]) ? base[id] : [];
+
+      const reviewId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `review-${id}-${current.length + 1}`;
+
+      const row = {
+        id: reviewId,
+        ts: Date.now(),
+        rating: safeRating,
+        name: safeName,
+        text: safeText,
+      };
+
+      return {
+        ...base,
+        [id]: [row, ...current].slice(0, 200),
+      };
+    });
+
+    pushToast(t.toastReviewAdded, "success");
+    logActivity({
+      kind: "review",
+      messageEs: `Reseña añadida (${safeRating}/5): ${id}`,
+      messageEn: `Review added (${safeRating}/5): ${id}`,
+    });
+  }
 
   const [newsletterEmails, setNewsletterEmails] = useState(() => {
     if (typeof window === "undefined") return [];
@@ -5322,8 +5553,18 @@ export default function App() {
 
   // openProduct
   function openProduct(p) {
-    setSelected(p);
+    const id = String(p?.id ?? "").trim();
+    const resolved = id ? products.find((x) => String(x?.id ?? "") === id) || p : p;
+
+    setSelected(resolved);
     setRoute("product");
+
+    if (!id) return;
+    setRecentlyViewed((prev) => {
+      const base = Array.isArray(prev) ? prev.map((x) => String(x)) : [];
+      const next = [id, ...base.filter((x) => x !== id)];
+      return next.slice(0, 12);
+    });
   }
 
 
@@ -5538,6 +5779,11 @@ export default function App() {
         <Home
           products={products}
           favorites={favorites}
+          recentlyViewedProducts={recentlyViewed
+            .map((id) => products.find((p) => String(p?.id ?? "") === String(id)))
+            .filter(Boolean)}
+          stockById={inventory}
+          ratingSummaryById={ratingSummaryByProductId}
           onToggleFavorite={toggleFavorite}
           notify={pushToast}
           onSubmitNewsletterEmail={submitNewsletterEmail}
@@ -5557,6 +5803,8 @@ export default function App() {
           products={products}
           categories={categories}
           favorites={favorites}
+          stockById={inventory}
+          ratingSummaryById={ratingSummaryByProductId}
           onToggleFavorite={toggleFavorite}
           onOpenProduct={openProduct}
           t={t}
@@ -5566,10 +5814,19 @@ export default function App() {
 
 
       {/* Route: product */}
-      {route === "product" && selected ? (
+      {(route === "product" || route === "admin_product_preview") && selected ? (
         <ProductDetail
           product={selected}
-          onBack={() => setRoute("catalog")}
+          products={products}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+          onOpenProduct={openProduct}
+          stockById={inventory}
+          ratingSummaryById={ratingSummaryByProductId}
+          reviews={reviewsByProduct?.[String(selected.id)]}
+          onAddReview={addProductReview}
+          notify={pushToast}
+          onBack={() => setRoute(route === "admin_product_preview" ? "admin" : "catalog")}
           onAddToCart={addToCart}
           t={t}
           language={language}
@@ -5595,6 +5852,8 @@ export default function App() {
         <Wishlist
           favorites={favorites}
           products={products}
+          stockById={inventory}
+          ratingSummaryById={ratingSummaryByProductId}
           onOpenProduct={openProduct}
           onToggleFavorite={toggleFavorite}
           t={t}
@@ -5653,6 +5912,9 @@ export default function App() {
       {/* Route: about */}
       {route === "about" ? <About t={t} language={language} /> : null}
 
+      {/* Route: faq */}
+      {route === "faq" ? <Faq t={t} language={language} /> : null}
+
       {/* Route: admin */}
       {route === "admin" ? (
         <AdminPanel
@@ -5670,6 +5932,10 @@ export default function App() {
           checkoutConfig={checkoutConfig}
           setCheckoutConfig={setCheckoutConfig}
           notify={pushToast}
+          onPreviewProduct={(p) => {
+            setSelected(p);
+            setRoute("admin_product_preview");
+          }}
           activityLog={activityLog}
           onClearActivityLog={clearActivityLog}
           logActivity={logActivity}

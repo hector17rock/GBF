@@ -2,7 +2,16 @@ import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 import SectionTitle from "../components/SectionTitle";
 
-export default function Wishlist({ favorites = [], products = [], onOpenProduct, onToggleFavorite, t, language }) {
+export default function Wishlist({
+  favorites = [],
+  products = [],
+  stockById,
+  ratingSummaryById,
+  onOpenProduct,
+  onToggleFavorite,
+  t,
+  language,
+}) {
   const favSet = new Set(Array.isArray(favorites) ? favorites : []);
   const list = Array.isArray(products) ? products.filter((p) => favSet.has(String(p?.id))) : [];
 
@@ -23,6 +32,10 @@ export default function Wishlist({ favorites = [], products = [], onOpenProduct,
                 p={p}
                 onOpen={onOpenProduct}
                 language={language}
+                t={t}
+                stockCount={stockById?.[p.id]}
+                ratingAvg={ratingSummaryById?.[String(p.id)]?.avg}
+                ratingCount={ratingSummaryById?.[String(p.id)]?.count}
                 isFavorite
                 onToggleFavorite={onToggleFavorite}
               />
