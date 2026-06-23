@@ -1069,9 +1069,32 @@ function sanitizeCvcInput(raw, brand) {
   return String(raw || "").replace(/\D/g, "").slice(0, maxLen);
 }
 
+// Provided logo assets (from /public)
+const PROVIDED_LOGOS = {
+  paypal: "/paypallogo.png",
+  visa: "/visa-logo-png-image-4.png",
+  mastercard: "/Mastercard-Logo.png",
+  amex: "/American_ExpressLogo.png",
+  discover: "/Discover-logo.png",
+};
+
+// Component: PayPalLogo
+function PayPalLogo({ className = "" }) {
+  return (
+    <img
+      src={PROVIDED_LOGOS.paypal}
+      alt="PayPal"
+      className={`block object-contain ${className}`.trim()}
+      loading="eager"
+      decoding="async"
+      draggable={false}
+    />
+  );
+}
+
 // Component: CreditCardBrandLogo
 function CreditCardBrandLogo({ brand, active = false, className = "" }) {
-  const base = "inline-flex h-9 w-[78px] items-center justify-center rounded-xl border bg-white";
+  const base = "inline-flex h-9 w-[78px] items-center justify-center rounded-xl border bg-white p-1";
   const border = active ? "border-zinc-900" : "border-zinc-200";
 
   const title =
@@ -1084,6 +1107,32 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
       : brand === "discover"
       ? "Discover"
       : "";
+
+  const imgSrc =
+    brand === "visa"
+      ? PROVIDED_LOGOS.visa
+      : brand === "mastercard"
+      ? PROVIDED_LOGOS.mastercard
+      : brand === "amex"
+      ? PROVIDED_LOGOS.amex
+      : brand === "discover"
+      ? PROVIDED_LOGOS.discover
+      : "";
+
+  if (imgSrc) {
+    return (
+      <span title={title} className={`${base} ${border} ${className}`.trim()}>
+        <img
+          src={imgSrc}
+          alt={title}
+          className="block h-7 w-[70px] object-contain"
+          loading="eager"
+          decoding="async"
+          draggable={false}
+        />
+      </span>
+    );
+  }
 
   const commonSvgProps = {
     viewBox: "0 0 72 32",
@@ -1104,31 +1153,7 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
   };
 
   const logo =
-    brand === "visa" ? (
-      <svg {...commonSvgProps}>
-        <rect x="2" y="6" width="68" height="20" rx="6" fill="#1A1F71" />
-        <text {...textProps} fill="#fff" fontSize="13">
-          VISA
-        </text>
-      </svg>
-    ) : brand === "mastercard" ? (
-      <svg {...commonSvgProps}>
-        <rect x="2" y="6" width="68" height="20" rx="6" fill="#ffffff" stroke="#e5e7eb" />
-        <circle cx="34" cy="16" r="7" fill="#EB001B" opacity="0.95" />
-        <circle cx="40" cy="16" r="7" fill="#F79E1B" opacity="0.95" />
-        <text
-          x="14"
-          y="16"
-          dominantBaseline="middle"
-          fill="#111"
-          fontSize="8"
-          fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
-          fontWeight="900"
-        >
-          MC
-        </text>
-      </svg>
-    ) : brand === "amex" ? (
+    brand === "amex" ? (
       <svg {...commonSvgProps}>
         <rect x="2" y="6" width="68" height="20" rx="6" fill="#2E77BC" />
         <text {...textProps} fill="#fff" fontSize="11">
@@ -3373,7 +3398,10 @@ function Checkout({
                         : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                     }`}
                   >
-                    {t.payByPayPal}
+                    <span className="inline-flex items-center">
+                      <span className="sr-only">{t.payByPayPal}</span>
+                      <PayPalLogo className="h-6 w-6" />
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -3431,31 +3459,20 @@ function Checkout({
                 </div>
 
                 <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="text-xs font-semibold text-zinc-600">{t.cardAcceptedLabel}</div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {acceptedCardBrands.map((b) => (
-                        <CreditCardBrandLogo key={b} brand={b} active={cardBrand === b} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <label className="text-xs font-semibold text-zinc-700">{t.cardNumberLabel}</label>
-                    <input
-                      value={cardNumberFormatted}
-                      onChange={(e) => {
-                        const next = sanitizeCardNumberInput(e.target.value);
-                        setDraftCardField("number", next.formatted);
-                      }}
-                      placeholder={t.cardNumberPlaceholder}
-                      inputMode="numeric"
-                      autoComplete="cc-number"
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    />
-                    <div className="mt-2 text-xs text-zinc-600">
-                      {t.cardTypeLabel}: <span className="font-semibold">{cardBrandLabel}</span>
-                    </div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.cardNumberLabel}</label>
+                  <input
+                    value={cardNumberFormatted}
+                    onChange={(e) => {
+                      const next = sanitizeCardNumberInput(e.target.value);
+                      setDraftCardField("number", next.formatted);
+                    }}
+                    placeholder={t.cardNumberPlaceholder}
+                    inputMode="numeric"
+                    autoComplete="cc-number"
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                  <div className="mt-2 text-xs text-zinc-600">
+                    {t.cardTypeLabel}: <span className="font-semibold">{cardBrandLabel}</span>
                   </div>
                 </div>
 
