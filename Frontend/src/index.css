@@ -1,1 +1,83 @@
 @import "tailwindcss";
+
+/* ============================
+   Page-to-page transitions
+   ============================ */
+
+.gbf-route {
+  /* Used by the View Transitions API (when available). */
+  view-transition-name: gbf-route;
+
+  /* Prevent side-scroll during slide transitions. */
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.gbf-page-in {
+  will-change: transform, opacity;
+  transform-origin: 50% 25%;
+
+  /* Premium e-commerce feel: lateral slide + subtle scale */
+  animation: gbf-page-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gbf-page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(22px, 0, 0) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbf-page-in {
+    animation: none;
+  }
+}
+
+/* If View Transitions API is running, prefer it over the fallback CSS animation. */
+[data-gbf-vt-running="1"] .gbf-page-in {
+  animation: none;
+}
+
+/* View Transitions API (Chrome/Edge/Safari depending on support)
+   Premium e-commerce: old slides slightly left, new comes from right. */
+::view-transition-old(gbf-route) {
+  animation: gbf-vt-old 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-new(gbf-route) {
+  animation: gbf-vt-new 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gbf-vt-old {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-18px, 0, 0) scale(0.995);
+  }
+}
+
+@keyframes gbf-vt-new {
+  from {
+    opacity: 0;
+    transform: translate3d(22px, 0, 0) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(gbf-route),
+  ::view-transition-new(gbf-route) {
+    animation: none;
+  }
+}

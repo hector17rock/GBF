@@ -30,7 +30,7 @@ export default function NewsletterSignup({ t, onSubmitEmail }) {
   }
 
   return (
-    <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-lg font-extrabold text-zinc-900">{t.newsletterTitle}</div>

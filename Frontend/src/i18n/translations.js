@@ -34,12 +34,21 @@ export const translations = {
     heroText:
       "Una tienda cristiana moderna para regalos y hábitos espirituales. Personaliza tu Yeti o tu Journal con nombre, frase o versículo.",
     heroPrimary: "Personalizar ahora",
-    heroSecondary: "Ver colección",
+    heroSecondary: "Ver productos",
 
     heroFeature1Title: "Personalización",
     heroFeature1Body: "Texto, tipografía, color y versículo.",
     heroFeature2Title: "Listo para regalar",
     heroFeature2Body: "Diseños limpios y mensajes claros.",
+
+    homeBenefit1Title: "Envío rápido",
+    homeBenefit1Body: "Opciones seguras y confiables.",
+    homeBenefit2Title: "Calidad premium",
+    homeBenefit2Body: "Detalles cuidados en cada pieza.",
+    homeBenefit3Title: "Fe con propósito",
+    homeBenefit3Body: "Productos que inspiran.",
+    homeBenefit4Title: "Pago seguro",
+    homeBenefit4Body: "Tu compra, protegida.",
 
     heroCountdownEndsIn: "Termina en",
     heroCountdownDays: (n) => `${n} ${n === 1 ? "día" : "días"}`,
@@ -281,8 +290,53 @@ export const translations = {
     adminSubtitle: "Gestiona visualmente los productos de la tienda.",
     adminStatProducts: "Productos",
     adminStatProductsBody: "Artículos activos en catálogo.",
-    adminStatMode: "Modo",
-    adminStatModeBody: "Datos simulados en frontend.",
+    adminStatMode: "Usuario de Administrador",
+    adminStatModeBody:
+      "Crea o elimina usuarios y contraseñas de administrador (requiere iniciar sesión).",
+
+    adminManageAccess: "Acceso admin",
+    adminLoginTitle: "Acceso Admin",
+    adminLoginSubtitle: "Inicia sesión para entrar al panel de administración.",
+    adminSetupTitle: "Configurar Admin",
+    adminSetupSubtitle:
+      "Crea el primer usuario administrador para proteger el panel.",
+
+    adminAuthUsernameLabel: "Usuario",
+    adminAuthUsernamePlaceholder: "Ej: admin",
+    adminAuthPasswordLabel: "Contraseña",
+    adminAuthPasswordPlaceholder: "Tu contraseña",
+    adminAuthConfirmPasswordLabel: "Confirmar contraseña",
+    adminAuthConfirmPasswordPlaceholder: "Repite la contraseña",
+
+    adminLoginButton: "Entrar",
+    adminSetupCreateButton: "Crear admin",
+    adminLogout: "Cerrar sesión",
+    adminAuthBackHome: "Volver al inicio",
+
+    adminAuthRequired: "Completa usuario y contraseña.",
+    adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
+    adminAuthInvalid: "Usuario o contraseña incorrectos.",
+    adminAuthDisclaimer:
+      "Demo local: las credenciales se guardan en este navegador (localStorage).",
+
+    adminAuthTipsTitle: "Tips",
+    adminAuthTip1: "Usa una contraseña única (no la reutilices).",
+    adminAuthTip2:
+      "Si borras el storage del navegador, tendrás que configurar el admin de nuevo.",
+    adminAuthTip3: "Esto es frontend-only; luego conectaremos un backend real.",
+
+    adminUsersTitle: "Administradores",
+    adminUsersSubtitle:
+      "Crea o elimina usuarios con acceso al panel de administración.",
+    adminUsersCreateTitle: "Crear nuevo admin",
+    adminUsersCreateButton: "Crear usuario",
+    adminUsersCreateError: "Ese usuario ya existe o hubo un error.",
+    adminUsersDeleteError: "No se pudo eliminar.",
+    adminUsersListTitle: "Usuarios admin",
+    adminUsersEmpty: "Aún no hay usuarios admin.",
+    adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
+    adminUsersCredentialHint: "Acceso local (este navegador).",
+
     adminStatManagement: "Gestión",
     adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
 
@@ -417,6 +471,11 @@ export const translations = {
     heroAdminTitle: "Promoción del Home",
     heroAdminSubtitle:
       "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin programador.",
+
+    adminHomepageTitle: "Página Principal",
+    adminHomepageSubtitle:
+      "Personaliza el cuadro principal del Home y los iconos con sus textos.",
+
     heroAdminEnabled: "Activar cuadro del Home",
     heroAdminReset: "Restablecer",
     heroAdminEs: "Español (ES)",
@@ -430,6 +489,14 @@ export const translations = {
     heroAdminHeroImage: "Imagen principal",
     heroAdminImage1: "Imagen 1",
     heroAdminImage2: "Imagen 2",
+
+    heroAdminBenefitsTitle: "Iconos y beneficios",
+    heroAdminBenefitsSubtitle:
+      "Edita los iconos y textos que aparecen debajo del cuadro principal.",
+    heroAdminBenefitN: (n) => `Beneficio ${n}`,
+    heroAdminBenefitIcon: "Icono",
+    heroAdminBenefitTitle: "Título",
+    heroAdminBenefitBody: "Descripción",
 
     uploadImageLabel: "Subir imagen",
     uploading: "Subiendo...",
@@ -510,12 +577,21 @@ export const translations = {
     heroText:
       "A modern Christian store for meaningful gifts and spiritual habits. Customize your Yeti or Journal with a name, phrase, or verse.",
     heroPrimary: "Customize now",
-    heroSecondary: "View collection",
+    heroSecondary: "View products",
 
     heroFeature1Title: "Customization",
     heroFeature1Body: "Text, typography, color, and verse.",
     heroFeature2Title: "Ready to gift",
     heroFeature2Body: "Clean designs and clear messages.",
+
+    homeBenefit1Title: "Fast shipping",
+    homeBenefit1Body: "Reliable delivery options.",
+    homeBenefit2Title: "Premium quality",
+    homeBenefit2Body: "Crafted with care.",
+    homeBenefit3Title: "Faith-driven",
+    homeBenefit3Body: "Products that inspire.",
+    homeBenefit4Title: "Secure checkout",
+    homeBenefit4Body: "Protected payments.",
 
     heroCountdownEndsIn: "Ends in",
     heroCountdownDays: (n) => `${n} ${n === 1 ? "day" : "days"}`,
@@ -755,8 +831,51 @@ export const translations = {
     adminSubtitle: "Visually manage the store's products.",
     adminStatProducts: "Products",
     adminStatProductsBody: "Active items in the catalog.",
-    adminStatMode: "Mode",
-    adminStatModeBody: "Frontend-only mock data.",
+    adminStatMode: "Admin user",
+    adminStatModeBody:
+      "Create or remove admin usernames and passwords (login required).",
+
+    adminManageAccess: "Admin access",
+    adminLoginTitle: "Admin login",
+    adminLoginSubtitle: "Sign in to access the admin panel.",
+    adminSetupTitle: "Set up Admin",
+    adminSetupSubtitle: "Create the first admin account to protect the panel.",
+
+    adminAuthUsernameLabel: "Username",
+    adminAuthUsernamePlaceholder: "e.g. admin",
+    adminAuthPasswordLabel: "Password",
+    adminAuthPasswordPlaceholder: "Your password",
+    adminAuthConfirmPasswordLabel: "Confirm password",
+    adminAuthConfirmPasswordPlaceholder: "Repeat password",
+
+    adminLoginButton: "Sign in",
+    adminSetupCreateButton: "Create admin",
+    adminLogout: "Log out",
+    adminAuthBackHome: "Back to home",
+
+    adminAuthRequired: "Enter username and password.",
+    adminAuthPasswordMismatch: "Passwords do not match.",
+    adminAuthInvalid: "Incorrect username or password.",
+    adminAuthDisclaimer:
+      "Local demo: credentials are saved in this browser (localStorage).",
+
+    adminAuthTipsTitle: "Tips",
+    adminAuthTip1: "Use a unique password (do not reuse it).",
+    adminAuthTip2:
+      "If you clear browser storage, you'll need to set up admin again.",
+    adminAuthTip3: "This is frontend-only; we'll connect a real backend later.",
+
+    adminUsersTitle: "Administrators",
+    adminUsersSubtitle: "Create or remove users with access to the admin panel.",
+    adminUsersCreateTitle: "Create new admin",
+    adminUsersCreateButton: "Create user",
+    adminUsersCreateError: "That user already exists or there was an error.",
+    adminUsersDeleteError: "Could not delete.",
+    adminUsersListTitle: "Admin users",
+    adminUsersEmpty: "No admin users yet.",
+    adminUsersCannotDeleteLast: "You cannot delete the last admin.",
+    adminUsersCredentialHint: "Local access (this browser).",
+
     adminStatManagement: "Management",
     adminStatManagementBody: "Next: add, edit, and delete products.",
 
@@ -891,6 +1010,11 @@ export const translations = {
     heroAdminTitle: "Homepage promotion",
     heroAdminSubtitle:
       "Edit the main homepage hero for promotions or content updates without needing a developer.",
+
+    adminHomepageTitle: "Homepage",
+    adminHomepageSubtitle:
+      "Customize the main Home hero and the icons with their text.",
+
     heroAdminEnabled: "Enable homepage hero",
     heroAdminReset: "Reset",
     heroAdminEs: "Spanish (ES)",
@@ -901,9 +1025,17 @@ export const translations = {
     heroAdminText: "Text",
     heroAdminPrimary: "Primary button",
     heroAdminSecondary: "Secondary button",
-    heroAdminHeroImage: "Main image",
+    heroAdminHeroImage: "Hero image",
     heroAdminImage1: "Image 1",
     heroAdminImage2: "Image 2",
+
+    heroAdminBenefitsTitle: "Icons & benefits",
+    heroAdminBenefitsSubtitle:
+      "Edit the icons and text that appear below the main hero box.",
+    heroAdminBenefitN: (n) => `Benefit ${n}`,
+    heroAdminBenefitIcon: "Icon",
+    heroAdminBenefitTitle: "Title",
+    heroAdminBenefitBody: "Description",
 
     uploadImageLabel: "Upload image",
     uploading: "Uploading...",

@@ -20,8 +20,12 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
   const closeMenuLabel = language === "es" ? "Cerrar menú" : "Close menu";
 
   const go = (nextRoute) => {
-    setRoute(nextRoute);
     setMenuOpen(false);
+
+    // Let the menu close render first, then navigate.
+    window.requestAnimationFrame(() => {
+      setRoute(nextRoute);
+    });
   };
 
   return (
@@ -225,7 +229,9 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
                   route === "admin" ||
                   route === "admin_orders" ||
                   route === "admin_profit" ||
-                  route === "admin_product_preview"
+                  route === "admin_product_preview" ||
+                  route === "admin_login" ||
+                  route === "admin_users"
                     ? "bg-zinc-900 text-white"
                     : "text-zinc-800 hover:bg-zinc-100"
                 }`}

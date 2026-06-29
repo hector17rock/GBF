@@ -38,7 +38,7 @@ export default function ProductCard({
   const tags = Array.isArray(p?.tags) ? p.tags : [];
 
   return (
-    <div className="group overflow-hidden rounded-[24px] border border-zinc-200/60 bg-white/55 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70">
+    <div className="group overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-left shadow-sm transition hover:bg-zinc-50">
       <div className="relative overflow-hidden">
         <button type="button" onClick={open} className="block w-full text-left">
           <img
@@ -49,7 +49,7 @@ export default function ProductCard({
         </button>
 
         {lowStock ? (
-          <div className="absolute left-3 top-3 inline-flex items-center rounded-full border border-amber-200 bg-white/75 px-3 py-1 text-[11px] font-extrabold text-amber-800 shadow-sm backdrop-blur-xl">
+          <div className="absolute left-3 top-3 inline-flex items-center rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-[11px] font-extrabold text-zinc-900 shadow-sm">
             {typeof t?.lowStockLeft === "function"
               ? t.lowStockLeft(stockN)
               : language === "es"
@@ -62,10 +62,8 @@ export default function ProductCard({
           <button
             type="button"
             onClick={toggleFav}
-            className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-sm backdrop-blur-xl transition ${
-              isFavorite
-                ? "border-rose-200 bg-white/70 text-rose-600"
-                : "border-zinc-200 bg-white/60 text-zinc-700 hover:bg-white/80"
+            className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-700 shadow-sm transition hover:bg-white ${
+              isFavorite ? "text-zinc-900" : ""
             }`}
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
@@ -126,7 +124,7 @@ function StarRow({ value }) {
           <svg
             key={i}
             viewBox="0 0 24 24"
-            className={`h-4 w-4 ${on ? "text-amber-500" : "text-zinc-300"}`}
+            className={`h-4 w-4 ${on ? "text-zinc-800" : "text-zinc-300"}`}
             fill="currentColor"
             aria-hidden="true"
           >

@@ -37,10 +37,10 @@ export default function DailyVerseCard({ verses = [], t, language, notify }) {
   }
 
   return (
-    <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <div className="inline-flex items-center rounded-full border border-zinc-200/60 bg-white/55 px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm backdrop-blur-xl">
+          <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
             {t.dailyVerseTitle}
           </div>
           {text ? (

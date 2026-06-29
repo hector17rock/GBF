@@ -2,7 +2,7 @@ import { l10n } from "../utils/format";
 
 function StarRow() {
   return (
-    <div className="flex items-center gap-1 text-amber-500" aria-label="5 stars">
+    <div className="flex items-center gap-1 text-zinc-800" aria-label="5 stars">
       {Array.from({ length: 5 }).map((_, idx) => (
         <svg
           key={idx}
@@ -23,7 +23,7 @@ export default function TestimonialCard({ testimonial, language }) {
   const author = l10n(testimonial?.author, language);
 
   return (
-    <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+    <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
       <StarRow />
       <div className="mt-3 text-sm font-semibold leading-6 text-zinc-800">“{quote}”</div>
       <div className="mt-3 text-xs font-semibold text-zinc-500">— {author}</div>

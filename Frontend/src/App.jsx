@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { translations } from "./i18n/translations";
 import { COLLECTIONS, VERSES, FONTS, COLORS, DAILY_VERSES } from "./data/catalog";
 import {
@@ -19,12 +20,15 @@ import SectionTitle from "./components/SectionTitle";
 import TestimonialCard from "./components/TestimonialCard";
 import ToastStack from "./components/ToastStack";
 import TopBar from "./components/TopBar";
+import PageTransition from "./components/PageTransition";
 import { TESTIMONIALS } from "./data/testimonials";
 import Catalog from "./pages/Catalog";
 import Cart from "./pages/Cart";
 import ProductDetail from "./pages/ProductDetail";
 import Wishlist from "./pages/Wishlist";
 import Faq from "./pages/Faq";
+import AdminLogin from "./pages/AdminLogin";
+import AdminUsers from "./pages/AdminUsers";
 import {
   buildDefaultCheckoutConfig,
   normalizeCheckoutConfig,
@@ -39,6 +43,7 @@ import {
 } from "./utils/orders";
 import { getPrTaxBreakdownFromOrder } from "./utils/taxes";
 import { escapeHtml, openPrintWindow } from "./utils/print";
+import { buildPasswordRecord, normalizeAdminUsers, verifyPassword } from "./utils/adminAuth";
 
 // =====================================================
 // App.jsx (single-file MVP) — Sections & Functions Index
@@ -85,6 +90,8 @@ const RECENTLY_VIEWED_STORAGE_KEY = "gbf.recentlyViewed.v1";
 const REVIEWS_STORAGE_KEY = "gbf.reviews.v1";
 const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
+const ADMIN_USERS_STORAGE_KEY = "gbf.adminUsers.v1";
+const ADMIN_SESSION_STORAGE_KEY = "gbf.adminSession.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -300,6 +307,197 @@ const DEFAULT_HERO_IMAGES = {
     "https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80",
 };
 
+const HERO_BENEFIT_ICON_LIBRARY = [
+  {
+    id: "truck",
+    label: { es: "Envío", en: "Shipping" },
+    render: ({ className = "h-5 w-5", strokeWidth = 2 } = {}) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M3 7h11v10H3z" />
+        <path d="M14 10h4l3 3v4h-7" />
+        <path d="M7 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+        <path d="M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+      </svg>
+    ),
+  },
+  {
+    id: "badge",
+    label: { es: "Calidad", en: "Quality" },
+    render: ({ className = "h-5 w-5", strokeWidth = 2 } = {}) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z" />
+      </svg>
+    ),
+  },
+  {
+    id: "heart",
+    label: { es: "Fe", en: "Faith" },
+    render: ({ className = "h-5 w-5", strokeWidth = 2 } = {}) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M12 21s-7-4.4-9.5-9C1 9 2.8 6 6 6c1.8 0 3.1 1 4 2 0.9-1 2.2-2 4-2 3.2 0 5 3 3.5 6-2.5 4.6-9.5 9-9.5 9z" />
+      </svg>
+    ),
+  },
+  {
+    id: "lock",
+    label: { es: "Seguro", en: "Secure" },
+    render: ({ className = "h-5 w-5", strokeWidth = 2 } = {}) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M6 11V8a6 6 0 1 1 12 0v3" />
+        <path d="M5 11h14v10H5z" />
+      </svg>
+    ),
+  },
+  {
+    id: "gift",
+    label: { es: "Regalo", en: "Gift" },
+    render: ({ className = "h-5 w-5", strokeWidth = 2 } = {}) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M20 12v10H4V12" />
+        <path d="M2 7h20v5H2z" />
+        <path d="M12 22V7" />
+        <path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C10 2 12 7 12 7Z" />
+        <path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C14 2 12 7 12 7Z" />
+      </svg>
+    ),
+  },
+  {
+    id: "tag",
+    label: { es: "Oferta", en: "Deal" },
+    render: ({ className = "h-5 w-5", strokeWidth = 2 } = {}) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={strokeWidth}
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M20 12l-8 8-10-10V2h8z" />
+        <path d="M7 7h.01" />
+      </svg>
+    ),
+  },
+];
+
+const HERO_BENEFIT_ICON_BY_ID = Object.fromEntries(
+  HERO_BENEFIT_ICON_LIBRARY.map((x) => [x.id, x])
+);
+
+function HeroBenefitIcon({ iconId, className = "h-5 w-5", strokeWidth = 2 }) {
+  const id = String(iconId || "").trim();
+  const item = HERO_BENEFIT_ICON_BY_ID[id] || HERO_BENEFIT_ICON_BY_ID.truck;
+  return item?.render ? item.render({ className, strokeWidth }) : null;
+}
+
+function buildDefaultHeroBenefits() {
+  return [
+    {
+      id: "benefit-1",
+      iconId: "truck",
+      title: {
+        es: translations.es.homeBenefit1Title,
+        en: translations.en.homeBenefit1Title,
+      },
+      body: {
+        es: translations.es.homeBenefit1Body,
+        en: translations.en.homeBenefit1Body,
+      },
+    },
+    {
+      id: "benefit-2",
+      iconId: "badge",
+      title: {
+        es: translations.es.homeBenefit2Title,
+        en: translations.en.homeBenefit2Title,
+      },
+      body: {
+        es: translations.es.homeBenefit2Body,
+        en: translations.en.homeBenefit2Body,
+      },
+    },
+    {
+      id: "benefit-3",
+      iconId: "heart",
+      title: {
+        es: translations.es.homeBenefit3Title,
+        en: translations.en.homeBenefit3Title,
+      },
+      body: {
+        es: translations.es.homeBenefit3Body,
+        en: translations.en.homeBenefit3Body,
+      },
+    },
+    {
+      id: "benefit-4",
+      iconId: "lock",
+      title: {
+        es: translations.es.homeBenefit4Title,
+        en: translations.en.homeBenefit4Title,
+      },
+      body: {
+        es: translations.es.homeBenefit4Body,
+        en: translations.en.homeBenefit4Body,
+      },
+    },
+  ];
+}
+
+function normalizeHeroBenefits(input) {
+  const base = buildDefaultHeroBenefits();
+  const raw = Array.isArray(input) ? input : [];
+
+  return base.map((b, idx) => {
+    const it = raw[idx] && typeof raw[idx] === "object" ? raw[idx] : {};
+
+    const iconIdCandidate = String(it.iconId || "").trim();
+    const iconId = HERO_BENEFIT_ICON_BY_ID[iconIdCandidate] ? iconIdCandidate : b.iconId;
+
+    return {
+      ...b,
+      ...it,
+      iconId,
+      title: { ...b.title, ...(it.title || {}) },
+      body: { ...b.body, ...(it.body || {}) },
+    };
+  });
+}
+
 // Helper: buildDefaultHeroConfig
 function buildDefaultHeroConfig() {
   return {
@@ -319,6 +517,7 @@ function buildDefaultHeroConfig() {
       en: translations.en.heroSecondary,
     },
     images: { ...DEFAULT_HERO_IMAGES },
+    benefits: buildDefaultHeroBenefits(),
   };
 }
 
@@ -344,6 +543,7 @@ function normalizeHeroConfig(input) {
     primary: { ...base.primary, ...(cfg.primary || {}) },
     secondary: { ...base.secondary, ...(cfg.secondary || {}) },
     images: { ...base.images, ...(cfg.images || {}) },
+    benefits: normalizeHeroBenefits(cfg.benefits),
   };
 }
 
@@ -950,65 +1150,34 @@ function NavLink({ active, onClick, children }) {
   );
 }
 
-// Component: CollectionCards
-function CollectionCards({ onPick, language, t }) {
-  return (
-    <div className="grid gap-3 md:grid-cols-3">
-      {COLLECTIONS.map((c) => (
-        <button
-          key={c.id}
-          onClick={() => onPick(c)}
-          className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
-        >
-          <div className="text-sm font-bold text-zinc-900">
-            {l10n(c.name, language)}
-          </div>
-          <div className="mt-2 text-sm leading-6 text-zinc-600">
-            {l10n(c.desc, language)}
-          </div>
-          <div className="mt-4">
-            <Pill>{t.viewProducts}</Pill>
-          </div>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // Component: Hero
 function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
-  const promoType = heroConfig?.promoType === "promo" ? "promo" : "content";
-  const promoStart = heroConfig?.promoSchedule?.startLocal || "";
-  const promoEnd = heroConfig?.promoSchedule?.endLocal || "";
+  const cfg = normalizeHeroConfig(heroConfig);
+
+  const promoType = cfg.promoType === "promo" ? "promo" : "content";
+  const promoStart = cfg.promoSchedule?.startLocal || "";
+  const promoEnd = cfg.promoSchedule?.endLocal || "";
 
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
-    if (!heroConfig?.enabled || promoType !== "promo") return;
+    if (!cfg.enabled || promoType !== "promo") return;
 
     const id = window.setInterval(() => {
       setNowMs(Date.now());
     }, 1000);
 
     return () => window.clearInterval(id);
-  }, [heroConfig?.enabled, promoType, promoStart, promoEnd]);
+  }, [cfg.enabled, promoType, promoStart, promoEnd]);
 
-  const enabled = isHeroOverrideActiveAt(heroConfig, nowMs);
+  const enabled = isHeroOverrideActiveAt(cfg, nowMs);
 
-  const pillOverride = enabled ? l10n(heroConfig?.pill, language).trim() : "";
-  const titleOneOverride = enabled
-    ? l10n(heroConfig?.titleOne, language).trim()
-    : "";
-  const titleTwoOverride = enabled
-    ? l10n(heroConfig?.titleTwo, language).trim()
-    : "";
-  const textOverride = enabled ? l10n(heroConfig?.text, language).trim() : "";
-  const primaryOverride = enabled
-    ? l10n(heroConfig?.primary, language).trim()
-    : "";
-  const secondaryOverride = enabled
-    ? l10n(heroConfig?.secondary, language).trim()
-    : "";
+  const pillOverride = enabled ? l10n(cfg.pill, language).trim() : "";
+  const titleOneOverride = enabled ? l10n(cfg.titleOne, language).trim() : "";
+  const titleTwoOverride = enabled ? l10n(cfg.titleTwo, language).trim() : "";
+  const textOverride = enabled ? l10n(cfg.text, language).trim() : "";
+  const primaryOverride = enabled ? l10n(cfg.primary, language).trim() : "";
+  const secondaryOverride = enabled ? l10n(cfg.secondary, language).trim() : "";
 
   const pillText = pillOverride || t.heroPill;
   const titleOne = titleOneOverride || t.heroTitleOne;
@@ -1017,7 +1186,7 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
   const primaryLabel = primaryOverride || t.heroPrimary;
   const secondaryLabel = secondaryOverride || t.heroSecondary;
 
-  const promoEndMs = localDateTimeStringToMs(heroConfig?.promoSchedule?.endLocal);
+  const promoEndMs = localDateTimeStringToMs(cfg?.promoSchedule?.endLocal);
   const remainingMs = Number.isFinite(promoEndMs) ? promoEndMs - nowMs : Number.NaN;
   const showCountdown =
     promoType === "promo" &&
@@ -1034,48 +1203,42 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
     : "";
 
   const heroImage =
-    enabled && typeof heroConfig?.images?.hero === "string" && heroConfig.images.hero.trim()
-      ? heroConfig.images.hero.trim()
+    enabled && typeof cfg?.images?.hero === "string" && cfg.images.hero.trim()
+      ? cfg.images.hero.trim()
       : DEFAULT_HERO_IMAGES.hero;
 
   const image1 =
-    enabled &&
-    typeof heroConfig?.images?.product1 === "string" &&
-    heroConfig.images.product1.trim()
-      ? heroConfig.images.product1.trim()
+    enabled && typeof cfg?.images?.product1 === "string" && cfg.images.product1.trim()
+      ? cfg.images.product1.trim()
       : DEFAULT_HERO_IMAGES.product1;
 
   const image2 =
-    enabled &&
-    typeof heroConfig?.images?.product2 === "string" &&
-    heroConfig.images.product2.trim()
-      ? heroConfig.images.product2.trim()
+    enabled && typeof cfg?.images?.product2 === "string" && cfg.images.product2.trim()
+      ? cfg.images.product2.trim()
       : DEFAULT_HERO_IMAGES.product2;
 
-  return (
-    <div className="relative overflow-hidden rounded-[28px] border border-zinc-200/60 bg-white/55 shadow-sm backdrop-blur-xl">
-      <div className="absolute inset-0">
-        <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
-        <div className="absolute -right-32 -bottom-32 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
-      </div>
+  const benefits = Array.isArray(cfg.benefits) ? cfg.benefits : buildDefaultHeroBenefits();
 
-      <div className="relative grid gap-6 p-6 md:grid-cols-2 md:p-10">
-        <div>
-          <Pill>{pillText}</Pill>
+  return (
+    <div className="overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-sm">
+      <div className="grid gap-8 p-6 md:grid-cols-2 md:p-10">
+        <div className="flex flex-col justify-center">
+          <div className="text-[11px] font-semibold tracking-[0.22em] text-zinc-500">GROW BY FAITH</div>
+          <div className="mt-3 text-xs font-semibold text-zinc-600">{pillText}</div>
 
           {showCountdown ? (
-            <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-zinc-200/60 bg-white/55 px-3 py-1 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-xl">
-              <span className="text-zinc-600">{t.heroCountdownEndsIn}</span>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700">
+              <span className="text-zinc-500">{t.heroCountdownEndsIn}</span>
               <span className="text-zinc-900">{countdownValue}</span>
             </div>
           ) : null}
 
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
-            {titleOne}
-            <span className="block">{titleTwo}</span>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-zinc-900 md:text-5xl">
+            <span className="font-serif">{titleOne}</span>
+            <span className="block font-serif">{titleTwo}</span>
           </h1>
 
-          <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
+          <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-600 md:text-base md:leading-7">
             {heroText}
           </p>
 
@@ -1083,51 +1246,70 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
             <Button onClick={onPrimary} variant="primary">
               {primaryLabel}
             </Button>
-
             <Button onClick={onSecondary} variant="secondary">
               {secondaryLabel}
             </Button>
           </div>
+        </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-zinc-600 md:max-w-md">
-            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl">
-              <div className="font-semibold text-zinc-900">{t.heroFeature1Title}</div>
-              <div className="mt-1">{t.heroFeature1Body}</div>
+        <div>
+          <div className="rounded-[28px] border border-zinc-200 bg-zinc-50 p-4">
+            <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white">
+              <img
+                alt="hero"
+                src={heroImage}
+                className="h-56 w-full object-cover md:h-72"
+                loading="eager"
+                decoding="async"
+                draggable={false}
+              />
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl">
-              <div className="font-semibold text-zinc-900">{t.heroFeature2Title}</div>
-              <div className="mt-1">{t.heroFeature2Body}</div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white">
+                <img
+                  alt="product"
+                  src={image1}
+                  className="h-28 w-full object-cover md:h-32"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
+              </div>
+              <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white">
+                <img
+                  alt="product"
+                  src={image2}
+                  className="h-28 w-full object-cover md:h-32"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid gap-3">
-          <div className="overflow-hidden rounded-[24px] border border-zinc-200">
-            <img
-              alt="hero"
-              src={heroImage}
-              className="h-44 w-full object-cover md:h-52"
-            />
-          </div>
+      <div className="border-t border-zinc-200 px-6 py-5 md:px-10">
+        <div className="grid gap-4 md:grid-cols-4">
+          {benefits.map((b, idx) => {
+            const title = l10n(b?.title, language) || "";
+            const body = l10n(b?.body, language) || "";
+            const key = String(b?.id || idx);
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="overflow-hidden rounded-[24px] border border-zinc-200">
-              <img
-                alt="product"
-                src={image1}
-                className="h-36 w-full object-cover"
-              />
-            </div>
-
-            <div className="overflow-hidden rounded-[24px] border border-zinc-200">
-              <img
-                alt="product"
-                src={image2}
-                className="h-36 w-full object-cover"
-              />
-            </div>
-          </div>
+            return (
+              <div key={key} className="flex items-start gap-2">
+                <div className="mt-0.5 inline-flex shrink-0 text-zinc-900">
+                  <HeroBenefitIcon iconId={b?.iconId} className="h-5 w-5" strokeWidth={2} />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-zinc-900">{title}</div>
+                  <div className="mt-1 text-xs text-zinc-600">{body}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -1136,14 +1318,12 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
 
 // Page: Home
 function Home({
-  products,
   favorites = [],
   recentlyViewedProducts = [],
   stockById,
   ratingSummaryById,
   onGoCatalog,
   onOpenProduct,
-  onPickCollection,
   onToggleFavorite,
   notify,
   onSubmitNewsletterEmail,
@@ -1151,7 +1331,6 @@ function Home({
   language,
   heroConfig,
 }) {
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <Hero
@@ -1166,35 +1345,11 @@ function Home({
         <DailyVerseCard verses={DAILY_VERSES} t={t} language={language} notify={notify} />
       </div>
 
-      <div className="mt-8">
-        <SectionTitle title={t.collectionsTitle} subtitle={t.collectionsSubtitle} />
-        <CollectionCards onPick={onPickCollection} t={t} language={language} />
-      </div>
-
-      <div className="mt-10">
-        <SectionTitle title={t.featuredTitle} subtitle={t.featuredSubtitle} />
-        <div className="grid gap-3 md:grid-cols-2">
-          {products.map((p) => (
-            <ProductCard
-              key={p.id}
-              p={p}
-              onOpen={onOpenProduct}
-              language={language}
-              t={t}
-              stockCount={stockById?.[p.id]}
-              ratingAvg={ratingSummaryById?.[String(p.id)]?.avg}
-              ratingCount={ratingSummaryById?.[String(p.id)]?.count}
-              isFavorite={Array.isArray(favorites) ? favorites.includes(String(p.id)) : false}
-              onToggleFavorite={onToggleFavorite}
-            />
-          ))}
-        </div>
-      </div>
 
       {recentlyViewedProducts.length ? (
         <div className="mt-10">
           <SectionTitle title={t.recentlyViewedTitle} subtitle={t.recentlyViewedSubtitle} />
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             {recentlyViewedProducts.map((p) => (
               <ProductCard
                 key={p.id}
@@ -1226,7 +1381,7 @@ function Home({
         <NewsletterSignup t={t} onSubmitEmail={onSubmitNewsletterEmail} />
       </div>
 
-      <div className="mt-10 rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="mt-10 rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-10">
         <SectionTitle title={t.stepsTitle} subtitle={t.stepsSubtitle} />
         <div className="grid gap-4 md:grid-cols-3">
           <Step n="1" title={t.step1Title} desc={t.step1Desc} />
@@ -1235,12 +1390,12 @@ function Home({
         </div>
       </div>
 
-      <div className="mt-10 grid gap-3 md:grid-cols-2">
-        <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+      <div className="mt-10 grid gap-4 md:grid-cols-2">
+        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="text-sm font-bold text-zinc-900">{t.mottoTitle}</div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">{t.mottoQuote}</p>
         </div>
-        <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="text-sm font-bold text-zinc-900">{t.quickCtaTitle}</div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">{t.quickCtaBody}</p>
         </div>
@@ -1254,7 +1409,7 @@ function Home({
 // Component: Step
 function Step({ n, title, desc }) {
   return (
-    <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+    <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-bold text-white">
           {n}
@@ -2763,20 +2918,180 @@ function About({ t, language }) {
 }
 
 // Page: AdminPanel
+function HeroBenefitsEditor({ heroConfig, setHeroConfig, t, language }) {
+  const cfg = normalizeHeroConfig(heroConfig);
+  const benefits = Array.isArray(cfg.benefits) ? cfg.benefits : buildDefaultHeroBenefits();
+
+  function setBenefitIcon(index, iconId) {
+    if (typeof setHeroConfig !== "function") return;
+
+    setHeroConfig((prev) => {
+      const next = normalizeHeroConfig(prev);
+      const list = Array.isArray(next.benefits) ? next.benefits : buildDefaultHeroBenefits();
+      const cloned = list.map((b) => ({
+        ...b,
+        title: { ...(b?.title || {}) },
+        body: { ...(b?.body || {}) },
+      }));
+
+      const candidate = String(iconId || "").trim();
+      const safe = HERO_BENEFIT_ICON_BY_ID[candidate] ? candidate : cloned[index]?.iconId;
+      cloned[index] = { ...cloned[index], iconId: safe };
+
+      return { ...next, benefits: cloned };
+    });
+  }
+
+  function setBenefitText(index, field, lang, value) {
+    if (typeof setHeroConfig !== "function") return;
+
+    setHeroConfig((prev) => {
+      const next = normalizeHeroConfig(prev);
+      const list = Array.isArray(next.benefits) ? next.benefits : buildDefaultHeroBenefits();
+      const cloned = list.map((b) => ({
+        ...b,
+        title: { ...(b?.title || {}) },
+        body: { ...(b?.body || {}) },
+      }));
+
+      const langKey = lang === "en" ? "en" : "es";
+      const key = field === "body" ? "body" : "title";
+      cloned[index] = {
+        ...cloned[index],
+        [key]: { ...(cloned[index]?.[key] || {}), [langKey]: value },
+      };
+
+      return { ...next, benefits: cloned };
+    });
+  }
+
+  return (
+    <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="text-sm font-extrabold text-zinc-900">{t.heroAdminBenefitsTitle}</div>
+      <div className="mt-1 text-sm text-zinc-600">{t.heroAdminBenefitsSubtitle}</div>
+
+      <div className="mt-4 grid gap-4">
+        {benefits.map((b, idx) => {
+          const currentIconId = String(b?.iconId || "").trim();
+
+          return (
+            <div key={String(b?.id || idx)} className="rounded-2xl border border-zinc-200 p-4">
+              <div className="text-xs font-semibold text-zinc-700">
+                {typeof t.heroAdminBenefitN === "function" ? t.heroAdminBenefitN(idx + 1) : `Benefit ${idx + 1}`}
+              </div>
+
+              <div className="mt-3 grid gap-4 md:grid-cols-2">
+                <div>
+                  <div className="text-xs font-semibold text-zinc-700">{t.heroAdminBenefitIcon}</div>
+
+                  <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                    {HERO_BENEFIT_ICON_LIBRARY.map((opt) => {
+                      const selected = opt.id === currentIconId;
+                      const label = l10n(opt.label, language);
+
+                      return (
+                        <button
+                          type="button"
+                          key={opt.id}
+                          onClick={() => setBenefitIcon(idx, opt.id)}
+                          className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2 text-[11px] transition ${
+                            selected
+                              ? "border-zinc-900 bg-zinc-900 text-white"
+                              : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+                          }`}
+                          aria-label={label}
+                          title={label}
+                        >
+                          <span className={selected ? "text-white" : "text-zinc-900"}>
+                            <HeroBenefitIcon iconId={opt.id} className="h-5 w-5" strokeWidth={2} />
+                          </span>
+                          <span className="truncate">{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.heroAdminBenefitTitle} — {t.heroAdminEs}
+                    </label>
+                    <input
+                      value={b?.title?.es ?? ""}
+                      onChange={(e) => setBenefitText(idx, "title", "es", e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.heroAdminBenefitTitle} — {t.heroAdminEn}
+                    </label>
+                    <input
+                      value={b?.title?.en ?? ""}
+                      onChange={(e) => setBenefitText(idx, "title", "en", e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.heroAdminBenefitBody} — {t.heroAdminEs}
+                    </label>
+                    <input
+                      value={b?.body?.es ?? ""}
+                      onChange={(e) => setBenefitText(idx, "body", "es", e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.heroAdminBenefitBody} — {t.heroAdminEn}
+                    </label>
+                    <input
+                      value={b?.body?.en ?? ""}
+                      onChange={(e) => setBenefitText(idx, "body", "en", e.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-5">
+        <div className="text-xs font-semibold text-zinc-700">{t.preview}</div>
+        <div className="mt-3">
+          <Hero
+            onPrimary={() => {}}
+            onSecondary={() => {}}
+            t={t}
+            heroConfig={cfg}
+            language={language}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminPanel({
-  products = [],
-  setProducts,
-  categories = [],
+  categories,
   setCategories,
-  heroConfig,
-  setHeroConfig,
+  products,
+  setProducts,
   inventory,
   setInventory,
   productCosts,
   setProductCosts,
-  orders,
   checkoutConfig,
   setCheckoutConfig,
+  orders,
+  heroConfig,
   notify,
   onPreviewProduct,
   activityLog = [],
@@ -2784,6 +3099,9 @@ function AdminPanel({
   logActivity,
   onGoOrders,
   onGoProfit,
+  onGoAdminUsers,
+  onLogoutAdmin,
+  onGoHomepage,
   t,
   language,
 }) {
@@ -2860,65 +3178,6 @@ function AdminPanel({
       [productId]: Number.isFinite(n) ? n : 0,
     }));
   }
-  
-
-  // setHeroEnabled
-  function setHeroEnabled(enabled) {
-    setHeroConfig((prev) => ({ ...normalizeHeroConfig(prev), enabled }));
-  }
-
-
-  // setHeroTextField
-  function setHeroTextField(field, lang, value) {
-    setHeroConfig((prev) => ({
-      ...normalizeHeroConfig(prev),
-      [field]: {
-        ...(prev?.[field] || {}),
-        [lang]: value,
-      },
-    }));
-  }
-
-
-  // setHeroImageField
-  function setHeroImageField(field, value) {
-    setHeroConfig((prev) => ({
-      ...normalizeHeroConfig(prev),
-      images: {
-        ...(prev?.images || {}),
-        [field]: value,
-      },
-    }));
-  }
-
-
-  // setHeroPromoType
-  function setHeroPromoType(value) {
-    const promoType = value === "promo" ? "promo" : "content";
-    setHeroConfig((prev) => ({
-      ...normalizeHeroConfig(prev),
-      promoType,
-    }));
-  }
-
-
-  // setHeroPromoScheduleField
-  function setHeroPromoScheduleField(field, value) {
-    setHeroConfig((prev) => ({
-      ...normalizeHeroConfig(prev),
-      promoSchedule: {
-        ...(prev?.promoSchedule || {}),
-        [field]: value,
-      },
-    }));
-  }
-
-
-  // resetHero
-  function resetHero() {
-    setHeroConfig(buildDefaultHeroConfig());
-  }
-
 
   // handleUploadImage
   async function handleUploadImage({ key, file, filenamePrefix, onSuccess }) {
@@ -3253,15 +3512,57 @@ function AdminPanel({
 
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatProductsBody}</p>
           </div>
+          {/* Dashboard card: Homepage */}
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-bold text-zinc-900">{t.adminHomepageTitle}</div>
+
+            <div className="mt-2 text-3xl font-extrabold text-zinc-900">HOME</div>
+
+            <p className="mt-1 text-sm text-zinc-600">
+              {t.adminHomepageSubtitle}
+              {" · "}
+              {heroConfig?.enabled
+                ? language === "es"
+                  ? "Activado"
+                  : "Enabled"
+                : language === "es"
+                  ? "Desactivado"
+                  : "Disabled"}
+            </p>
+
+            <div className="mt-4">
+              <Button
+                variant="secondary"
+                onClick={() => (typeof onGoHomepage === "function" ? onGoHomepage() : null)}
+                className="w-full"
+              >
+                {t.edit}
+              </Button>
+            </div>
+          </div>
 
           <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.adminStatMode}</div>
 
             <div className="mt-2 text-3xl font-extrabold text-zinc-900">
-              MVP
+              ADMIN
             </div>
 
             <p className="mt-1 text-sm text-zinc-600">{t.adminStatModeBody}</p>
+
+            <div className="mt-4 grid gap-2">
+              {typeof onGoAdminUsers === "function" ? (
+                <Button variant="secondary" onClick={onGoAdminUsers} className="w-full">
+                  {t.adminManageAccess}
+                </Button>
+              ) : null}
+
+              {typeof onLogoutAdmin === "function" ? (
+                <Button variant="secondary" onClick={onLogoutAdmin} className="w-full">
+                  {t.adminLogout}
+                </Button>
+              ) : null}
+            </div>
           </div>
 
           {/* Dashboard card: Profit / Loss (go to AdminProfit page) */}
@@ -3462,392 +3763,6 @@ function AdminPanel({
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-        {/* Admin: Home Hero Promotion */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-          <SectionTitle title={t.heroAdminTitle} subtitle={t.heroAdminSubtitle} />
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
-              <input
-                type="checkbox"
-                checked={Boolean(heroConfig?.enabled)}
-                onChange={(e) => setHeroEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-zinc-300"
-              />
-              {t.heroAdminEnabled}
-            </label>
-
-            <Button variant="secondary" onClick={resetHero}>
-              {t.heroAdminReset}
-            </Button>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="text-sm font-semibold text-zinc-900">
-                {t.heroAdminTypeLabel}
-              </label>
-              <select
-                value={heroConfig?.promoType === "promo" ? "promo" : "content"}
-                onChange={(e) => setHeroPromoType(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-              >
-                <option value="content">{t.heroAdminTypeContent}</option>
-                <option value="promo">{t.heroAdminTypePromo}</option>
-              </select>
-            </div>
-
-            {heroConfig?.promoType === "promo" ? (
-              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
-                <div className="text-sm font-bold text-zinc-900">
-                  {t.heroAdminScheduleTitle}
-                </div>
-
-                <div className="mt-3 grid gap-3">
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700">
-                        {t.heroAdminStartLabel}
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={heroConfig?.promoSchedule?.startLocal || ""}
-                        onChange={(e) =>
-                          setHeroPromoScheduleField("startLocal", e.target.value)
-                        }
-                        className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700">
-                        {t.heroAdminEndLabel}
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={heroConfig?.promoSchedule?.endLocal || ""}
-                        onChange={(e) =>
-                          setHeroPromoScheduleField("endLocal", e.target.value)
-                        }
-                        className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-zinc-500">
-                    {t.heroAdminScheduleHint}
-                    {heroConfig?.enabled ? (
-                      <>
-                        {" · "}
-                        {isHeroOverrideActive(heroConfig)
-                          ? t.heroAdminStatusActive
-                          : t.heroAdminStatusInactive}
-                      </>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="mt-5 grid gap-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminPill} — {t.heroAdminEs}
-                </label>
-                <input
-                  value={heroConfig?.pill?.es ?? ""}
-                  onChange={(e) => setHeroTextField("pill", "es", e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminPill} — {t.heroAdminEn}
-                </label>
-                <input
-                  value={heroConfig?.pill?.en ?? ""}
-                  onChange={(e) => setHeroTextField("pill", "en", e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminTitleOne} — {t.heroAdminEs}
-                </label>
-                <input
-                  value={heroConfig?.titleOne?.es ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("titleOne", "es", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminTitleOne} — {t.heroAdminEn}
-                </label>
-                <input
-                  value={heroConfig?.titleOne?.en ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("titleOne", "en", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminTitleTwo} — {t.heroAdminEs}
-                </label>
-                <input
-                  value={heroConfig?.titleTwo?.es ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("titleTwo", "es", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminTitleTwo} — {t.heroAdminEn}
-                </label>
-                <input
-                  value={heroConfig?.titleTwo?.en ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("titleTwo", "en", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminText} — {t.heroAdminEs}
-                </label>
-                <textarea
-                  value={heroConfig?.text?.es ?? ""}
-                  onChange={(e) => setHeroTextField("text", "es", e.target.value)}
-                  rows={3}
-                  className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminText} — {t.heroAdminEn}
-                </label>
-                <textarea
-                  value={heroConfig?.text?.en ?? ""}
-                  onChange={(e) => setHeroTextField("text", "en", e.target.value)}
-                  rows={3}
-                  className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminPrimary} — {t.heroAdminEs}
-                </label>
-                <input
-                  value={heroConfig?.primary?.es ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("primary", "es", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminPrimary} — {t.heroAdminEn}
-                </label>
-                <input
-                  value={heroConfig?.primary?.en ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("primary", "en", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminSecondary} — {t.heroAdminEs}
-                </label>
-                <input
-                  value={heroConfig?.secondary?.es ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("secondary", "es", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminSecondary} — {t.heroAdminEn}
-                </label>
-                <input
-                  value={heroConfig?.secondary?.en ?? ""}
-                  onChange={(e) =>
-                    setHeroTextField("secondary", "en", e.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminHeroImage}
-                </label>
-                <input
-                  value={heroConfig?.images?.hero ?? ""}
-                  onChange={(e) => setHeroImageField("hero", e.target.value)}
-                  placeholder="https://..."
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-
-                <div className="mt-2">
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t.uploadImageLabel}
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={Boolean(uploading["hero:hero"])}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = "";
-                      handleUploadImage({
-                        key: "hero:hero",
-                        file,
-                        filenamePrefix: "hero-hero",
-                        onSuccess: (url) => setHeroImageField("hero", url),
-                      });
-                    }}
-                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
-                  />
-
-                  {uploading["hero:hero"] ? (
-                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
-                  ) : null}
-
-                  {uploadErrors["hero:hero"] ? (
-                    <div className="mt-1 text-xs font-semibold text-red-600">
-                      {t.uploadFailed} {uploadErrors["hero:hero"]}
-                    </div>
-                  ) : (
-                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminImage1}
-                </label>
-                <input
-                  value={heroConfig?.images?.product1 ?? ""}
-                  onChange={(e) => setHeroImageField("product1", e.target.value)}
-                  placeholder="https://..."
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-
-                <div className="mt-2">
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t.uploadImageLabel}
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={Boolean(uploading["hero:product1"])}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = "";
-                      handleUploadImage({
-                        key: "hero:product1",
-                        file,
-                        filenamePrefix: "hero-product1",
-                        onSuccess: (url) => setHeroImageField("product1", url),
-                      });
-                    }}
-                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
-                  />
-
-                  {uploading["hero:product1"] ? (
-                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
-                  ) : null}
-
-                  {uploadErrors["hero:product1"] ? (
-                    <div className="mt-1 text-xs font-semibold text-red-600">
-                      {t.uploadFailed} {uploadErrors["hero:product1"]}
-                    </div>
-                  ) : (
-                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-zinc-900">
-                  {t.heroAdminImage2}
-                </label>
-                <input
-                  value={heroConfig?.images?.product2 ?? ""}
-                  onChange={(e) => setHeroImageField("product2", e.target.value)}
-                  placeholder="https://..."
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-
-                <div className="mt-2">
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t.uploadImageLabel}
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={Boolean(uploading["hero:product2"])}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = "";
-                      handleUploadImage({
-                        key: "hero:product2",
-                        file,
-                        filenamePrefix: "hero-product2",
-                        onSuccess: (url) => setHeroImageField("product2", url),
-                      });
-                    }}
-                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
-                  />
-
-                  {uploading["hero:product2"] ? (
-                    <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
-                  ) : null}
-
-                  {uploadErrors["hero:product2"] ? (
-                    <div className="mt-1 text-xs font-semibold text-red-600">
-                      {t.uploadFailed} {uploadErrors["hero:product2"]}
-                    </div>
-                  ) : (
-                    <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -4254,6 +4169,462 @@ function AdminPanel({
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: AdminHomepage
+function AdminHomepage({ heroConfig, setHeroConfig, t, language, onBack }) {
+  const [uploading, setUploading] = useState({});
+  const [uploadErrors, setUploadErrors] = useState({});
+
+  // setHeroEnabled
+  function setHeroEnabled(enabled) {
+    setHeroConfig((prev) => ({ ...normalizeHeroConfig(prev), enabled }));
+  }
+
+  // setHeroTextField
+  function setHeroTextField(field, lang, value) {
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      [field]: {
+        ...(prev?.[field] || {}),
+        [lang]: value,
+      },
+    }));
+  }
+
+  // setHeroImageField
+  function setHeroImageField(field, value) {
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      images: {
+        ...(prev?.images || {}),
+        [field]: value,
+      },
+    }));
+  }
+
+  // setHeroPromoType
+  function setHeroPromoType(value) {
+    const promoType = value === "promo" ? "promo" : "content";
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      promoType,
+    }));
+  }
+
+  // setHeroPromoScheduleField
+  function setHeroPromoScheduleField(field, value) {
+    setHeroConfig((prev) => ({
+      ...normalizeHeroConfig(prev),
+      promoSchedule: {
+        ...(prev?.promoSchedule || {}),
+        [field]: value,
+      },
+    }));
+  }
+
+  // resetHero
+  function resetHero() {
+    setHeroConfig(buildDefaultHeroConfig());
+  }
+
+  // handleUploadImage
+  async function handleUploadImage({ key, file, filenamePrefix, onSuccess }) {
+    if (!file) return;
+
+    setUploadErrors((prev) => ({ ...(prev || {}), [key]: "" }));
+    setUploading((prev) => ({ ...(prev || {}), [key]: true }));
+
+    try {
+      const filename = buildUploadFilename(filenamePrefix, file);
+      const url = await uploadImageToPublicImages({ file, filename });
+      onSuccess(url);
+    } catch (err) {
+      setUploadErrors((prev) => ({
+        ...(prev || {}),
+        [key]: err?.message || "Upload failed",
+      }));
+    } finally {
+      setUploading((prev) => ({ ...(prev || {}), [key]: false }));
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminHomepageTitle} subtitle={t.adminHomepageSubtitle} />
+
+          <Button
+            variant="secondary"
+            onClick={() => (typeof onBack === "function" ? onBack() : null)}
+          >
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6">
+          <div className="text-sm font-extrabold text-zinc-900">{t.heroAdminTitle}</div>
+          <div className="mt-1 text-sm text-zinc-600">{t.heroAdminSubtitle}</div>
+
+          <div className="mt-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                <input
+                  type="checkbox"
+                  checked={Boolean(heroConfig?.enabled)}
+                  onChange={(e) => setHeroEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-300"
+                />
+                {t.heroAdminEnabled}
+              </label>
+
+              <Button variant="secondary" onClick={resetHero}>
+                {t.heroAdminReset}
+              </Button>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-semibold text-zinc-900">
+                  {t.heroAdminTypeLabel}
+                </label>
+                <select
+                  value={heroConfig?.promoType === "promo" ? "promo" : "content"}
+                  onChange={(e) => setHeroPromoType(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                >
+                  <option value="content">{t.heroAdminTypeContent}</option>
+                  <option value="promo">{t.heroAdminTypePromo}</option>
+                </select>
+              </div>
+
+              {heroConfig?.promoType === "promo" ? (
+                <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+                  <div className="text-sm font-bold text-zinc-900">{t.heroAdminScheduleTitle}</div>
+
+                  <div className="mt-3 grid gap-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700">{t.heroAdminStartLabel}</label>
+                        <input
+                          type="datetime-local"
+                          value={heroConfig?.promoSchedule?.startLocal || ""}
+                          onChange={(e) => setHeroPromoScheduleField("startLocal", e.target.value)}
+                          className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700">{t.heroAdminEndLabel}</label>
+                        <input
+                          type="datetime-local"
+                          value={heroConfig?.promoSchedule?.endLocal || ""}
+                          onChange={(e) => setHeroPromoScheduleField("endLocal", e.target.value)}
+                          className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-zinc-500">
+                      {t.heroAdminScheduleHint}
+                      {heroConfig?.enabled ? (
+                        <>
+                          {" · "}
+                          {isHeroOverrideActive(heroConfig)
+                            ? t.heroAdminStatusActive
+                            : t.heroAdminStatusInactive}
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-5 grid gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminPill} — {t.heroAdminEs}
+                  </label>
+                  <input
+                    value={heroConfig?.pill?.es ?? ""}
+                    onChange={(e) => setHeroTextField("pill", "es", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminPill} — {t.heroAdminEn}
+                  </label>
+                  <input
+                    value={heroConfig?.pill?.en ?? ""}
+                    onChange={(e) => setHeroTextField("pill", "en", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminTitleOne} — {t.heroAdminEs}
+                  </label>
+                  <input
+                    value={heroConfig?.titleOne?.es ?? ""}
+                    onChange={(e) => setHeroTextField("titleOne", "es", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminTitleOne} — {t.heroAdminEn}
+                  </label>
+                  <input
+                    value={heroConfig?.titleOne?.en ?? ""}
+                    onChange={(e) => setHeroTextField("titleOne", "en", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminTitleTwo} — {t.heroAdminEs}
+                  </label>
+                  <input
+                    value={heroConfig?.titleTwo?.es ?? ""}
+                    onChange={(e) => setHeroTextField("titleTwo", "es", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminTitleTwo} — {t.heroAdminEn}
+                  </label>
+                  <input
+                    value={heroConfig?.titleTwo?.en ?? ""}
+                    onChange={(e) => setHeroTextField("titleTwo", "en", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminText} — {t.heroAdminEs}
+                  </label>
+                  <textarea
+                    value={heroConfig?.text?.es ?? ""}
+                    onChange={(e) => setHeroTextField("text", "es", e.target.value)}
+                    rows={3}
+                    className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminText} — {t.heroAdminEn}
+                  </label>
+                  <textarea
+                    value={heroConfig?.text?.en ?? ""}
+                    onChange={(e) => setHeroTextField("text", "en", e.target.value)}
+                    rows={3}
+                    className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminPrimary} — {t.heroAdminEs}
+                  </label>
+                  <input
+                    value={heroConfig?.primary?.es ?? ""}
+                    onChange={(e) => setHeroTextField("primary", "es", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminPrimary} — {t.heroAdminEn}
+                  </label>
+                  <input
+                    value={heroConfig?.primary?.en ?? ""}
+                    onChange={(e) => setHeroTextField("primary", "en", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminSecondary} — {t.heroAdminEs}
+                  </label>
+                  <input
+                    value={heroConfig?.secondary?.es ?? ""}
+                    onChange={(e) => setHeroTextField("secondary", "es", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">
+                    {t.heroAdminSecondary} — {t.heroAdminEn}
+                  </label>
+                  <input
+                    value={heroConfig?.secondary?.en ?? ""}
+                    onChange={(e) => setHeroTextField("secondary", "en", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+
+              <HeroBenefitsEditor
+                heroConfig={heroConfig}
+                setHeroConfig={setHeroConfig}
+                t={t}
+                language={language}
+              />
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">{t.heroAdminHeroImage}</label>
+                  <input
+                    value={heroConfig?.images?.hero ?? ""}
+                    onChange={(e) => setHeroImageField("hero", e.target.value)}
+                    placeholder="https://..."
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+
+                  <div className="mt-2">
+                    <label className="text-xs font-semibold text-zinc-700">{t.uploadImageLabel}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={Boolean(uploading["hero:hero"])}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        handleUploadImage({
+                          key: "hero:hero",
+                          file,
+                          filenamePrefix: "hero-hero",
+                          onSuccess: (url) => setHeroImageField("hero", url),
+                        });
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                    />
+
+                    {uploading["hero:hero"] ? (
+                      <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                    ) : null}
+
+                    {uploadErrors["hero:hero"] ? (
+                      <div className="mt-1 text-xs font-semibold text-red-600">
+                        {t.uploadFailed} {uploadErrors["hero:hero"]}
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">{t.heroAdminImage1}</label>
+                  <input
+                    value={heroConfig?.images?.product1 ?? ""}
+                    onChange={(e) => setHeroImageField("product1", e.target.value)}
+                    placeholder="https://..."
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+
+                  <div className="mt-2">
+                    <label className="text-xs font-semibold text-zinc-700">{t.uploadImageLabel}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={Boolean(uploading["hero:product1"])}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        handleUploadImage({
+                          key: "hero:product1",
+                          file,
+                          filenamePrefix: "hero-product1",
+                          onSuccess: (url) => setHeroImageField("product1", url),
+                        });
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                    />
+
+                    {uploading["hero:product1"] ? (
+                      <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                    ) : null}
+
+                    {uploadErrors["hero:product1"] ? (
+                      <div className="mt-1 text-xs font-semibold text-red-600">
+                        {t.uploadFailed} {uploadErrors["hero:product1"]}
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900">{t.heroAdminImage2}</label>
+                  <input
+                    value={heroConfig?.images?.product2 ?? ""}
+                    onChange={(e) => setHeroImageField("product2", e.target.value)}
+                    placeholder="https://..."
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+
+                  <div className="mt-2">
+                    <label className="text-xs font-semibold text-zinc-700">{t.uploadImageLabel}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={Boolean(uploading["hero:product2"])}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        handleUploadImage({
+                          key: "hero:product2",
+                          file,
+                          filenamePrefix: "hero-product2",
+                          onSuccess: (url) => setHeroImageField("product2", url),
+                        });
+                      }}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm"
+                    />
+
+                    {uploading["hero:product2"] ? (
+                      <div className="mt-1 text-xs text-zinc-600">{t.uploading}</div>
+                    ) : null}
+
+                    {uploadErrors["hero:product2"] ? (
+                      <div className="mt-1 text-xs font-semibold text-red-600">
+                        {t.uploadFailed} {uploadErrors["hero:product2"]}
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-xs text-zinc-500">{t.uploadDevOnlyHint}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -5076,6 +5447,262 @@ export default function App() {
 
   const t = translations[language];
 
+  const [adminUsers, setAdminUsers] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(ADMIN_USERS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return normalizeAdminUsers(parsed);
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ADMIN_USERS_STORAGE_KEY, JSON.stringify(normalizeAdminUsers(adminUsers)));
+    } catch {
+      // ignore
+    }
+  }, [adminUsers]);
+
+  const [adminSession, setAdminSession] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || typeof parsed !== "object") return null;
+
+      const userId = String(parsed.userId || "").trim();
+      const username = String(parsed.username || "").trim();
+      const createdAt = typeof parsed.createdAt === "number" ? parsed.createdAt : null;
+
+      if (!userId || !username) return null;
+      return { userId, username, createdAt };
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (!adminSession) {
+        window.sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
+        return;
+      }
+      window.sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, JSON.stringify(adminSession));
+    } catch {
+      // ignore
+    }
+  }, [adminSession]);
+
+  const [afterLoginRoute, setAfterLoginRoute] = useState("admin");
+
+  // Admin auth gate: require login to access admin-only pages.
+  const ADMIN_AUTH_ENABLED = true;
+
+  const hasAdmins = Array.isArray(adminUsers) && adminUsers.length > 0;
+  const currentAdminUser = adminSession?.userId
+    ? adminUsers.find((u) => u?.id === adminSession.userId) || null
+    : null;
+  const isAdminAuthed = Boolean(currentAdminUser);
+
+  const prefersReducedMotion = () => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  };
+
+  const canViewTransition =
+    typeof document !== "undefined" && typeof document.startViewTransition === "function";
+
+  useEffect(() => {
+    if (!canViewTransition || typeof document === "undefined") return;
+    document.documentElement.dataset.gbfVt = "1";
+  }, [canViewTransition]);
+
+  const runViewTransition = (fn) => {
+    if (typeof fn !== "function") return;
+
+    if (
+      !canViewTransition ||
+      prefersReducedMotion() ||
+      (typeof document !== "undefined" && document.documentElement.dataset.gbfVtRunning === "1")
+    ) {
+      fn();
+      return;
+    }
+
+    try {
+      const vt = document.startViewTransition(() => {
+        // View Transitions expects DOM updates to happen during this callback.
+        flushSync(() => {
+          fn();
+        });
+      });
+
+      if (vt && typeof vt.finished?.then === "function") {
+        document.documentElement.dataset.gbfVtRunning = "1";
+        vt.finished.then(
+          () => {
+            delete document.documentElement.dataset.gbfVtRunning;
+          },
+          () => {
+            delete document.documentElement.dataset.gbfVtRunning;
+          }
+        );
+      }
+    } catch {
+      fn();
+    }
+  };
+
+  const ADMIN_PROTECTED_ROUTES = new Set([
+    "admin",
+    "admin_orders",
+    "admin_profit",
+    "admin_homepage",
+    "admin_product_preview",
+    "admin_users",
+  ]);
+
+  const navigate = (nextRoute) => {
+    const next = String(nextRoute || "").trim();
+    if (!next || next === route) return;
+
+    const wantsProtected = ADMIN_AUTH_ENABLED && ADMIN_PROTECTED_ROUTES.has(next);
+    const needsLogin = wantsProtected && !isAdminAuthed;
+    const finalRoute = needsLogin ? "admin_login" : next;
+
+    runViewTransition(() => {
+      if (needsLogin) setAfterLoginRoute(next);
+      setRoute(finalRoute);
+    });
+  };
+
+  async function buildAdminUserRecord({ username, password }) {
+    const u = String(username || "").trim();
+    const p = String(password || "");
+    if (!u || !p.trim()) return null;
+
+    const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
+    const salt = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
+
+    const pw = await buildPasswordRecord(p, salt);
+
+    return {
+      id,
+      username: u,
+      algo: pw.algo,
+      salt: pw.salt,
+      hash: pw.hash,
+      createdAt: Date.now(),
+    };
+  }
+
+  async function createAdminUser({ username, password }) {
+    const u = String(username || "").trim();
+    const p = String(password || "");
+    if (!u || !p.trim()) return false;
+
+    const exists = (Array.isArray(adminUsers) ? adminUsers : []).some(
+      (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
+    );
+    if (exists) return false;
+
+    const user = await buildAdminUserRecord({ username: u, password: p });
+    if (!user) return false;
+
+    setAdminUsers((prev) => {
+      const base = normalizeAdminUsers(prev);
+      return [...base, user];
+    });
+
+    return true;
+  }
+
+  async function deleteAdminUser({ userId }) {
+    const id = String(userId || "").trim();
+    if (!id) return false;
+
+    const base = Array.isArray(adminUsers) ? adminUsers : [];
+    if (base.length <= 1) return false;
+
+    runViewTransition(() => {
+      setAdminUsers((prev) => {
+        const rows = normalizeAdminUsers(prev);
+        return rows.filter((u) => u.id !== id);
+      });
+
+      if (adminSession?.userId === id) {
+        setAdminSession(null);
+        setRoute("home");
+      }
+    });
+
+    return true;
+  }
+
+  async function loginAdmin({ username, password }) {
+    const u = String(username || "").trim();
+    const p = String(password || "");
+    if (!u || !p.trim()) return false;
+
+    const user = (Array.isArray(adminUsers) ? adminUsers : []).find(
+      (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
+    );
+    if (!user) return false;
+
+    const ok = await verifyPassword(user, p);
+    if (!ok) return false;
+
+    const nextRoute =
+      typeof afterLoginRoute === "string" &&
+      afterLoginRoute &&
+      ADMIN_PROTECTED_ROUTES.has(afterLoginRoute)
+        ? afterLoginRoute
+        : "admin";
+
+    runViewTransition(() => {
+      setAdminSession({ userId: user.id, username: user.username, createdAt: Date.now() });
+      setRoute(nextRoute);
+    });
+
+    return true;
+  }
+
+  async function createFirstAdmin({ username, password }) {
+    if (hasAdmins) return false;
+
+    const user = await buildAdminUserRecord({ username, password });
+    if (!user) return false;
+
+    runViewTransition(() => {
+      setAdminUsers((prev) => {
+        const base = normalizeAdminUsers(prev);
+        return [...base, user];
+      });
+
+      setAdminSession({ userId: user.id, username: user.username, createdAt: Date.now() });
+      setRoute("admin");
+    });
+
+    return true;
+  }
+
+  function logoutAdmin() {
+    runViewTransition(() => {
+      setAdminSession(null);
+      setRoute("home");
+    });
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, left: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+  }, [route]);
+
   const [toasts, setToasts] = useState([]);
 
   const [favorites, setFavorites] = useState(() => {
@@ -5556,14 +6183,16 @@ export default function App() {
     const id = String(p?.id ?? "").trim();
     const resolved = id ? products.find((x) => String(x?.id ?? "") === id) || p : p;
 
-    setSelected(resolved);
-    setRoute("product");
+    runViewTransition(() => {
+      setSelected(resolved);
+      setRoute("product");
 
-    if (!id) return;
-    setRecentlyViewed((prev) => {
-      const base = Array.isArray(prev) ? prev.map((x) => String(x)) : [];
-      const next = [id, ...base.filter((x) => x !== id)];
-      return next.slice(0, 12);
+      if (!id) return;
+      setRecentlyViewed((prev) => {
+        const base = Array.isArray(prev) ? prev.map((x) => String(x)) : [];
+        const next = [id, ...base.filter((x) => x !== id)];
+        return next.slice(0, 12);
+      });
     });
   }
 
@@ -5579,25 +6208,28 @@ export default function App() {
       pushToast(language === "es" ? "Producto añadido" : "Added to cart");
     }
 
-    setCart((prev) => {
-      const found = prev.find((x) => x.key === key);
-      if (found) {
-        return prev.map((x) => (x.key === key ? { ...x, qty: x.qty + 1 } : x));
-      }
-      return [
-        ...prev,
-        {
-          key,
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          price: product.price,
-          qty: 1,
-          personalization,
-        },
-      ];
+    runViewTransition(() => {
+      setCart((prev) => {
+        const found = prev.find((x) => x.key === key);
+        if (found) {
+          return prev.map((x) => (x.key === key ? { ...x, qty: x.qty + 1 } : x));
+        }
+        return [
+          ...prev,
+          {
+            key,
+            id: product.id,
+            name: product.name,
+            category: product.category,
+            price: product.price,
+            qty: 1,
+            personalization,
+          },
+        ];
+      });
+
+      setRoute("cart");
     });
-    setRoute("cart");
   }
 
 
@@ -5605,14 +6237,6 @@ export default function App() {
   function removeFromCart(key) {
     setCart((prev) => prev.filter((x) => x.key !== key));
   }
-
-
-  // pickCollection
-  function pickCollection() {
-    setRoute("catalog");
-  }
-
-
   // placeOrder
   function placeOrder({
     customer,
@@ -5749,225 +6373,332 @@ export default function App() {
 
     setCart([]);
     setCheckoutDraft(buildDefaultCheckoutDraft());
-    setLastOrderId(orderId);
-    setRoute("order_confirmation");
+
+    runViewTransition(() => {
+      setLastOrderId(orderId);
+      setRoute("order_confirmation");
+    });
 
     pushToast(t.orderConfirmationToastOrderSent, "success");
 
     return { orderId, orderNumber };
   }
 
-  const orderFlowStep =
-    route === "cart" ? 1 : route === "checkout" ? 2 : route === "checkout_review" ? 3 : 0;
+  const renderRoutedContent = (r) => {
+    const orderFlowStep =
+      r === "cart" ? 1 : r === "checkout" ? 2 : r === "checkout_review" ? 3 : 0;
+
+    return (
+      <>
+        {/* Order flow progress (Cart → Checkout → Review) */}
+        {orderFlowStep ? <OrderFlowStepper currentStep={orderFlowStep} t={t} /> : null}
+
+        {/* Route: home */}
+        {r === "home" ? (
+          <Home
+            products={products}
+            favorites={favorites}
+            recentlyViewedProducts={recentlyViewed
+              .map((id) => products.find((p) => String(p?.id ?? "") === String(id)))
+              .filter(Boolean)}
+            stockById={inventory}
+            ratingSummaryById={ratingSummaryByProductId}
+            onToggleFavorite={toggleFavorite}
+            notify={pushToast}
+            onSubmitNewsletterEmail={submitNewsletterEmail}
+            t={t}
+            language={language}
+            heroConfig={heroConfig}
+            onGoCatalog={() => navigate("catalog")}
+            onOpenProduct={openProduct}
+          />
+        ) : null}
+
+        {/* Route: catalog */}
+        {r === "catalog" ? (
+          <Catalog
+            products={products}
+            categories={categories}
+            favorites={favorites}
+            stockById={inventory}
+            ratingSummaryById={ratingSummaryByProductId}
+            onToggleFavorite={toggleFavorite}
+            onOpenProduct={openProduct}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: product */}
+        {(r === "product" || r === "admin_product_preview") && selected ? (
+          <ProductDetail
+            product={selected}
+            products={products}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            onOpenProduct={openProduct}
+            stockById={inventory}
+            ratingSummaryById={ratingSummaryByProductId}
+            reviews={reviewsByProduct?.[String(selected.id)]}
+            onAddReview={addProductReview}
+            notify={pushToast}
+            onBack={() => navigate(r === "admin_product_preview" ? "admin" : "catalog")}
+            onAddToCart={addToCart}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: cart */}
+        {r === "cart" ? (
+          <Cart
+            cart={cart}
+            checkoutConfig={checkoutConfig}
+            onRemove={removeFromCart}
+            onCheckout={() => navigate("checkout")}
+            onBack={() => navigate("catalog")}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: wishlist */}
+        {r === "wishlist" ? (
+          <Wishlist
+            favorites={favorites}
+            products={products}
+            stockById={inventory}
+            ratingSummaryById={ratingSummaryByProductId}
+            onOpenProduct={openProduct}
+            onToggleFavorite={toggleFavorite}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: checkout */}
+        {r === "checkout" ? (
+          <Checkout
+            cart={cart}
+            checkoutConfig={checkoutConfig}
+            checkoutDraft={checkoutDraft}
+            setCheckoutDraft={setCheckoutDraft}
+            onBack={() => navigate("cart")}
+            onGoReview={() => navigate("checkout_review")}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: checkout review */}
+        {r === "checkout_review" ? (
+          <CheckoutReview
+            cart={cart}
+            checkoutConfig={checkoutConfig}
+            checkoutDraft={checkoutDraft}
+            onBack={() => navigate("checkout")}
+            onRemove={removeFromCart}
+            onPlaceOrder={placeOrder}
+            notify={pushToast}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: order confirmation */}
+        {r === "order_confirmation" ? (
+          <OrderConfirmation
+            order={confirmationOrder}
+            onGoHome={() => navigate("home")}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: order status */}
+        {r === "order_status" ? (
+          <OrderStatus
+            orders={orders}
+            setOrders={setOrders}
+            notify={pushToast}
+            t={t}
+            language={language}
+          />
+        ) : null}
+
+        {/* Route: blog */}
+        {r === "blog" ? <Blog t={t} language={language} /> : null}
+
+        {/* Route: about */}
+        {r === "about" ? <About t={t} language={language} /> : null}
+
+        {/* Route: faq */}
+        {r === "faq" ? <Faq t={t} language={language} /> : null}
+
+        {/* Route: admin login */}
+        {r === "admin_login" ? (
+          <AdminLogin
+            t={t}
+            language={language}
+            hasAdmins={hasAdmins}
+            onLogin={loginAdmin}
+            onCreateFirstAdmin={createFirstAdmin}
+            onGoHome={() => navigate("home")}
+          />
+        ) : null}
+
+        {/* Route: admin users */}
+        {r === "admin_users" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminUsers
+              t={t}
+              language={language}
+              adminUsers={adminUsers}
+              onCreateUser={createAdminUser}
+              onDeleteUser={deleteAdminUser}
+              onBack={() => navigate("admin")}
+              onLogout={logoutAdmin}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin */}
+        {r === "admin" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminPanel
+              products={products}
+              setProducts={setProducts}
+              categories={categories}
+              setCategories={setCategories}
+              heroConfig={heroConfig}
+              inventory={inventory}
+              setInventory={setInventory}
+              productCosts={productCosts}
+              setProductCosts={setProductCosts}
+              orders={orders}
+              checkoutConfig={checkoutConfig}
+              setCheckoutConfig={setCheckoutConfig}
+              notify={pushToast}
+              onPreviewProduct={(p) => {
+                runViewTransition(() => {
+                  setSelected(p);
+                  setRoute("admin_product_preview");
+                });
+              }}
+              activityLog={activityLog}
+              onClearActivityLog={clearActivityLog}
+              logActivity={logActivity}
+              onGoOrders={() => navigate("admin_orders")}
+              onGoProfit={() => navigate("admin_profit")}
+              onGoAdminUsers={() => navigate("admin_users")}
+              onLogoutAdmin={logoutAdmin}
+              onGoHomepage={() => navigate("admin_homepage")}
+              t={t}
+              language={language}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin homepage */}
+        {r === "admin_homepage" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminHomepage
+              heroConfig={heroConfig}
+              setHeroConfig={setHeroConfig}
+              t={t}
+              language={language}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin orders */}
+        {r === "admin_orders" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminOrders
+              orders={orders}
+              setOrders={setOrders}
+              t={t}
+              language={language}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin profit/loss */}
+        {r === "admin_profit" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminProfit
+              products={products}
+              sales={sales}
+              orders={orders}
+              t={t}
+              language={language}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50">
       <TopBar
         route={route}
-        setRoute={setRoute}
+        setRoute={navigate}
         cartCount={cartCount}
         t={t}
         language={language}
         setLanguage={setLanguage}
       />
 
-      {/* Order flow progress (Cart → Checkout → Review) */}
-      {orderFlowStep ? <OrderFlowStepper currentStep={orderFlowStep} t={t} /> : null}
-
-      {/* Route: home */}
-      {route === "home" ? (
-        <Home
-          products={products}
-          favorites={favorites}
-          recentlyViewedProducts={recentlyViewed
-            .map((id) => products.find((p) => String(p?.id ?? "") === String(id)))
-            .filter(Boolean)}
-          stockById={inventory}
-          ratingSummaryById={ratingSummaryByProductId}
-          onToggleFavorite={toggleFavorite}
-          notify={pushToast}
-          onSubmitNewsletterEmail={submitNewsletterEmail}
-          t={t}
-          language={language}
-          heroConfig={heroConfig}
-          onGoCatalog={() => setRoute("catalog")}
-          onOpenProduct={openProduct}
-          onPickCollection={pickCollection}
-        />
-      ) : null}
-
-
-      {/* Route: catalog */}
-      {route === "catalog" ? (
-        <Catalog
-          products={products}
-          categories={categories}
-          favorites={favorites}
-          stockById={inventory}
-          ratingSummaryById={ratingSummaryByProductId}
-          onToggleFavorite={toggleFavorite}
-          onOpenProduct={openProduct}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-
-      {/* Route: product */}
-      {(route === "product" || route === "admin_product_preview") && selected ? (
-        <ProductDetail
-          product={selected}
-          products={products}
-          favorites={favorites}
-          onToggleFavorite={toggleFavorite}
-          onOpenProduct={openProduct}
-          stockById={inventory}
-          ratingSummaryById={ratingSummaryByProductId}
-          reviews={reviewsByProduct?.[String(selected.id)]}
-          onAddReview={addProductReview}
-          notify={pushToast}
-          onBack={() => setRoute(route === "admin_product_preview" ? "admin" : "catalog")}
-          onAddToCart={addToCart}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-
-      {/* Route: cart */}
-      {route === "cart" ? (
-        <Cart
-          cart={cart}
-          checkoutConfig={checkoutConfig}
-          onRemove={removeFromCart}
-          onCheckout={() => setRoute("checkout")}
-          onBack={() => setRoute("catalog")}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-      {/* Route: wishlist */}
-      {route === "wishlist" ? (
-        <Wishlist
-          favorites={favorites}
-          products={products}
-          stockById={inventory}
-          ratingSummaryById={ratingSummaryByProductId}
-          onOpenProduct={openProduct}
-          onToggleFavorite={toggleFavorite}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-
-      {/* Route: checkout */}
-      {route === "checkout" ? (
-        <Checkout
-          cart={cart}
-          checkoutConfig={checkoutConfig}
-          checkoutDraft={checkoutDraft}
-          setCheckoutDraft={setCheckoutDraft}
-          onBack={() => setRoute("cart")}
-          onGoReview={() => setRoute("checkout_review")}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-      {/* Route: checkout review */}
-      {route === "checkout_review" ? (
-        <CheckoutReview
-          cart={cart}
-          checkoutConfig={checkoutConfig}
-          checkoutDraft={checkoutDraft}
-          onBack={() => setRoute("checkout")}
-          onRemove={removeFromCart}
-          onPlaceOrder={placeOrder}
-          notify={pushToast}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-      {/* Route: order confirmation */}
-      {route === "order_confirmation" ? (
-        <OrderConfirmation
-          order={confirmationOrder}
-          onGoHome={() => setRoute("home")}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-      {/* Route: order status */}
-      {route === "order_status" ? (
-        <OrderStatus orders={orders} setOrders={setOrders} notify={pushToast} t={t} language={language} />
-      ) : null}
-
-      {/* Route: blog */}
-      {route === "blog" ? <Blog t={t} language={language} /> : null}
-
-      {/* Route: about */}
-      {route === "about" ? <About t={t} language={language} /> : null}
-
-      {/* Route: faq */}
-      {route === "faq" ? <Faq t={t} language={language} /> : null}
-
-      {/* Route: admin */}
-      {route === "admin" ? (
-        <AdminPanel
-          products={products}
-          setProducts={setProducts}
-          categories={categories}
-          setCategories={setCategories}
-          heroConfig={heroConfig}
-          setHeroConfig={setHeroConfig}
-          inventory={inventory}
-          setInventory={setInventory}
-          productCosts={productCosts}
-          setProductCosts={setProductCosts}
-          orders={orders}
-          checkoutConfig={checkoutConfig}
-          setCheckoutConfig={setCheckoutConfig}
-          notify={pushToast}
-          onPreviewProduct={(p) => {
-            setSelected(p);
-            setRoute("admin_product_preview");
-          }}
-          activityLog={activityLog}
-          onClearActivityLog={clearActivityLog}
-          logActivity={logActivity}
-          onGoOrders={() => setRoute("admin_orders")}
-          onGoProfit={() => setRoute("admin_profit")}
-          t={t}
-          language={language}
-        />
-      ) : null}
-
-      {/* Route: admin orders */}
-      {route === "admin_orders" ? (
-        <AdminOrders
-          orders={orders}
-          setOrders={setOrders}
-          t={t}
-          language={language}
-          onBack={() => setRoute("admin")}
-        />
-      ) : null}
-
-      {/* Route: admin profit/loss */}
-      {route === "admin_profit" ? (
-        <AdminProfit
-          products={products}
-          sales={sales}
-          orders={orders}
-          t={t}
-          language={language}
-          onBack={() => setRoute("admin")}
-        />
-      ) : null}
+      <PageTransition key="gbf-route" routeKey={route} render={renderRoutedContent} />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
       <div className="pb-10" />
