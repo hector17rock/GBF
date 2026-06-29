@@ -7,18 +7,29 @@ function getUtcDayNumber(date = new Date()) {
   return Math.floor(Date.UTC(y, m, d) / 86400000);
 }
 
-export default function DailyVerseCard({ verses = [], t, notify }) {
+export default function DailyVerseCard({ verses = [], t, language, notify }) {
   const list = Array.isArray(verses) ? verses : [];
   const day = getUtcDayNumber(new Date());
   const idx = list.length ? Math.abs(day) % list.length : 0;
-  const verse = list[idx] || "";
+  const v = list[idx];
+
+  const ref =
+    v && typeof v === "object"
+      ? String(v?.ref?.[language] || v?.ref?.es || v?.ref?.en || "").trim()
+      : String(v || "").trim();
+
+  const text =
+    v && typeof v === "object"
+      ? String(v?.text?.[language] || v?.text?.es || v?.text?.en || "").trim()
+      : "";
+
+  const copyText = [ref, text].filter(Boolean).join(" — ");
 
   async function copy() {
-    const text = String(verse || "").trim();
-    if (!text) return;
+    if (!copyText) return;
 
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(copyText);
       if (typeof notify === "function") notify(t.toastCopied, "success");
     } catch {
       if (typeof notify === "function") notify(t.toastCopied, "success");
@@ -32,14 +43,18 @@ export default function DailyVerseCard({ verses = [], t, notify }) {
           <div className="inline-flex items-center rounded-full border border-zinc-200/60 bg-white/55 px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm backdrop-blur-xl">
             {t.dailyVerseTitle}
           </div>
-          <div className="mt-3 text-lg font-extrabold leading-7 text-zinc-900 md:text-xl">
-            {verse}
-          </div>
+          {text ? (
+            <div className="mt-3 text-pretty text-lg font-extrabold leading-7 text-zinc-900 md:text-xl">
+              “{text}”
+            </div>
+          ) : null}
+
+          <div className="mt-3 text-sm font-semibold text-zinc-700">{ref}</div>
           <div className="mt-2 text-sm text-zinc-600">{t.dailyVerseSubtitle}</div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={copy} disabled={!String(verse || "").trim()}>
+          <Button variant="secondary" onClick={copy} disabled={!copyText}>
             {t.dailyVerseCopy}
           </Button>
         </div>

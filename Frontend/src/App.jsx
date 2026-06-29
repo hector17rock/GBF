@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { translations } from "./i18n/translations";
-import { COLLECTIONS, VERSES, FONTS, COLORS } from "./data/catalog";
+import { COLLECTIONS, VERSES, FONTS, COLORS, DAILY_VERSES } from "./data/catalog";
 import {
   buildDefaultCategories,
   normalizeCategories,
@@ -509,7 +509,7 @@ function buildShippingLabelHtml({ order, language }) {
   <div class="page">
     <div class="row">
       <div class="from">
-        <div class="brand">Grow by Faith</div>
+        <div class="brand">Grow by Faith<span style="font-size:0.6em; vertical-align:super; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; font-weight:700;">®</span></div>
       </div>
       <div class="order">
         <div class="muted">${escapeHtml(tr.shippingLabelOrder)}</div>
@@ -616,8 +616,8 @@ function buildReceiptHtml({ order, language }) {
     <div class="header">
       <div>
         <div class="brandRow">
-          <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith" />
-          <div class="brandName">Grow by Faith</div>
+          <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith®" />
+          <div class="brandName">Grow by Faith<span style="font-size:0.6em; vertical-align:super; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; font-weight:700;">®</span></div>
         </div>
         <div class="muted">${lang === "es" ? "Recibo" : "Receipt"}</div>
       </div>
@@ -773,9 +773,9 @@ function buildProfitReportHtml({
   <div class="report">
     <div class="header">
       <div class="brandRow">
-        <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith" />
+        <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith®" />
         <div>
-          <div class="brandName">Grow by Faith</div>
+          <div class="brandName">Grow by Faith<span style="font-size:0.6em; vertical-align:super; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; font-weight:700;">®</span></div>
           <div class="muted">${escapeHtml(tr.profitTitle)}</div>
         </div>
       </div>
@@ -1163,7 +1163,7 @@ function Home({
       />
 
       <div className="mt-8">
-        <DailyVerseCard verses={VERSES} t={t} notify={notify} />
+        <DailyVerseCard verses={DAILY_VERSES} t={t} language={language} notify={notify} />
       </div>
 
       <div className="mt-8">
