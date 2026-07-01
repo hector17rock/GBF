@@ -37,20 +37,20 @@ export default function DailyVerseCard({ verses = [], t, language, notify }) {
   }
 
   return (
-    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-10">
+    <div className="rounded-[28px] border border-[#DDD6CA] bg-[#EFE7DA] p-6 shadow-sm md:p-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm">
+          <div className="inline-flex items-center rounded-full border border-[#DDD6CA] bg-[#F8F6F2] px-3 py-1 text-[11px] font-semibold text-[#2B2B2B] shadow-sm">
             {t.dailyVerseTitle}
           </div>
           {text ? (
-            <div className="mt-3 text-pretty text-lg font-extrabold leading-7 text-zinc-900 md:text-xl">
+            <div className="mt-3 text-pretty text-lg font-extrabold leading-7 text-[#2B2B2B] md:text-xl">
               “{text}”
             </div>
           ) : null}
 
-          <div className="mt-3 text-sm font-semibold text-zinc-700">{ref}</div>
-          <div className="mt-2 text-sm text-zinc-600">{t.dailyVerseSubtitle}</div>
+          <div className="mt-3 text-sm font-semibold text-[#2B2B2B]">{ref}</div>
+          <div className="mt-2 text-sm text-[#6B6B6B]">{t.dailyVerseSubtitle}</div>
         </div>
 
         <div className="flex items-center gap-2">

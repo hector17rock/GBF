@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+:root {
+  --gbf-forest-green: #355e3b;
+  --gbf-sage-green: #a8b99a;
+  --gbf-warm-ivory: #f8f6f2;
+  --gbf-soft-beige: #efe7da;
+  --gbf-charcoal: #2b2b2b;
+  --gbf-warm-gray: #6b6b6b;
+  --gbf-stone: #ddd6ca;
+  --gbf-moss-green: #4b734e;
+}
+
+html,
+body {
+  background: var(--gbf-warm-ivory);
+  color: var(--gbf-charcoal);
+}
+
 /* ============================
    Page-to-page transitions
    ============================ */

@@ -29,7 +29,7 @@ export default function Catalog({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#F8F6F2]/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.catalogTitle} subtitle={t.catalogSubtitle} />
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
@@ -47,7 +47,7 @@ export default function Catalog({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400 md:w-72"
+              className="w-full rounded-2xl border border-[#DDD6CA] bg-white px-4 py-2 text-sm outline-none focus:border-[#355E3B] md:w-72"
             />
           </div>
         </div>
@@ -80,7 +80,9 @@ function FilterChip({ active, onClick, children }) {
     <button
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-        active ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-800"
+        active
+          ? "bg-[#355E3B] text-white"
+          : "border border-[#DDD6CA]/70 bg-white/60 text-[#2B2B2B] hover:bg-[#EFE7DA]/60"
       }`}
     >
       {children}

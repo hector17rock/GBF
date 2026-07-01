@@ -38,7 +38,7 @@ export default function ProductCard({
   const tags = Array.isArray(p?.tags) ? p.tags : [];
 
   return (
-    <div className="group overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-left shadow-sm transition hover:bg-zinc-50">
+    <div className="group overflow-hidden rounded-[24px] border border-[#DDD6CA] bg-white text-left shadow-sm transition hover:bg-[#EFE7DA]/35">
       <div className="relative overflow-hidden">
         <button type="button" onClick={open} className="block w-full text-left">
           <img
@@ -49,7 +49,7 @@ export default function ProductCard({
         </button>
 
         {lowStock ? (
-          <div className="absolute left-3 top-3 inline-flex items-center rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-[11px] font-extrabold text-zinc-900 shadow-sm">
+          <div className="absolute left-3 top-3 inline-flex items-center rounded-full border border-[#DDD6CA] bg-[#F8F6F2]/90 px-3 py-1 text-[11px] font-extrabold text-[#2B2B2B] shadow-sm">
             {typeof t?.lowStockLeft === "function"
               ? t.lowStockLeft(stockN)
               : language === "es"
@@ -62,8 +62,8 @@ export default function ProductCard({
           <button
             type="button"
             onClick={toggleFav}
-            className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-700 shadow-sm transition hover:bg-white ${
-              isFavorite ? "text-zinc-900" : ""
+            className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DDD6CA] bg-[#F8F6F2]/90 text-[#6B6B6B] shadow-sm transition hover:bg-[#F8F6F2] ${
+              isFavorite ? "text-[#2B2B2B]" : ""
             }`}
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
@@ -86,18 +86,18 @@ export default function ProductCard({
       <button type="button" onClick={open} className="block w-full p-5 text-left">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-semibold text-zinc-500">{p?.category}</div>
-            <div className="mt-1 text-sm font-bold text-zinc-900">{name}</div>
+            <div className="text-xs font-semibold text-[#6B6B6B]">{p?.category}</div>
+            <div className="mt-1 text-sm font-bold text-[#2B2B2B]">{name}</div>
           </div>
-          <div className="text-sm font-bold text-zinc-900">{money(p?.price, language)}</div>
+          <div className="text-sm font-bold text-[#2B2B2B]">{money(p?.price, language)}</div>
         </div>
-        <div className="mt-2 text-sm text-zinc-600">{short}</div>
+        <div className="mt-2 text-sm text-[#6B6B6B]">{short}</div>
 
         {hasRatings ? (
-          <div className="mt-3 flex items-center gap-2 text-xs text-zinc-600">
+          <div className="mt-3 flex items-center gap-2 text-xs text-[#6B6B6B]">
             <StarRow value={avg} />
-            <span className="font-semibold text-zinc-700">{avg.toFixed(1)}</span>
-            <span className="text-zinc-500">({count})</span>
+            <span className="font-semibold text-[#2B2B2B]">{avg.toFixed(1)}</span>
+            <span className="text-[#6B6B6B]">({count})</span>
           </div>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
@@ -124,7 +124,7 @@ function StarRow({ value }) {
           <svg
             key={i}
             viewBox="0 0 24 24"
-            className={`h-4 w-4 ${on ? "text-zinc-800" : "text-zinc-300"}`}
+            className={`h-4 w-4 ${on ? "text-[#355E3B]" : "text-[#DDD6CA]"}`}
             fill="currentColor"
             aria-hidden="true"
           >

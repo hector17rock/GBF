@@ -1068,7 +1068,7 @@ function OrderFlowStepper({ currentStep = 1, t }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-4">
-      <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+      <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-[#F8F6F2]/70 p-4 shadow-sm backdrop-blur-xl">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs font-semibold text-zinc-600">
             {typeof t.orderFlowProgress === "function" ? t.orderFlowProgress(safeStep, total) : ""}
@@ -1076,9 +1076,9 @@ function OrderFlowStepper({ currentStep = 1, t }) {
         </div>
 
         <div className="relative mt-3">
-          <div className="h-2 w-full rounded-full bg-zinc-200" />
+          <div className="h-2 w-full rounded-full bg-[#DDD6CA]" />
           <div
-            className="absolute left-0 top-0 h-2 rounded-full bg-emerald-500"
+            className="absolute left-0 top-0 h-2 rounded-full bg-[#355E3B]"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -1094,10 +1094,10 @@ function OrderFlowStepper({ currentStep = 1, t }) {
                 <span
                   className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-extrabold ${
                     done
-                      ? "border-emerald-200 bg-emerald-100 text-emerald-900"
+                      ? "border-[#A8B99A] bg-[#A8B99A]/25 text-[#2B2B2B]"
                       : current
-                      ? "border-zinc-900 bg-zinc-900 text-white"
-                      : "border-zinc-200 bg-white text-zinc-700"
+                      ? "border-[#355E3B] bg-[#355E3B] text-white"
+                      : "border-[#DDD6CA] bg-[#F8F6F2] text-[#2B2B2B]"
                   }`}
                   aria-label={`${n}`}
                 >
@@ -1120,7 +1120,7 @@ function OrderFlowStepper({ currentStep = 1, t }) {
                 </span>
                 <div
                   className={`text-[11px] font-semibold leading-4 ${
-                    current ? "text-zinc-900" : "text-zinc-500"
+                    current ? "text-[#2B2B2B]" : "text-[#6B6B6B]"
                   }`}
                 >
                   {s.label}
@@ -1220,25 +1220,25 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
   const benefits = Array.isArray(cfg.benefits) ? cfg.benefits : buildDefaultHeroBenefits();
 
   return (
-    <div className="overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-[32px] border border-[#DDD6CA] bg-[#EFE7DA] shadow-sm">
       <div className="grid gap-8 p-6 md:grid-cols-2 md:p-10">
         <div className="flex flex-col justify-center">
-          <div className="text-[11px] font-semibold tracking-[0.22em] text-zinc-500">GROW BY FAITH</div>
-          <div className="mt-3 text-xs font-semibold text-zinc-600">{pillText}</div>
+          <div className="text-[11px] font-semibold tracking-[0.22em] text-[#6B6B6B]">GROW BY FAITH</div>
+          <div className="mt-3 text-xs font-semibold text-[#6B6B6B]">{pillText}</div>
 
           {showCountdown ? (
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700">
-              <span className="text-zinc-500">{t.heroCountdownEndsIn}</span>
-              <span className="text-zinc-900">{countdownValue}</span>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#DDD6CA] bg-[#F8F6F2] px-3 py-1 text-xs font-semibold text-[#2B2B2B]">
+              <span className="text-[#6B6B6B]">{t.heroCountdownEndsIn}</span>
+              <span className="text-[#2B2B2B]">{countdownValue}</span>
             </div>
           ) : null}
 
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-zinc-900 md:text-5xl">
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-[#2B2B2B] md:text-5xl">
             <span className="font-serif">{titleOne}</span>
             <span className="block font-serif">{titleTwo}</span>
           </h1>
 
-          <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-600 md:text-base md:leading-7">
+          <p className="mt-4 max-w-xl text-sm leading-6 text-[#6B6B6B] md:text-base md:leading-7">
             {heroText}
           </p>
 
@@ -1253,8 +1253,8 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
         </div>
 
         <div>
-          <div className="rounded-[28px] border border-zinc-200 bg-zinc-50 p-4">
-            <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white">
+          <div className="rounded-[28px] border border-[#DDD6CA] bg-[#F8F6F2] p-4">
+            <div className="overflow-hidden rounded-[24px] border border-[#DDD6CA] bg-white">
               <img
                 alt="hero"
                 src={heroImage}
@@ -1266,7 +1266,7 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white">
+              <div className="overflow-hidden rounded-[24px] border border-[#DDD6CA] bg-white">
                 <img
                   alt="product"
                   src={image1}
@@ -1276,7 +1276,7 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
                   draggable={false}
                 />
               </div>
-              <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white">
+              <div className="overflow-hidden rounded-[24px] border border-[#DDD6CA] bg-white">
                 <img
                   alt="product"
                   src={image2}
@@ -1291,7 +1291,7 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
         </div>
       </div>
 
-      <div className="border-t border-zinc-200 px-6 py-5 md:px-10">
+      <div className="border-t border-[#DDD6CA] px-6 py-5 md:px-10">
         <div className="grid gap-4 md:grid-cols-4">
           {benefits.map((b, idx) => {
             const title = l10n(b?.title, language) || "";
@@ -1300,12 +1300,12 @@ function Hero({ onPrimary, onSecondary, t, heroConfig, language }) {
 
             return (
               <div key={key} className="flex items-start gap-2">
-                <div className="mt-0.5 inline-flex shrink-0 text-zinc-900">
+                <div className="mt-0.5 inline-flex shrink-0 text-[#355E3B]">
                   <HeroBenefitIcon iconId={b?.iconId} className="h-5 w-5" strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-zinc-900">{title}</div>
-                  <div className="mt-1 text-xs text-zinc-600">{body}</div>
+                  <div className="text-xs font-semibold text-[#2B2B2B]">{title}</div>
+                  <div className="mt-1 text-xs text-[#6B6B6B]">{body}</div>
                 </div>
               </div>
             );
@@ -1381,7 +1381,7 @@ function Home({
         <NewsletterSignup t={t} onSubmitEmail={onSubmitNewsletterEmail} />
       </div>
 
-      <div className="mt-10 rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-10">
+      <div className="mt-10 rounded-[28px] border border-[#DDD6CA] bg-[#EFE7DA] p-6 shadow-sm md:p-10">
         <SectionTitle title={t.stepsTitle} subtitle={t.stepsSubtitle} />
         <div className="grid gap-4 md:grid-cols-3">
           <Step n="1" title={t.step1Title} desc={t.step1Desc} />
@@ -1409,14 +1409,14 @@ function Home({
 // Component: Step
 function Step({ n, title, desc }) {
   return (
-    <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-[24px] border border-[#DDD6CA] bg-[#F8F6F2] p-5 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-bold text-white">
+        <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-[#355E3B] text-sm font-bold text-white">
           {n}
         </div>
-        <div className="text-sm font-bold text-zinc-900">{title}</div>
+        <div className="text-sm font-bold text-[#2B2B2B]">{title}</div>
       </div>
-      <div className="mt-2 text-sm leading-6 text-zinc-600">{desc}</div>
+      <div className="mt-2 text-sm leading-6 text-[#6B6B6B]">{desc}</div>
     </div>
   );
 }
@@ -3497,6 +3497,70 @@ function AdminPanel({
     );
   }
 
+  function DashboardIcon({ kind, className = "h-5 w-5" }) {
+    const common = {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: 2,
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className,
+      "aria-hidden": true,
+    };
+
+    if (kind === "products") {
+      return (
+        <svg {...common}>
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="M3.3 7.3 12 12l8.7-4.7" />
+          <path d="M12 22V12" />
+        </svg>
+      );
+    }
+
+    if (kind === "homepage") {
+      return (
+        <svg {...common}>
+          <path d="M3 10.5 12 3l9 7.5" />
+          <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" />
+        </svg>
+      );
+    }
+
+    if (kind === "admin") {
+      return (
+        <svg {...common}>
+          <path d="M12 2 19 5v6c0 5-3 9-7 11C8 20 5 16 5 11V5l7-3Z" />
+          <path d="M9.5 11.5 11 13l3.5-4" />
+        </svg>
+      );
+    }
+
+    if (kind === "profit") {
+      return (
+        <svg {...common}>
+          <path d="M3 3v18h18" />
+          <path d="M7 13l3-3 4 4 6-7" />
+        </svg>
+      );
+    }
+
+    if (kind === "orders") {
+      return (
+        <svg {...common}>
+          <path d="M21 8V7a2 2 0 0 0-2-2H5A2 2 0 0 0 3 7v1" />
+          <path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" />
+          <path d="M7 5V3" />
+          <path d="M17 5V3" />
+          <path d="M3 10h18" />
+        </svg>
+      );
+    }
+
+    return null;
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
@@ -3504,31 +3568,24 @@ function AdminPanel({
 
         <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="text-sm font-bold text-zinc-900">{t.adminStatProducts}</div>
-
-            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
-              {products.length}
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-sm font-bold text-zinc-900">{t.adminStatProducts}</div>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
+                <DashboardIcon kind="products" className="h-5 w-5" />
+              </span>
             </div>
 
-            <p className="mt-1 text-sm text-zinc-600">{t.adminStatProductsBody}</p>
+            <div className="mt-3 text-3xl font-extrabold text-zinc-900">{products.length}</div>
           </div>
+
           {/* Dashboard card: Homepage */}
           <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="text-sm font-bold text-zinc-900">{t.adminHomepageTitle}</div>
-
-            <div className="mt-2 text-3xl font-extrabold text-zinc-900">HOME</div>
-
-            <p className="mt-1 text-sm text-zinc-600">
-              {t.adminHomepageSubtitle}
-              {" · "}
-              {heroConfig?.enabled
-                ? language === "es"
-                  ? "Activado"
-                  : "Enabled"
-                : language === "es"
-                  ? "Desactivado"
-                  : "Disabled"}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-sm font-bold text-zinc-900">{t.adminHomepageTitle}</div>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
+                <DashboardIcon kind="homepage" className="h-5 w-5" />
+              </span>
+            </div>
 
             <div className="mt-4">
               <Button
@@ -3542,13 +3599,12 @@ function AdminPanel({
           </div>
 
           <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="text-sm font-bold text-zinc-900">{t.adminStatMode}</div>
-
-            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
-              ADMIN
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-sm font-bold text-zinc-900">{t.adminStatMode}</div>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
+                <DashboardIcon kind="admin" className="h-5 w-5" />
+              </span>
             </div>
-
-            <p className="mt-1 text-sm text-zinc-600">{t.adminStatModeBody}</p>
 
             <div className="mt-4 grid gap-2">
               {typeof onGoAdminUsers === "function" ? (
@@ -3571,11 +3627,13 @@ function AdminPanel({
             onClick={() => (typeof onGoProfit === "function" ? onGoProfit() : null)}
             className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
           >
-            <div className="text-sm font-bold text-zinc-900">{t.profitTitle}</div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-sm font-bold text-zinc-900">{t.profitTitle}</div>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
+                <DashboardIcon kind="profit" className="h-5 w-5" />
+              </span>
+            </div>
 
-            <div className="mt-2 text-3xl font-extrabold text-zinc-900">P/L</div>
-
-            <p className="mt-1 text-sm text-zinc-600">{t.adminProfitCardBody}</p>
           </button>
 
           {/* Dashboard card: Orders (go to AdminOrders page) */}
@@ -3584,15 +3642,14 @@ function AdminPanel({
             onClick={() => (typeof onGoOrders === "function" ? onGoOrders() : null)}
             className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
           >
-            <div className="text-sm font-bold text-zinc-900">{t.ordersTitle}</div>
-
-            <div className="mt-2 text-3xl font-extrabold text-zinc-900">
-              {openOrders.length}
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-sm font-bold text-zinc-900">{t.ordersTitle}</div>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
+                <DashboardIcon kind="orders" className="h-5 w-5" />
+              </span>
             </div>
 
-            <p className="mt-1 text-sm text-zinc-600">
-              {t.adminStatOrdersPendingBody} · {t.ordersTotal}: {ordersList.length}
-            </p>
+            <div className="mt-3 text-3xl font-extrabold text-zinc-900">{openOrders.length}</div>
           </button>
         </div>
 
@@ -6688,7 +6745,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[#F8F6F2]">
       <TopBar
         route={route}
         setRoute={navigate}
@@ -6698,10 +6755,11 @@ export default function App() {
         setLanguage={setLanguage}
       />
 
-      <PageTransition key="gbf-route" routeKey={route} render={renderRoutedContent} />
-
-      <ToastStack toasts={toasts} onDismiss={dismissToast} />
-      <div className="pb-10" />
+      <div className="text-[#2B2B2B]">
+        <PageTransition key="gbf-route" routeKey={route} render={renderRoutedContent} />
+        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+        <div className="pb-10" />
+      </div>
     </div>
   );
 }

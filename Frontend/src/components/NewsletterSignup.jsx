@@ -30,11 +30,11 @@ export default function NewsletterSignup({ t, onSubmitEmail }) {
   }
 
   return (
-    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-10">
+    <div className="rounded-[28px] border border-[#DDD6CA] bg-white p-6 shadow-sm md:p-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="text-lg font-extrabold text-zinc-900">{t.newsletterTitle}</div>
-          <div className="mt-1 text-sm text-zinc-600">{t.newsletterSubtitle}</div>
+          <div className="text-lg font-extrabold text-[#2B2B2B]">{t.newsletterTitle}</div>
+          <div className="mt-1 text-sm text-[#6B6B6B]">{t.newsletterSubtitle}</div>
         </div>
 
         <form onSubmit={submit} className="grid w-full max-w-md gap-2 md:grid-cols-[1fr_auto]">
@@ -44,7 +44,7 @@ export default function NewsletterSignup({ t, onSubmitEmail }) {
             placeholder={t.newsletterPlaceholder}
             inputMode="email"
             autoComplete="email"
-            className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+            className="w-full rounded-2xl border border-[#DDD6CA] bg-white px-4 py-2 text-sm outline-none focus:border-[#355E3B]"
           />
           <Button variant="primary" className="w-full md:w-auto">
             {t.newsletterCta}

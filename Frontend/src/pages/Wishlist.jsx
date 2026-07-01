@@ -17,11 +17,11 @@ export default function Wishlist({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#F8F6F2]/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.wishlistTitle} subtitle={t.wishlistSubtitle} />
 
         {list.length === 0 ? (
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+          <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-6 text-sm text-[#6B6B6B] shadow-sm backdrop-blur-xl">
             {t.wishlistEmpty}
           </div>
         ) : (
