@@ -244,12 +244,6 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
               <Button variant="secondary" onClick={() => setLanguage(language === "es" ? "en" : "es")}>
                 {language === "es" ? "EN" : "ES"}
               </Button>
-              <Button variant="secondary" onClick={() => go("catalog")}>
-                {t.explore}
-              </Button>
-              <Button variant="secondary" onClick={() => go("wishlist")}>
-                {t.navWishlist}
-              </Button>
               <Button variant="secondary" onClick={() => go("cart")}>
                 {t.cart}
               </Button>
