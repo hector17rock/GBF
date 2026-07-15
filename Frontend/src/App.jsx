@@ -1740,7 +1740,28 @@ function Checkout({
                         : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                     }`}
                   >
-                    {t.payByCard}
+                    <span className="inline-flex items-center gap-2">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                      >
+                        <rect
+                          x="3"
+                          y="6"
+                          width="18"
+                          height="14"
+                          rx="2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <path d="M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M7 15h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                      <span>{t.payByCard}</span>
+                    </span>
                   </button>
                 </div>
 
@@ -1958,6 +1979,9 @@ function CheckoutReview({
   cart,
   checkoutConfig,
   checkoutDraft,
+  setCheckoutDraft,
+  policiesConfig,
+  onGoPolicies,
   onBack,
   onRemove,
   onPlaceOrder,
@@ -2001,6 +2025,26 @@ function CheckoutReview({
     return Boolean(customerOk && shippingOk);
   }
 
+  function setDraftAcceptPolicies(value) {
+    if (typeof setCheckoutDraft !== "function") return;
+    setCheckoutDraft((prev) => ({
+      ...normalizeCheckoutDraft(prev),
+      acceptPolicies: Boolean(value),
+    }));
+  }
+
+  const policiesNormalized = normalizePoliciesConfig(policiesConfig);
+  const policyCategories = Array.isArray(policiesNormalized?.categories) ? policiesNormalized.categories : [];
+
+  const publishedPolicies = policyCategories
+    .map((c, idx) => {
+      const id = String(c?.id ?? idx).trim();
+      const name = String(c?.name || "").trim();
+      const content = String(c?.content || "");
+      return { id, name, content };
+    })
+    .filter((c) => c.id && c.name && c.content.trim());
+
   // Action: submitOrder (shows toast then calls onPlaceOrder)
   function submitOrder() {
     setMessage("");
@@ -2017,6 +2061,11 @@ function CheckoutReview({
 
     if (!validateDraft()) {
       setMessage(t.checkoutDetailsRequired);
+      return;
+    }
+
+    if (!draft.acceptPolicies) {
+      setMessage(t.checkoutPoliciesRequired);
       return;
     }
 
@@ -2093,6 +2142,61 @@ function CheckoutReview({
                 <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
                   {shipLines || "—"}
                 </pre>
+              </div>
+
+              {/* Policies acceptance */}
+              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-bold text-zinc-900">{t.checkoutPoliciesTitle}</div>
+                    <div className="mt-1 text-xs leading-5 text-zinc-600">{t.checkoutPoliciesSubtitle}</div>
+                  </div>
+
+                  {typeof onGoPolicies === "function" ? (
+                    <button
+                      type="button"
+                      onClick={onGoPolicies}
+                      className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-50"
+                    >
+                      {t.checkoutPoliciesViewLink}
+                    </button>
+                  ) : null}
+                </div>
+
+                {publishedPolicies.length ? (
+                  <div className="mt-3 grid gap-2">
+                    {publishedPolicies.map((p) => (
+                      <details
+                        key={p.id}
+                        className="rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3"
+                      >
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900">
+                          <span>{p.name}</span>
+                          <span className="text-zinc-500">
+                            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        </summary>
+                        <div className="mt-3 max-h-[240px] overflow-auto whitespace-pre-wrap text-sm leading-6 text-zinc-700">
+                          {p.content}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-3 text-sm text-zinc-600">{t.policiesPublicEmpty}</div>
+                )}
+
+                <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(draft.acceptPolicies)}
+                    onChange={(e) => setDraftAcceptPolicies(e.target.checked)}
+                    className="mt-0.5 h-4 w-4"
+                  />
+                  <span className="text-sm font-semibold text-zinc-900">{t.checkoutPoliciesAcceptLabel}</span>
+                </label>
               </div>
 
               {message ? (
@@ -2856,6 +2960,7 @@ function Blog({ t, language }) {
 function About({ t, language }) {
   const values = [
     {
+      icon: "faith",
       title: { es: "Fe", en: "Faith" },
       desc: {
         es: "Todo lo que hacemos está fundamentado en la Palabra.",
@@ -2863,6 +2968,7 @@ function About({ t, language }) {
       },
     },
     {
+      icon: "integrity",
       title: { es: "Integridad", en: "Integrity" },
       desc: {
         es: "Operamos con transparencia, honestidad y responsabilidad.",
@@ -2870,10 +2976,12 @@ function About({ t, language }) {
       },
     },
     {
+      icon: "service",
       title: { es: "Servicio", en: "Service" },
       desc: { es: "Servimos con amor y excelencia.", en: "We serve with love and excellence." },
     },
     {
+      icon: "hope",
       title: { es: "Esperanza", en: "Hope" },
       desc: {
         es: "Promovemos mensajes que edifican y transforman vidas.",
@@ -2881,6 +2989,7 @@ function About({ t, language }) {
       },
     },
     {
+      icon: "community",
       title: { es: "Comunidad", en: "Community" },
       desc: {
         es: "Fomentamos unidad entre creyentes y quienes buscan.",
@@ -2888,6 +2997,79 @@ function About({ t, language }) {
       },
     },
   ];
+
+  function ValuesIcon({ kind, className = "h-5 w-5" }) {
+    const common = {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: 2,
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className,
+      "aria-hidden": true,
+    };
+
+    if (kind === "faith") {
+      return (
+        <svg {...common}>
+          <path d="M12 4v17" />
+          <path d="M8 9h8" />
+          <path d="M9 21h6" />
+        </svg>
+      );
+    }
+
+    if (kind === "integrity") {
+      return (
+        <svg {...common}>
+          <path d="M12 2 19 5v6c0 5-3 9-7 11C8 20 5 16 5 11V5l7-3Z" />
+          <path d="M9.5 11.5 11 13l3.5-4" />
+        </svg>
+      );
+    }
+
+    if (kind === "service") {
+      return (
+        <svg {...common}>
+          <path d="M20 12v10H4V12" />
+          <path d="M2 7h20v5H2z" />
+          <path d="M12 22V7" />
+          <path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C10 2 12 7 12 7Z" />
+          <path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C14 2 12 7 12 7Z" />
+        </svg>
+      );
+    }
+
+    if (kind === "hope") {
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="M4.93 4.93l1.41 1.41" />
+          <path d="M17.66 17.66l1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="M4.93 19.07l1.41-1.41" />
+          <path d="M17.66 6.34l1.41-1.41" />
+        </svg>
+      );
+    }
+
+    if (kind === "community") {
+      return (
+        <svg {...common}>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="3" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a3 3 0 0 1 0 5.74" />
+        </svg>
+      );
+    }
+
+    return null;
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -2899,19 +3081,45 @@ function About({ t, language }) {
               key={`${l10n(v.title, "en") || l10n(v.title, "es")}-${idx}`}
               className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
             >
-              <div className="text-sm font-bold text-zinc-900">
-                {l10n(v.title, language)}
-              </div>
-              <div className="mt-2 text-sm leading-6 text-zinc-600">
-                {l10n(v.desc, language)}
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#355E3B]/10 text-[#355E3B]">
+                  <ValuesIcon kind={v.icon} className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-zinc-900">
+                    {l10n(v.title, language)}
+                  </div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-600">
+                    {l10n(v.desc, language)}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
         <div className="mt-6 rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
-          <div className="text-sm font-bold text-zinc-900">{t.missionTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.missionText}</p>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#355E3B]/10 text-[#355E3B]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M5 3v18" />
+                <path d="M5 4h12l-1 4 1 4H5" />
+              </svg>
+            </span>
+            <div>
+              <div className="text-sm font-bold text-zinc-900">{t.missionTitle}</div>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">{t.missionText}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3637,6 +3845,8 @@ function AdminPanel({
               const tileInner = "flex h-full min-h-[248px] flex-col";
               const titleCls = "text-sm font-bold text-zinc-900";
               const iconAreaCls = "mt-5 flex flex-1 items-center justify-center";
+              const iconBoxCls =
+                "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#355E3B]/10 text-[#355E3B]";
               const footerSpacer = <div className="h-10" aria-hidden="true" />;
 
               return (
@@ -3651,8 +3861,10 @@ function AdminPanel({
                       <div className={titleCls}>{t.adminStatProducts}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="relative inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="products" className="h-12 w-12" />
+                        <span className="relative inline-flex">
+                          <span className={iconBoxCls}>
+                            <DashboardIcon kind="products" className="h-7 w-7" />
+                          </span>
 
                           {products.length > 0 ? (
                             <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold leading-none text-white">
@@ -3672,8 +3884,8 @@ function AdminPanel({
                       <div className={titleCls}>{t.adminHomepageTitle}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="homepage" className="h-12 w-12" />
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="homepage" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -3695,8 +3907,8 @@ function AdminPanel({
                       <div className={titleCls}>{t.adminStatMode}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="admin" className="h-12 w-12" />
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="admin" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -3728,8 +3940,8 @@ function AdminPanel({
                       <div className={titleCls}>{t.profitTitle}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="profit" className="h-12 w-12" />
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="profit" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -3747,8 +3959,10 @@ function AdminPanel({
                       <div className={titleCls}>{t.ordersTitle}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="relative inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="orders" className="h-12 w-12" />
+                        <span className="relative inline-flex">
+                          <span className={iconBoxCls}>
+                            <DashboardIcon kind="orders" className="h-7 w-7" />
+                          </span>
 
                           {openOrders.length > 0 ? (
                             <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold leading-none text-white">
@@ -3772,8 +3986,8 @@ function AdminPanel({
                       <div className={titleCls}>{t.inventoryTitle}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="inventory" className="h-12 w-12" />
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="inventory" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -3791,8 +4005,8 @@ function AdminPanel({
                       <div className={titleCls}>{t.checkoutTitle}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="checkout" className="h-12 w-12" />
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="checkout" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -3810,8 +4024,8 @@ function AdminPanel({
                       <div className={titleCls}>{t.policiesTitle}</div>
 
                       <div className={iconAreaCls}>
-                        <span className="inline-flex items-center justify-center text-zinc-900">
-                          <DashboardIcon kind="policies" className="h-12 w-12" />
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="policies" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -7046,6 +7260,9 @@ export default function App() {
             cart={cart}
             checkoutConfig={checkoutConfig}
             checkoutDraft={checkoutDraft}
+            setCheckoutDraft={setCheckoutDraft}
+            policiesConfig={policiesConfig}
+            onGoPolicies={() => navigate("policies")}
             onBack={() => navigate("checkout")}
             onRemove={removeFromCart}
             onPlaceOrder={placeOrder}

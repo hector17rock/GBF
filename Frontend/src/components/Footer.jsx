@@ -1,6 +1,9 @@
 import Pill from "./Pill";
 
 export default function Footer({ t }) {
+  const year = new Date().getFullYear();
+  const footerNote = typeof t?.footerNote === "function" ? t.footerNote(year) : t?.footerNote;
+
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
       <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA]/55 p-6 shadow-sm backdrop-blur-xl">
@@ -15,7 +18,7 @@ export default function Footer({ t }) {
                 ®
               </span>
             </div>
-            <div className="mt-1 text-xs text-[#6B6B6B]">{t.footerNote}</div>
+            <div className="mt-1 text-xs text-[#6B6B6B]">{footerNote}</div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Pill>IG</Pill>

@@ -35,6 +35,7 @@ export function normalizeCheckoutConfig(cfg) {
 export function buildDefaultCheckoutDraft() {
   return {
     paymentMethod: "card", // card | paypal
+    acceptPolicies: false,
     customer: {
       name: "",
       phone: "",
@@ -66,10 +67,13 @@ export function normalizeCheckoutDraft(draft) {
   const paymentMethod =
     cfg.paymentMethod === "paypal" || cfg.paymentMethod === "whatsapp" ? "paypal" : "card";
 
+  const acceptPolicies = Boolean(cfg.acceptPolicies);
+
   return {
     ...base,
     ...cfg,
     paymentMethod,
+    acceptPolicies,
     customer: { ...base.customer, ...(cfg.customer || {}) },
     shipping: { ...base.shipping, ...(cfg.shipping || {}) },
     card: { ...base.card, ...(cfg.card || {}) },

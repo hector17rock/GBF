@@ -99,6 +99,20 @@ export default function ProductDetail({
     color,
   };
 
+  const previewText = personalization.text.length > 0 ? personalization.text : t.previewFallbackText;
+  const previewTextLen = previewText.length;
+
+  const previewTextSizeClass =
+    previewTextLen <= 14
+      ? "text-3xl md:text-4xl"
+      : previewTextLen <= 26
+      ? "text-2xl md:text-3xl"
+      : previewTextLen <= 42
+      ? "text-xl md:text-2xl"
+      : "text-lg md:text-xl";
+
+  const previewTextLeadingClass = previewTextLen <= 26 ? "leading-tight" : "leading-snug";
+
   const gallery = useMemo(() => {
     const base = String(product?.image || "").trim();
     const list = [];
@@ -116,6 +130,16 @@ export default function ProductDetail({
   }, [product]);
 
   const [activeImg, setActiveImg] = useState(0);
+
+  const previewIndex = useMemo(() => {
+    const idx = gallery.findIndex((g) => g?.kind === "preview");
+    return idx >= 0 ? idx : 0;
+  }, [gallery]);
+
+  function ensurePreviewActive() {
+    if (activeImg === previewIndex) return;
+    setActiveImg(previewIndex);
+  }
 
   function goPrev() {
     setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
@@ -235,7 +259,7 @@ export default function ProductDetail({
                       </div>
 
                       <div
-                        className={`mx-auto mt-4 max-w-[520px] text-balance text-2xl font-extrabold leading-tight md:text-3xl ${fontClass} ${colorClass} opacity-70`}
+                        className={`mx-auto mt-4 max-w-[520px] text-balance font-extrabold ${previewTextSizeClass} ${previewTextLeadingClass} ${fontClass} ${colorClass} opacity-90`}
                         style={{
                           mixBlendMode: "multiply",
                           textShadow:
@@ -243,11 +267,11 @@ export default function ProductDetail({
                           letterSpacing: "0.02em",
                         }}
                       >
-                        {personalization.text.length > 0 ? personalization.text : t.previewFallbackText}
+                        {previewText}
                       </div>
 
                       <div
-                        className="mx-auto mt-2 max-w-[520px] text-pretty text-sm font-semibold text-zinc-900/60"
+                        className={`mx-auto mt-2 max-w-[520px] text-pretty text-sm font-semibold ${fontClass} ${colorClass} opacity-60`}
                         style={{ mixBlendMode: "multiply", textShadow: "0 1px 10px rgba(0,0,0,0.25)" }}
                       >
                         {personalization.verse}
@@ -326,7 +350,10 @@ export default function ProductDetail({
                 <label className="text-xs font-semibold text-zinc-700">{t.labelText}</label>
                 <input
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    ensurePreviewActive();
+                    setText(e.target.value);
+                  }}
                   placeholder={t.textPlaceholder}
                   className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
@@ -344,7 +371,10 @@ export default function ProductDetail({
                       <button
                         type="button"
                         key={f.id}
-                        onClick={() => setFont(f.id)}
+                        onClick={() => {
+                          ensurePreviewActive();
+                          setFont(f.id);
+                        }}
                         className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
                           selected
                             ? "border-zinc-900 bg-zinc-900 text-white"
@@ -367,7 +397,10 @@ export default function ProductDetail({
                       <button
                         type="button"
                         key={c.id}
-                        onClick={() => setColor(c.id)}
+                        onClick={() => {
+                          ensurePreviewActive();
+                          setColor(c.id);
+                        }}
                         className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
                           selected
                             ? "border-zinc-900 bg-zinc-900 text-white"
@@ -386,7 +419,10 @@ export default function ProductDetail({
                 <label className="text-xs font-semibold text-zinc-700">{t.labelVerse}</label>
                 <select
                   value={verse}
-                  onChange={(e) => setVerse(e.target.value)}
+                  onChange={(e) => {
+                    ensurePreviewActive();
+                    setVerse(e.target.value);
+                  }}
                   className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 >
                   {VERSES.map((v) => (

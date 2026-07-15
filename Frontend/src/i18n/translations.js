@@ -204,7 +204,7 @@ export const translations = {
     paymentMethod: "Método de pago",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
-    payByCard: "Tarjeta (Stripe)",
+    payByCard: "Tarjeta",
     payPalDisclaimer: "PayPal (próximamente) — demo frontend.",
     checkoutContinueToReview: "Continuar a revisión",
 
@@ -233,6 +233,11 @@ export const translations = {
     checkoutEditDetails: "Editar datos",
     checkoutSubmitOrder: "Someter orden",
     checkoutDetailsRequired: "Completa nombre, teléfono y dirección de envío.",
+    checkoutPoliciesTitle: "Políticas",
+    checkoutPoliciesSubtitle: "Debes aceptar las políticas antes de someter el pago.",
+    checkoutPoliciesViewLink: "Ver Políticas",
+    checkoutPoliciesAcceptLabel: "He leído y acepto las políticas.",
+    checkoutPoliciesRequired: "Debes aceptar las políticas para continuar.",
     checkoutOrderSubmittedToast: "Orden sometida",
     cardRequired: "Completa todos los campos de tarjeta.",
     cardNotReady:
@@ -572,7 +577,7 @@ export const translations = {
     cancel: "Cancelar",
     confirmDeleteProduct: (name) => `¿Eliminar "${name}"? Esta acción no se puede deshacer.`,
 
-    footerNote: "MVP visual (solo frontend) para validar interés.",
+    footerNote: (year) => `© ${year} Grow by Faith. Todos los derechos reservados.`,
     footerWhatsAppCheckout: "Pago con tarjeta",
   },
   en: {
@@ -773,7 +778,7 @@ export const translations = {
     paymentMethod: "Payment method",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
-    payByCard: "Card (Stripe)",
+    payByCard: "Card",
     payPalDisclaimer: "PayPal (coming soon) — frontend demo.",
     checkoutContinueToReview: "Continue to review",
 
@@ -802,6 +807,11 @@ export const translations = {
     checkoutEditDetails: "Edit details",
     checkoutSubmitOrder: "Submit order",
     checkoutDetailsRequired: "Please enter your name, phone, and shipping address.",
+    checkoutPoliciesTitle: "Policies",
+    checkoutPoliciesSubtitle: "You must accept the policies before submitting payment.",
+    checkoutPoliciesViewLink: "View Policies",
+    checkoutPoliciesAcceptLabel: "I have read and accept the policies.",
+    checkoutPoliciesRequired: "You must accept the policies to continue.",
     checkoutOrderSubmittedToast: "Order submitted",
     cardRequired: "Complete all card fields.",
     cardNotReady:
@@ -1136,7 +1146,7 @@ export const translations = {
     cancel: "Cancel",
     confirmDeleteProduct: (name) => `Delete "${name}"? This can't be undone.`,
 
-    footerNote: "Visual MVP (frontend-only) to validate interest.",
+    footerNote: (year) => `© ${year} Grow by Faith. All rights reserved.`,
     footerWhatsAppCheckout: "Card checkout",
   },
 };
