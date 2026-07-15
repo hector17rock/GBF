@@ -229,6 +229,9 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
                   route === "admin" ||
                   route === "admin_orders" ||
                   route === "admin_profit" ||
+                  route === "admin_inventory" ||
+                  route === "admin_products" ||
+                  route === "admin_homepage" ||
                   route === "admin_product_preview" ||
                   route === "admin_login" ||
                   route === "admin_users"

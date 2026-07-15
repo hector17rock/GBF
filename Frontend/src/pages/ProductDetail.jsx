@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { COLORS, FONTS, VERSES } from "../data/catalog";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
@@ -116,10 +116,6 @@ export default function ProductDetail({
   }, [product]);
 
   const [activeImg, setActiveImg] = useState(0);
-
-  useEffect(() => {
-    setActiveImg(0);
-  }, [product?.id]);
 
   function goPrev() {
     setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);

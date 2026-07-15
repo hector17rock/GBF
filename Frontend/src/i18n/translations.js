@@ -373,6 +373,26 @@ export const translations = {
     adminCheckoutDefaultShippingLabel: "Costo de envío",
     adminCheckoutTaxStateRateLabel: "IVU estatal (PR) — tasa (%)",
     adminCheckoutTaxMunicipalRateLabel: "IVU municipal (PR) — tasa (%)",
+
+    policiesTitle: "Políticas",
+    adminPoliciesTitle: "Políticas",
+    adminPoliciesSubtitle: "Crea y organiza las políticas por categoría.",
+    policiesCategoriesTitle: "Categorías",
+    policiesCategoriesSubtitle: "Añade o elimina categorías para organizar tus políticas.",
+    policiesEmptyCategories: "No hay categorías todavía.",
+    policiesUntitledCategory: "Sin título",
+    policiesNewCategoryLabel: "Nueva categoría",
+    policiesNewCategoryPlaceholder: "Ej: Reembolsos",
+    policiesAddCategory: "Añadir categoría",
+    policiesSelectCategoryHint: "Selecciona una categoría para editar su contenido.",
+    policiesCategoryNameLabel: "Nombre de la categoría",
+    policiesCategoryNamePlaceholder: "Ej: Envíos",
+    policiesCategoryContentLabel: "Contenido",
+    policiesCategoryContentPlaceholder:
+      "Escribe aquí tu política. Puedes usar saltos de línea, bullets, etc.",
+    policiesAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
+    policiesConfirmDeleteCategory: (name) => `¿Eliminar la categoría "${name}"?`,
+
     profitNoSales: "No hay ventas registradas en este período.",
     profitTopProducts: "Productos top",
 
@@ -915,6 +935,26 @@ export const translations = {
     adminCheckoutDefaultShippingLabel: "Shipping cost",
     adminCheckoutTaxStateRateLabel: "PR state tax — rate (%)",
     adminCheckoutTaxMunicipalRateLabel: "PR municipal tax — rate (%)",
+
+    policiesTitle: "Policies",
+    adminPoliciesTitle: "Policies",
+    adminPoliciesSubtitle: "Create and organize policies by category.",
+    policiesCategoriesTitle: "Categories",
+    policiesCategoriesSubtitle: "Add or remove categories to organize your policies.",
+    policiesEmptyCategories: "No categories yet.",
+    policiesUntitledCategory: "Untitled",
+    policiesNewCategoryLabel: "New category",
+    policiesNewCategoryPlaceholder: "e.g. Refunds",
+    policiesAddCategory: "Add category",
+    policiesSelectCategoryHint: "Select a category to edit its content.",
+    policiesCategoryNameLabel: "Category name",
+    policiesCategoryNamePlaceholder: "e.g. Shipping",
+    policiesCategoryContentLabel: "Content",
+    policiesCategoryContentPlaceholder:
+      "Write your policy here. You can use line breaks, bullets, etc.",
+    policiesAutosaveHint: "Autosaved in this browser (localStorage).",
+    policiesConfirmDeleteCategory: (name) => `Delete category "${name}"?`,
+
     profitNoSales: "No sales recorded for this period.",
     profitTopProducts: "Top products",
 

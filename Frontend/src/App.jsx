@@ -35,6 +35,7 @@ import {
   buildDefaultCheckoutDraft,
   normalizeCheckoutDraft,
 } from "./utils/checkout";
+import { buildDefaultPoliciesConfig, normalizePoliciesConfig } from "./utils/policies";
 import {
   normalizeOrderStatus,
   isOpenOrderStatus,
@@ -92,6 +93,7 @@ const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
 const ADMIN_USERS_STORAGE_KEY = "gbf.adminUsers.v1";
 const ADMIN_SESSION_STORAGE_KEY = "gbf.adminSession.v1";
+const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -3084,26 +3086,25 @@ function AdminPanel({
   setCategories,
   products,
   setProducts,
-  inventory,
   setInventory,
-  productCosts,
   setProductCosts,
-  checkoutConfig,
-  setCheckoutConfig,
   orders,
-  heroConfig,
   notify,
   onPreviewProduct,
   activityLog = [],
   onClearActivityLog,
   logActivity,
   onGoOrders,
+  onGoInventory,
+  onGoCheckout,
+  onGoPolicies,
+  onGoProducts,
   onGoProfit,
   onGoAdminUsers,
   onLogoutAdmin,
   onGoHomepage,
   currentAdminUser,
-  onUpdateAdminName,
+  page = "dashboard",
   t,
   language,
 }) {
@@ -3118,27 +3119,6 @@ function AdminPanel({
 
   const adminName = String(currentAdminUser?.name || currentAdminUser?.username || "").trim();
   const adminUsername = String(currentAdminUser?.username || "").trim();
-
-  const [editingWelcomeName, setEditingWelcomeName] = useState(false);
-  const [welcomeNameDraft, setWelcomeNameDraft] = useState(adminName);
-  const [welcomeNameBusy, setWelcomeNameBusy] = useState(false);
-
-  useEffect(() => {
-    setWelcomeNameDraft(adminName);
-  }, [adminName]);
-
-  async function saveWelcomeName() {
-    const next = String(welcomeNameDraft || "").trim();
-    if (!next || typeof onUpdateAdminName !== "function") return;
-
-    setWelcomeNameBusy(true);
-    try {
-      const ok = await onUpdateAdminName(next);
-      if (ok) setEditingWelcomeName(false);
-    } finally {
-      setWelcomeNameBusy(false);
-    }
-  }
 
   const locale = language === "es" ? "es-PR" : "en-US";
   const now = useMemo(() => new Date(nowTs), [nowTs]);
@@ -3194,45 +3174,6 @@ function AdminPanel({
     } catch {
       return d.toLocaleString();
     }
-  }
-
-  // getInventoryCount
-  function getInventoryCount(productId) {
-    const n = Number(inventory?.[productId]);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-
-  // setInventoryCount
-  function setInventoryCount(productId, value) {
-    const n = Number(value);
-    setInventory((prev) => ({
-      ...(prev && typeof prev === "object" ? prev : {}),
-      [productId]: Number.isFinite(n) ? n : 0,
-    }));
-  }
-
-
-  // adjustInventory
-  function adjustInventory(productId, delta) {
-    setInventoryCount(productId, getInventoryCount(productId) + delta);
-  }
-
-
-  // getUnitCost
-  function getUnitCost(productId) {
-    const n = Number(productCosts?.[productId]);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-
-  // setUnitCost
-  function setUnitCost(productId, value) {
-    const n = Number(value);
-    setProductCosts((prev) => ({
-      ...(prev && typeof prev === "object" ? prev : {}),
-      [productId]: Number.isFinite(n) ? n : 0,
-    }));
   }
 
   // handleUploadImage
@@ -3539,20 +3480,6 @@ function AdminPanel({
     });
   }
 
-  const normalizedCheckoutConfig = normalizeCheckoutConfig(checkoutConfig);
-
-  // setCheckoutConfigField
-  function setCheckoutConfigField(field, value) {
-    if (typeof setCheckoutConfig !== "function") return;
-
-    setCheckoutConfig((prev) =>
-      normalizeCheckoutConfig({
-        ...(prev && typeof prev === "object" ? prev : {}),
-        [field]: value,
-      })
-    );
-  }
-
   function DashboardIcon({ kind, className = "h-5 w-5" }) {
     const common = {
       viewBox: "0 0 24 24",
@@ -3614,6 +3541,39 @@ function AdminPanel({
       );
     }
 
+    if (kind === "inventory") {
+      return (
+        <svg {...common}>
+          <path d="M20 7 12 3 4 7v10l8 4 8-4V7Z" />
+          <path d="M12 22V12" />
+          <path d="M4 7l8 5 8-5" />
+        </svg>
+      );
+    }
+
+    if (kind === "checkout") {
+      // Credit card icon (clearer for “Checkout / Payments”)
+      return (
+        <svg {...common}>
+          <rect x="3" y="6" width="18" height="14" rx="2" />
+          <path d="M3 10h18" />
+          <path d="M7 15h6" />
+          <path d="M16 16l1.2 1.2L20 14.5" />
+        </svg>
+      );
+    }
+
+    if (kind === "policies") {
+      // File + check (balanced center alignment)
+      return (
+        <svg {...common}>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+          <path d="M14 2v6h6" />
+          <path d="M9 15l2 2 4-4" />
+        </svg>
+      );
+    }
+
     return null;
   }
 
@@ -3625,66 +3585,15 @@ function AdminPanel({
             {language === "es" ? "Bienvenido" : "Welcome"}
           </div>
 
-          {editingWelcomeName ? (
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
-              <div className="w-full sm:w-[320px]">
-                <label className="text-[11px] font-semibold text-zinc-600">{t.adminAuthNameLabel}</label>
-                <input
-                  value={welcomeNameDraft}
-                  onChange={(e) => setWelcomeNameDraft(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  type="button"
-                  onClick={() => {
-                    setEditingWelcomeName(false);
-                    setWelcomeNameDraft(adminName);
-                  }}
-                  disabled={welcomeNameBusy}
-                >
-                  {t.cancel}
-                </Button>
-                <Button
-                  variant="primary"
-                  type="button"
-                  onClick={saveWelcomeName}
-                  disabled={welcomeNameBusy || !String(welcomeNameDraft || "").trim()}
-                >
-                  {t.save}
-                </Button>
-              </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <div className="text-base font-extrabold text-zinc-900">
+              {adminName || (language === "es" ? "Administrador" : "Admin")}
             </div>
-          ) : (
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <div className="text-base font-extrabold text-zinc-900">
-                {adminName || (language === "es" ? "Administrador" : "Admin")}
-              </div>
 
-              {adminUsername && adminUsername !== adminName ? (
-                <div className="text-xs font-semibold text-zinc-500">@{adminUsername}</div>
-              ) : null}
-
-              {typeof onUpdateAdminName === "function" ? (
-                <button
-                  type="button"
-                  onClick={() => setEditingWelcomeName(true)}
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
-                >
-                  {adminName === adminUsername
-                    ? language === "es"
-                      ? "Agregar nombre"
-                      : "Add name"
-                    : language === "es"
-                      ? "Editar nombre"
-                      : "Edit name"}
-                </button>
-              ) : null}
-            </div>
-          )}
+            {adminUsername && adminUsername !== adminName ? (
+              <div className="text-xs font-semibold text-zinc-500">@{adminUsername}</div>
+            ) : null}
+          </div>
         </div>
 
         <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 px-5 py-3 shadow-sm backdrop-blur-xl">
@@ -3698,95 +3607,219 @@ function AdminPanel({
       </div>
 
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
-        <SectionTitle title={t.adminTitle} subtitle={t.adminSubtitle} />
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle
+            title={page === "products" ? t.adminStatProducts : t.adminTitle}
+            subtitle={page === "products" ? t.currentProductsSubtitle : t.adminSubtitle}
+          />
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="flex items-start justify-between gap-3">
-              <div className="text-sm font-bold text-zinc-900">{t.adminStatProducts}</div>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
-                <DashboardIcon kind="products" className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="mt-3 text-3xl font-extrabold text-zinc-900">{products.length}</div>
-          </div>
-
-          {/* Dashboard card: Homepage */}
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="flex items-start justify-between gap-3">
-              <div className="text-sm font-bold text-zinc-900">{t.adminHomepageTitle}</div>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
-                <DashboardIcon kind="homepage" className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="mt-4">
-              <Button
-                variant="secondary"
-                onClick={() => (typeof onGoHomepage === "function" ? onGoHomepage() : null)}
-                className="w-full"
-              >
-                {t.edit}
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-            <div className="flex items-start justify-between gap-3">
-              <div className="text-sm font-bold text-zinc-900">{t.adminStatMode}</div>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
-                <DashboardIcon kind="admin" className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-2">
-              {typeof onGoAdminUsers === "function" ? (
-                <Button variant="secondary" onClick={onGoAdminUsers} className="w-full">
-                  {t.adminManageAccess}
-                </Button>
-              ) : null}
-
-              {typeof onLogoutAdmin === "function" ? (
-                <Button variant="secondary" onClick={onLogoutAdmin} className="w-full">
-                  {t.adminLogout}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Dashboard card: Profit / Loss (go to AdminProfit page) */}
-          <button
-            type="button"
-            onClick={() => (typeof onGoProfit === "function" ? onGoProfit() : null)}
-            className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="text-sm font-bold text-zinc-900">{t.profitTitle}</div>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
-                <DashboardIcon kind="profit" className="h-5 w-5" />
-              </span>
-            </div>
-
-          </button>
-
-          {/* Dashboard card: Orders (go to AdminOrders page) */}
-          <button
-            type="button"
-            onClick={() => (typeof onGoOrders === "function" ? onGoOrders() : null)}
-            className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition hover:bg-white/70"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="text-sm font-bold text-zinc-900">{t.ordersTitle}</div>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200/60 bg-white/60 text-zinc-900">
-                <DashboardIcon kind="orders" className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="mt-3 text-3xl font-extrabold text-zinc-900">{openOrders.length}</div>
-          </button>
+          {page === "products" ? (
+            <Button
+              variant="secondary"
+              onClick={() => (typeof onGoProducts === "function" ? onGoProducts() : null)}
+            >
+              {t.back}
+            </Button>
+          ) : null}
         </div>
 
+        {page === "dashboard" ? (
+          <div className="grid items-stretch gap-4 md:grid-cols-4">
+            {(() => {
+              const tileBase =
+                "group h-full rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 text-left shadow-sm backdrop-blur-xl transition will-change-transform hover:-translate-y-0.5 hover:bg-white/70 hover:shadow-md hover:ring-1 hover:ring-zinc-900/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30";
+              const tileInner = "flex h-full min-h-[248px] flex-col";
+              const titleCls = "text-sm font-bold text-zinc-900";
+              const iconAreaCls = "mt-5 flex flex-1 items-center justify-center";
+              const footerSpacer = <div className="h-10" aria-hidden="true" />;
+
+              return (
+                <>
+                  {/* Dashboard card: Products */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoProducts === "function" ? onGoProducts() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.adminStatProducts}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="relative inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="products" className="h-12 w-12" />
+
+                          {products.length > 0 ? (
+                            <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold leading-none text-white">
+                              {products.length > 99 ? "99+" : products.length}
+                            </span>
+                          ) : null}
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Homepage */}
+                  <div className={tileBase}>
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.adminHomepageTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="homepage" className="h-12 w-12" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">
+                        <Button
+                          variant="secondary"
+                          onClick={() => (typeof onGoHomepage === "function" ? onGoHomepage() : null)}
+                          className="w-full"
+                        >
+                          {t.edit}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dashboard card: Admin */}
+                  <div className={tileBase}>
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.adminStatMode}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="admin" className="h-12 w-12" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto grid gap-2 pt-4">
+                        {typeof onGoAdminUsers === "function" ? (
+                          <Button variant="secondary" onClick={onGoAdminUsers} className="w-full">
+                            {t.adminManageAccess}
+                          </Button>
+                        ) : (
+                          footerSpacer
+                        )}
+
+                        {typeof onLogoutAdmin === "function" ? (
+                          <Button variant="secondary" onClick={onLogoutAdmin} className="w-full">
+                            {t.adminLogout}
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dashboard card: Profit / Loss */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoProfit === "function" ? onGoProfit() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.profitTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="profit" className="h-12 w-12" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Orders */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoOrders === "function" ? onGoOrders() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.ordersTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="relative inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="orders" className="h-12 w-12" />
+
+                          {openOrders.length > 0 ? (
+                            <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold leading-none text-white">
+                              {openOrders.length > 99 ? "99+" : openOrders.length}
+                            </span>
+                          ) : null}
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Inventory */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoInventory === "function" ? onGoInventory() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.inventoryTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="inventory" className="h-12 w-12" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Checkout */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoCheckout === "function" ? onGoCheckout() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.checkoutTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="checkout" className="h-12 w-12" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Policies */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoPolicies === "function" ? onGoPolicies() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.policiesTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className="inline-flex items-center justify-center text-zinc-900">
+                          <DashboardIcon kind="policies" className="h-12 w-12" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        ) : null}
+
+        {page === "dashboard" ? (
+        <>
         {/* Admin: Activity log */}
         <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -3821,142 +3854,11 @@ function AdminPanel({
             </div>
           )}
         </div>
+        </>
+        ) : null}
 
-        {/* Admin: Checkout Settings */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-          <SectionTitle
-            title={t.adminCheckoutSettingsTitle}
-            subtitle={t.adminCheckoutSettingsSubtitle}
-          />
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <label className="text-xs font-semibold text-zinc-700">
-                {t.adminCheckoutTaxStateRateLabel}
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={String(normalizedCheckoutConfig.prTaxStateRatePct)}
-                onChange={(e) => setCheckoutConfigField("prTaxStateRatePct", e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-zinc-700">
-                {t.adminCheckoutTaxMunicipalRateLabel}
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={String(normalizedCheckoutConfig.prTaxMunicipalRatePct)}
-                onChange={(e) =>
-                  setCheckoutConfigField("prTaxMunicipalRatePct", e.target.value)
-                }
-                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-zinc-700">
-                {t.adminCheckoutDefaultShippingLabel}
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                placeholder={language === "es" ? "0.00" : "0.00"}
-                value={String(normalizedCheckoutConfig.defaultShippingFee)}
-                onChange={(e) => setCheckoutConfigField("defaultShippingFee", e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-              />
-              <div className="mt-1 text-[11px] text-zinc-500">USD</div>
-            </div>
-          </div>
-
-          <div className="mt-3 text-xs text-zinc-500">
-            {t.taxPrTotal} ({formatRatePct(
-              normalizedCheckoutConfig.prTaxStateRatePct +
-                normalizedCheckoutConfig.prTaxMunicipalRatePct
-            )}%)
-          </div>
-        </div>
-
-        {/* Dashboard: Inventory */}
-        <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
-          <SectionTitle title={t.inventoryTitle} subtitle={t.inventorySubtitle} />
-
-          <div className="grid gap-3">
-            {products.map((p) => (
-              <div
-                key={p.id}
-                className="flex flex-col gap-4 rounded-[24px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl md:flex-row md:items-center md:justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={p.image}
-                    alt={l10n(p.name, language)}
-                    className="h-14 w-14 rounded-2xl object-cover"
-                  />
-                  <div>
-                    <div className="text-xs font-semibold text-zinc-500">{p.category}</div>
-                    <div className="mt-1 text-sm font-bold text-zinc-900">
-                      {l10n(p.name, language)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2 md:items-end">
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.inventoryInStock}
-                    </label>
-                    <input
-                      type="number"
-                      value={getInventoryCount(p.id)}
-                      onChange={(e) => setInventoryCount(p.id, e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    />
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        variant="secondary"
-                        onClick={() => adjustInventory(p.id, -1)}
-                        className="w-full"
-                      >
-                        {t.inventoryAdjustMinus}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        onClick={() => adjustInventory(p.id, 1)}
-                        className="w-full"
-                      >
-                        {t.inventoryAdjustPlus}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-700">
-                      {t.inventoryUnitCost}
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={getUnitCost(p.id)}
-                      onChange={(e) => setUnitCost(p.id, e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+        {page === "products" ? (
+          <>
         <div className="mt-8 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
           <SectionTitle title={t.categoriesTitle} subtitle={t.categoriesSubtitle} />
 
@@ -4362,6 +4264,8 @@ function AdminPanel({
             })}
           </div>
         </div>
+        </>
+        ) : null}
       </div>
 
       <Footer t={t} />
@@ -4816,6 +4720,410 @@ function AdminHomepage({ heroConfig, setHeroConfig, t, language, onBack }) {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: AdminInventory
+function AdminInventory({ products = [], inventory, setInventory, productCosts, setProductCosts, t, language, onBack }) {
+  const items = Array.isArray(products) ? products : [];
+
+  // getInventoryCount
+  function getInventoryCount(productId) {
+    const n = Number(inventory?.[productId]);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  // setInventoryCount
+  function setInventoryCount(productId, value) {
+    const n = Number(value);
+    if (typeof setInventory !== "function") return;
+
+    setInventory((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [productId]: Number.isFinite(n) ? n : 0,
+    }));
+  }
+
+  // adjustInventory
+  function adjustInventory(productId, delta) {
+    setInventoryCount(productId, getInventoryCount(productId) + delta);
+  }
+
+  // getUnitCost
+  function getUnitCost(productId) {
+    const n = Number(productCosts?.[productId]);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  // setUnitCost
+  function setUnitCost(productId, value) {
+    const n = Number(value);
+    if (typeof setProductCosts !== "function") return;
+
+    setProductCosts((prev) => ({
+      ...(prev && typeof prev === "object" ? prev : {}),
+      [productId]: Number.isFinite(n) ? n : 0,
+    }));
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.inventoryTitle} subtitle={t.inventorySubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-3">
+          {items.map((p) => (
+            <div
+              key={p.id}
+              className="flex flex-col gap-4 rounded-[24px] border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl md:flex-row md:items-center md:justify-between"
+            >
+              <div className="flex items-center gap-4">
+                <img
+                  src={p.image}
+                  alt={l10n(p.name, language)}
+                  className="h-14 w-14 rounded-2xl object-cover"
+                />
+                <div>
+                  <div className="text-xs font-semibold text-zinc-500">{p.category}</div>
+                  <div className="mt-1 text-sm font-bold text-zinc-900">{l10n(p.name, language)}</div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2 md:items-end">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.inventoryInStock}</label>
+                  <input
+                    type="number"
+                    value={getInventoryCount(p.id)}
+                    onChange={(e) => setInventoryCount(p.id, e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                  <div className="mt-2 flex gap-2">
+                    <Button variant="secondary" onClick={() => adjustInventory(p.id, -1)} className="w-full">
+                      {t.inventoryAdjustMinus}
+                    </Button>
+                    <Button variant="secondary" onClick={() => adjustInventory(p.id, 1)} className="w-full">
+                      {t.inventoryAdjustPlus}
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.inventoryUnitCost}</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={getUnitCost(p.id)}
+                    onChange={(e) => setUnitCost(p.id, e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: AdminCheckoutSettings
+function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, language, onBack }) {
+  const normalizedCheckoutConfig = normalizeCheckoutConfig(checkoutConfig);
+
+  // setCheckoutConfigField
+  function setCheckoutConfigField(field, value) {
+    if (typeof setCheckoutConfig !== "function") return;
+
+    setCheckoutConfig((prev) =>
+      normalizeCheckoutConfig({
+        ...(prev && typeof prev === "object" ? prev : {}),
+        [field]: value,
+      })
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle
+            title={t.adminCheckoutSettingsTitle}
+            subtitle={t.adminCheckoutSettingsSubtitle}
+          />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <label className="text-xs font-semibold text-zinc-700">
+                {t.adminCheckoutTaxStateRateLabel}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={String(normalizedCheckoutConfig.prTaxStateRatePct)}
+                onChange={(e) => setCheckoutConfigField("prTaxStateRatePct", e.target.value)}
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-zinc-700">
+                {t.adminCheckoutTaxMunicipalRateLabel}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={String(normalizedCheckoutConfig.prTaxMunicipalRatePct)}
+                onChange={(e) =>
+                  setCheckoutConfigField("prTaxMunicipalRatePct", e.target.value)
+                }
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-zinc-700">
+                {t.adminCheckoutDefaultShippingLabel}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                placeholder={language === "es" ? "0.00" : "0.00"}
+                value={String(normalizedCheckoutConfig.defaultShippingFee)}
+                onChange={(e) => setCheckoutConfigField("defaultShippingFee", e.target.value)}
+                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+              <div className="mt-1 text-[11px] text-zinc-500">USD</div>
+            </div>
+          </div>
+
+          <div className="mt-3 text-xs text-zinc-500">
+            {t.taxPrTotal} ({formatRatePct(
+              normalizedCheckoutConfig.prTaxStateRatePct +
+                normalizedCheckoutConfig.prTaxMunicipalRatePct
+            )}%)
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} />
+    </div>
+  );
+}
+
+// Page: AdminPolicies
+function AdminPolicies({ policiesConfig, setPoliciesConfig, t, language, onBack }) {
+  const normalized = normalizePoliciesConfig(policiesConfig);
+  const categories = Array.isArray(normalized.categories) ? normalized.categories : [];
+
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  const [activeCategoryId, setActiveCategoryId] = useState(
+    () => categories[0]?.id || ""
+  );
+
+  const selectedId = categories.some((c) => c.id === activeCategoryId)
+    ? activeCategoryId
+    : categories[0]?.id || "";
+
+  const activeCategory = categories.find((c) => c.id === selectedId) || null;
+
+  function addCategory(e) {
+    e.preventDefault();
+
+    const name = String(newCategoryName || "").trim();
+    if (!name) return;
+
+    const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
+
+    setPoliciesConfig((prev) => {
+      const base = normalizePoliciesConfig(prev);
+      const list = Array.isArray(base.categories) ? base.categories : [];
+
+      const exists = list.some((c) => String(c?.name || "").trim().toLowerCase() === name.toLowerCase());
+      if (exists) return base;
+
+      return {
+        ...base,
+        categories: [...list, { id, name, content: "" }],
+      };
+    });
+
+    setActiveCategoryId(id);
+    setNewCategoryName("");
+  }
+
+  function deleteCategory(categoryId) {
+    const id = String(categoryId || "").trim();
+    if (!id) return;
+
+    const cat = categories.find((c) => c.id === id);
+    const displayName = String(cat?.name || "").trim() || id;
+
+    const confirmText =
+      typeof t.policiesConfirmDeleteCategory === "function"
+        ? t.policiesConfirmDeleteCategory(displayName)
+        : language === "es"
+          ? `¿Eliminar la categoría "${displayName}"?`
+          : `Delete category "${displayName}"?`;
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setPoliciesConfig((prev) => {
+      const base = normalizePoliciesConfig(prev);
+      const list = Array.isArray(base.categories) ? base.categories : [];
+      return { ...base, categories: list.filter((c) => c.id !== id) };
+    });
+
+    if (selectedId === id) {
+      const next = categories.filter((c) => c.id !== id);
+      setActiveCategoryId(next[0]?.id || "");
+    }
+  }
+
+  function updateActiveCategory(patch) {
+    if (!activeCategory) return;
+
+    setPoliciesConfig((prev) => {
+      const base = normalizePoliciesConfig(prev);
+      const list = Array.isArray(base.categories) ? base.categories : [];
+      return {
+        ...base,
+        categories: list.map((c) => (c.id === activeCategory.id ? { ...c, ...patch } : c)),
+      };
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminPoliciesTitle} subtitle={t.adminPoliciesSubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {/* Left: categories */}
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-extrabold text-zinc-900">{t.policiesCategoriesTitle}</div>
+            <div className="mt-1 text-sm text-zinc-600">{t.policiesCategoriesSubtitle}</div>
+
+            <div className="mt-4 grid gap-2">
+              {categories.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                  {t.policiesEmptyCategories}
+                </div>
+              ) : (
+                categories.map((c) => {
+                  const active = c.id === selectedId;
+                  return (
+                    <div key={c.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveCategoryId(c.id)}
+                        className={`flex-1 rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition ${
+                          active
+                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
+                        }`}
+                        title={c.name}
+                      >
+                        {c.name || t.policiesUntitledCategory}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteCategory(c.id)}
+                        className="rounded-2xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <form onSubmit={addCategory} className="mt-4 grid gap-2">
+              <label className="text-xs font-semibold text-zinc-700">{t.policiesNewCategoryLabel}</label>
+              <input
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder={t.policiesNewCategoryPlaceholder}
+                className="w-full rounded-2xl border border-zinc-200 bg-white/70 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+              <Button variant="secondary" className="w-full">
+                {t.policiesAddCategory}
+              </Button>
+            </form>
+          </div>
+
+          {/* Right: editor */}
+          <div className="md:col-span-2 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            {!activeCategory ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                {t.policiesSelectCategoryHint}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.policiesCategoryNameLabel}
+                  </label>
+                  <input
+                    value={activeCategory.name}
+                    onChange={(e) => updateActiveCategory({ name: e.target.value })}
+                    placeholder={t.policiesCategoryNamePlaceholder}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">
+                    {t.policiesCategoryContentLabel}
+                  </label>
+                  <textarea
+                    value={activeCategory.content}
+                    onChange={(e) => updateActiveCategory({ content: e.target.value })}
+                    placeholder={t.policiesCategoryContentPlaceholder}
+                    rows={12}
+                    className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                  />
+                  <div className="mt-2 text-xs text-zinc-500">{t.policiesAutosaveHint}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -5754,7 +6062,11 @@ export default function App() {
     "admin_orders",
     "admin_profit",
     "admin_homepage",
+    "admin_inventory",
+    "admin_checkout",
+    "admin_products",
     "admin_product_preview",
+    "admin_policies",
     "admin_users",
   ]);
 
@@ -6211,6 +6523,29 @@ export default function App() {
     }
   }, [checkoutConfig]);
 
+  const [policiesConfig, setPoliciesConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultPoliciesConfig();
+    try {
+      const raw = window.localStorage.getItem(POLICIES_STORAGE_KEY);
+      if (!raw) return buildDefaultPoliciesConfig();
+      return normalizePoliciesConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultPoliciesConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        POLICIES_STORAGE_KEY,
+        JSON.stringify(normalizePoliciesConfig(policiesConfig))
+      );
+    } catch {
+      // ignore
+    }
+  }, [policiesConfig]);
+
   const [checkoutDraft, setCheckoutDraft] = useState(() => buildDefaultCheckoutDraft());
 
   const [inventory, setInventory] = useState(() => {
@@ -6639,6 +6974,7 @@ export default function App() {
         {/* Route: product */}
         {(r === "product" || r === "admin_product_preview") && selected ? (
           <ProductDetail
+            key={String(selected?.id ?? "product")}
             product={selected}
             products={products}
             favorites={favorites}
@@ -6784,6 +7120,7 @@ export default function App() {
         {r === "admin" ? (
           !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
             <AdminPanel
+              page="dashboard"
               products={products}
               setProducts={setProducts}
               categories={categories}
@@ -6807,18 +7144,138 @@ export default function App() {
               onClearActivityLog={clearActivityLog}
               logActivity={logActivity}
               onGoOrders={() => navigate("admin_orders")}
+              onGoInventory={() => navigate("admin_inventory")}
+              onGoCheckout={() => navigate("admin_checkout")}
+              onGoPolicies={() => navigate("admin_policies")}
+              onGoProducts={() => navigate("admin_products")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
               onLogoutAdmin={logoutAdmin}
               onGoHomepage={() => navigate("admin_homepage")}
               currentAdminUser={currentAdminUser}
-              onUpdateAdminName={
-                currentAdminUser?.id
-                  ? (nextName) => updateAdminUser({ userId: currentAdminUser.id, name: nextName })
-                  : undefined
-              }
               t={t}
               language={language}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin products */}
+        {r === "admin_products" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminPanel
+              page="products"
+              products={products}
+              setProducts={setProducts}
+              categories={categories}
+              setCategories={setCategories}
+              heroConfig={heroConfig}
+              inventory={inventory}
+              setInventory={setInventory}
+              productCosts={productCosts}
+              setProductCosts={setProductCosts}
+              orders={orders}
+              checkoutConfig={checkoutConfig}
+              setCheckoutConfig={setCheckoutConfig}
+              notify={pushToast}
+              onPreviewProduct={(p) => {
+                runViewTransition(() => {
+                  setSelected(p);
+                  setRoute("admin_product_preview");
+                });
+              }}
+              activityLog={activityLog}
+              onClearActivityLog={clearActivityLog}
+              logActivity={logActivity}
+              onGoOrders={() => navigate("admin_orders")}
+              onGoInventory={() => navigate("admin_inventory")}
+              onGoCheckout={() => navigate("admin_checkout")}
+              onGoPolicies={() => navigate("admin_policies")}
+              onGoProducts={() => navigate("admin")}
+              onGoProfit={() => navigate("admin_profit")}
+              onGoAdminUsers={() => navigate("admin_users")}
+              onLogoutAdmin={logoutAdmin}
+              onGoHomepage={() => navigate("admin_homepage")}
+              currentAdminUser={currentAdminUser}
+              t={t}
+              language={language}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin inventory */}
+        {r === "admin_inventory" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminInventory
+              products={products}
+              inventory={inventory}
+              setInventory={setInventory}
+              productCosts={productCosts}
+              setProductCosts={setProductCosts}
+              t={t}
+              language={language}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin checkout settings */}
+        {r === "admin_checkout" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminCheckoutSettings
+              checkoutConfig={checkoutConfig}
+              setCheckoutConfig={setCheckoutConfig}
+              t={t}
+              language={language}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onCreateFirstAdmin={createFirstAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin policies */}
+        {r === "admin_policies" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminPolicies
+              policiesConfig={policiesConfig}
+              setPoliciesConfig={setPoliciesConfig}
+              t={t}
+              language={language}
+              onBack={() => navigate("admin")}
             />
           ) : (
             <AdminLogin
