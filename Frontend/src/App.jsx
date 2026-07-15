@@ -27,6 +27,7 @@ import Cart from "./pages/Cart";
 import ProductDetail from "./pages/ProductDetail";
 import Wishlist from "./pages/Wishlist";
 import Faq from "./pages/Faq";
+import Policies from "./pages/Policies";
 import AdminLogin from "./pages/AdminLogin";
 import AdminUsers from "./pages/AdminUsers";
 import {
@@ -3542,11 +3543,16 @@ function AdminPanel({
     }
 
     if (kind === "inventory") {
+      // Shelves / stock icon (distinct from product box)
       return (
         <svg {...common}>
-          <path d="M20 7 12 3 4 7v10l8 4 8-4V7Z" />
-          <path d="M12 22V12" />
-          <path d="M4 7l8 5 8-5" />
+          <path d="M5 4v16" />
+          <path d="M19 4v16" />
+          <path d="M5 8h14" />
+          <path d="M5 12h14" />
+          <path d="M5 16h14" />
+          <rect x="7" y="9" width="4" height="2" rx="0.5" />
+          <rect x="13" y="13" width="4" height="2" rx="0.5" />
         </svg>
       );
     }
@@ -7078,6 +7084,11 @@ export default function App() {
 
         {/* Route: faq */}
         {r === "faq" ? <Faq t={t} language={language} /> : null}
+
+        {/* Route: policies */}
+        {r === "policies" ? (
+          <Policies policiesConfig={policiesConfig} t={t} language={language} />
+        ) : null}
 
         {/* Route: admin login */}
         {r === "admin_login" ? (

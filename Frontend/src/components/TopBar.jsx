@@ -216,6 +216,14 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
                 {t.navFaq}
               </button>
               <button
+                onClick={() => go("policies")}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                  route === "policies" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {t.navPolicies}
+              </button>
+              <button
                 onClick={() => go("order_status")}
                 className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                   route === "order_status" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"

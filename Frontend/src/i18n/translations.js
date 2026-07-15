@@ -14,6 +14,7 @@ export const translations = {
     navBlog: "Blog",
     navValues: "Valores",
     navFaq: "FAQ",
+    navPolicies: "Políticas",
     navOrderStatus: "Estatus de Orden",
     navWishlist: "Favoritos",
     navAdmin: "Admin",
@@ -375,6 +376,8 @@ export const translations = {
     adminCheckoutTaxMunicipalRateLabel: "IVU municipal (PR) — tasa (%)",
 
     policiesTitle: "Políticas",
+    policiesPublicSubtitle: "Información importante sobre envíos, devoluciones y más.",
+    policiesPublicEmpty: "Aún no hay políticas publicadas.",
     adminPoliciesTitle: "Políticas",
     adminPoliciesSubtitle: "Crea y organiza las políticas por categoría.",
     policiesCategoriesTitle: "Categorías",
@@ -580,6 +583,7 @@ export const translations = {
     navBlog: "Blog",
     navValues: "Values",
     navFaq: "FAQ",
+    navPolicies: "Policies",
     navOrderStatus: "Order Status",
     navWishlist: "Wishlist",
     navAdmin: "Admin",
@@ -937,6 +941,8 @@ export const translations = {
     adminCheckoutTaxMunicipalRateLabel: "PR municipal tax — rate (%)",
 
     policiesTitle: "Policies",
+    policiesPublicSubtitle: "Important info about shipping, returns, and more.",
+    policiesPublicEmpty: "No policies have been published yet.",
     adminPoliciesTitle: "Policies",
     adminPoliciesSubtitle: "Create and organize policies by category.",
     policiesCategoriesTitle: "Categories",
