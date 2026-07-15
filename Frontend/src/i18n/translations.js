@@ -301,6 +301,8 @@ export const translations = {
     adminSetupSubtitle:
       "Crea el primer usuario administrador para proteger el panel.",
 
+    adminAuthNameLabel: "Nombre",
+    adminAuthNamePlaceholder: "Ej: Héctor Rivera",
     adminAuthUsernameLabel: "Usuario",
     adminAuthUsernamePlaceholder: "Ej: admin",
     adminAuthPasswordLabel: "Contraseña",
@@ -313,6 +315,7 @@ export const translations = {
     adminLogout: "Cerrar sesión",
     adminAuthBackHome: "Volver al inicio",
 
+    adminAuthRequiredName: "Completa nombre, usuario y contraseña.",
     adminAuthRequired: "Completa usuario y contraseña.",
     adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
     adminAuthInvalid: "Usuario o contraseña incorrectos.",
@@ -841,6 +844,8 @@ export const translations = {
     adminSetupTitle: "Set up Admin",
     adminSetupSubtitle: "Create the first admin account to protect the panel.",
 
+    adminAuthNameLabel: "Name",
+    adminAuthNamePlaceholder: "e.g. Hector Rivera",
     adminAuthUsernameLabel: "Username",
     adminAuthUsernamePlaceholder: "e.g. admin",
     adminAuthPasswordLabel: "Password",
@@ -853,6 +858,7 @@ export const translations = {
     adminLogout: "Log out",
     adminAuthBackHome: "Back to home",
 
+    adminAuthRequiredName: "Enter name, username, and password.",
     adminAuthRequired: "Enter username and password.",
     adminAuthPasswordMismatch: "Passwords do not match.",
     adminAuthInvalid: "Incorrect username or password.",

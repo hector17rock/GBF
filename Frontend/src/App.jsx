@@ -3102,10 +3102,66 @@ function AdminPanel({
   onGoAdminUsers,
   onLogoutAdmin,
   onGoHomepage,
+  currentAdminUser,
+  onUpdateAdminName,
   t,
   language,
 }) {
   const fallbackCategory = categories[0] ?? "Yeti";
+
+  const [nowTs, setNowTs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const adminName = String(currentAdminUser?.name || currentAdminUser?.username || "").trim();
+  const adminUsername = String(currentAdminUser?.username || "").trim();
+
+  const [editingWelcomeName, setEditingWelcomeName] = useState(false);
+  const [welcomeNameDraft, setWelcomeNameDraft] = useState(adminName);
+  const [welcomeNameBusy, setWelcomeNameBusy] = useState(false);
+
+  useEffect(() => {
+    setWelcomeNameDraft(adminName);
+  }, [adminName]);
+
+  async function saveWelcomeName() {
+    const next = String(welcomeNameDraft || "").trim();
+    if (!next || typeof onUpdateAdminName !== "function") return;
+
+    setWelcomeNameBusy(true);
+    try {
+      const ok = await onUpdateAdminName(next);
+      if (ok) setEditingWelcomeName(false);
+    } finally {
+      setWelcomeNameBusy(false);
+    }
+  }
+
+  const locale = language === "es" ? "es-PR" : "en-US";
+  const now = useMemo(() => new Date(nowTs), [nowTs]);
+
+  let dateText = "";
+  let timeText = "";
+
+  try {
+    dateText = now.toLocaleDateString(locale, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    timeText = now.toLocaleTimeString(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    dateText = now.toDateString();
+    timeText = now.toTimeString();
+  }
 
   const [newCategory, setNewCategory] = useState("");
 
@@ -3563,6 +3619,84 @@ function AdminPanel({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold text-zinc-500">
+            {language === "es" ? "Bienvenido" : "Welcome"}
+          </div>
+
+          {editingWelcomeName ? (
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+              <div className="w-full sm:w-[320px]">
+                <label className="text-[11px] font-semibold text-zinc-600">{t.adminAuthNameLabel}</label>
+                <input
+                  value={welcomeNameDraft}
+                  onChange={(e) => setWelcomeNameDraft(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => {
+                    setEditingWelcomeName(false);
+                    setWelcomeNameDraft(adminName);
+                  }}
+                  disabled={welcomeNameBusy}
+                >
+                  {t.cancel}
+                </Button>
+                <Button
+                  variant="primary"
+                  type="button"
+                  onClick={saveWelcomeName}
+                  disabled={welcomeNameBusy || !String(welcomeNameDraft || "").trim()}
+                >
+                  {t.save}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <div className="text-base font-extrabold text-zinc-900">
+                {adminName || (language === "es" ? "Administrador" : "Admin")}
+              </div>
+
+              {adminUsername && adminUsername !== adminName ? (
+                <div className="text-xs font-semibold text-zinc-500">@{adminUsername}</div>
+              ) : null}
+
+              {typeof onUpdateAdminName === "function" ? (
+                <button
+                  type="button"
+                  onClick={() => setEditingWelcomeName(true)}
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
+                >
+                  {adminName === adminUsername
+                    ? language === "es"
+                      ? "Agregar nombre"
+                      : "Add name"
+                    : language === "es"
+                      ? "Editar nombre"
+                      : "Edit name"}
+                </button>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 px-5 py-3 shadow-sm backdrop-blur-xl">
+          <div className="text-xs font-semibold text-zinc-700">
+            {language === "es" ? "Fecha:" : "Date:"} <span className="font-normal text-zinc-600">{dateText}</span>
+          </div>
+          <div className="mt-1 text-xs font-semibold text-zinc-700">
+            {language === "es" ? "Hora:" : "Time:"} <span className="font-normal text-zinc-600">{timeText}</span>
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.adminTitle} subtitle={t.adminSubtitle} />
 
@@ -5638,10 +5772,11 @@ export default function App() {
     });
   };
 
-  async function buildAdminUserRecord({ username, password }) {
+  async function buildAdminUserRecord({ name, username, password }) {
+    const n = String(name || "").trim();
     const u = String(username || "").trim();
     const p = String(password || "");
-    if (!u || !p.trim()) return null;
+    if (!n || !u || !p.trim()) return null;
 
     const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
     const salt = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
@@ -5650,6 +5785,7 @@ export default function App() {
 
     return {
       id,
+      name: n,
       username: u,
       algo: pw.algo,
       salt: pw.salt,
@@ -5658,22 +5794,36 @@ export default function App() {
     };
   }
 
-  async function createAdminUser({ username, password }) {
+  async function createAdminUser({ name, username, password }) {
+    const n = String(name || "").trim();
     const u = String(username || "").trim();
     const p = String(password || "");
-    if (!u || !p.trim()) return false;
+    if (!n || !u || !p.trim()) return false;
 
     const exists = (Array.isArray(adminUsers) ? adminUsers : []).some(
       (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
     );
     if (exists) return false;
 
-    const user = await buildAdminUserRecord({ username: u, password: p });
+    const user = await buildAdminUserRecord({ name: n, username: u, password: p });
     if (!user) return false;
 
     setAdminUsers((prev) => {
       const base = normalizeAdminUsers(prev);
       return [...base, user];
+    });
+
+    return true;
+  }
+
+  async function updateAdminUser({ userId, name }) {
+    const id = String(userId || "").trim();
+    const n = String(name || "").trim();
+    if (!id || !n) return false;
+
+    setAdminUsers((prev) => {
+      const base = normalizeAdminUsers(prev);
+      return base.map((u) => (u.id === id ? { ...u, name: n } : u));
     });
 
     return true;
@@ -5729,10 +5879,10 @@ export default function App() {
     return true;
   }
 
-  async function createFirstAdmin({ username, password }) {
+  async function createFirstAdmin({ name, username, password }) {
     if (hasAdmins) return false;
 
-    const user = await buildAdminUserRecord({ username, password });
+    const user = await buildAdminUserRecord({ name, username, password });
     if (!user) return false;
 
     runViewTransition(() => {
@@ -6501,6 +6651,7 @@ export default function App() {
             notify={pushToast}
             onBack={() => navigate(r === "admin_product_preview" ? "admin" : "catalog")}
             onAddToCart={addToCart}
+            onGoCheckout={r === "admin_product_preview" ? undefined : () => navigate("checkout")}
             t={t}
             language={language}
           />
@@ -6612,6 +6763,7 @@ export default function App() {
               language={language}
               adminUsers={adminUsers}
               onCreateUser={createAdminUser}
+              onUpdateUser={updateAdminUser}
               onDeleteUser={deleteAdminUser}
               onBack={() => navigate("admin")}
               onLogout={logoutAdmin}
@@ -6659,6 +6811,12 @@ export default function App() {
               onGoAdminUsers={() => navigate("admin_users")}
               onLogoutAdmin={logoutAdmin}
               onGoHomepage={() => navigate("admin_homepage")}
+              currentAdminUser={currentAdminUser}
+              onUpdateAdminName={
+                currentAdminUser?.id
+                  ? (nextName) => updateAdminUser({ userId: currentAdminUser.id, name: nextName })
+                  : undefined
+              }
               t={t}
               language={language}
             />

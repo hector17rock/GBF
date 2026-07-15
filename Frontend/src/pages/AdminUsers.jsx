@@ -7,32 +7,41 @@ export default function AdminUsers({
   language,
   adminUsers,
   onCreateUser,
+  onUpdateUser,
   onDeleteUser,
   onBack,
   onLogout,
 }) {
+  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState("");
+
   const users = Array.isArray(adminUsers) ? adminUsers : [];
 
   const canCreate = useMemo(() => {
-    if (!username.trim() || !password.trim()) return false;
+    if (!name.trim() || !username.trim() || !password.trim()) return false;
     if (password.trim() !== password2.trim()) return false;
     return true;
-  }, [username, password, password2]);
+  }, [name, username, password, password2]);
 
   async function handleCreate(e) {
     e.preventDefault();
     setMessage("");
 
+    const n = name.trim();
     const u = username.trim();
 
-    if (!u || !password.trim()) {
-      setMessage(t?.adminAuthRequired || (language === "es" ? "Completa usuario y contraseña." : "Enter username and password."));
+    if (!n || !u || !password.trim()) {
+      setMessage(
+        t?.adminAuthRequiredName ||
+          (language === "es" ? "Completa nombre, usuario y contraseña." : "Enter name, username, and password.")
+      );
       return;
     }
 
@@ -44,12 +53,14 @@ export default function AdminUsers({
     setBusy(true);
 
     try {
-      const ok = typeof onCreateUser === "function" ? await onCreateUser({ username: u, password }) : false;
+      const ok =
+        typeof onCreateUser === "function" ? await onCreateUser({ name: n, username: u, password }) : false;
       if (!ok) {
         setMessage(t?.adminUsersCreateError || (language === "es" ? "No se pudo crear el admin." : "Could not create admin."));
         return;
       }
 
+      setName("");
       setUsername("");
       setPassword("");
       setPassword2("");
@@ -65,11 +76,55 @@ export default function AdminUsers({
     setMessage("");
     setBusy(true);
 
+    if (editingId === u.id) {
+      setEditingId(null);
+      setEditingName("");
+    }
+
     try {
       const ok = typeof onDeleteUser === "function" ? await onDeleteUser({ userId: u.id }) : false;
       if (!ok) {
         setMessage(t?.adminUsersDeleteError || (language === "es" ? "No se pudo eliminar." : "Could not delete."));
       }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function startEditName(u) {
+    if (!u?.id) return;
+    setMessage("");
+    setEditingId(u.id);
+    setEditingName(String(u?.name || "").trim());
+  }
+
+  function cancelEditName() {
+    setEditingId(null);
+    setEditingName("");
+  }
+
+  async function saveEditName(u) {
+    if (!u?.id) return;
+    const next = String(editingName || "").trim();
+    if (!next) {
+      setMessage(
+        t?.adminAuthRequiredName ||
+          (language === "es" ? "Completa nombre, usuario y contraseña." : "Enter name, username, and password.")
+      );
+      return;
+    }
+
+    setMessage("");
+    setBusy(true);
+
+    try {
+      const ok = typeof onUpdateUser === "function" ? await onUpdateUser({ userId: u.id, name: next }) : false;
+      if (!ok) {
+        setMessage(language === "es" ? "No se pudo actualizar." : "Could not update.");
+        return;
+      }
+
+      cancelEditName();
     } finally {
       setBusy(false);
     }
@@ -98,6 +153,17 @@ export default function AdminUsers({
             <div className="text-sm font-extrabold text-zinc-900">{t.adminUsersCreateTitle}</div>
 
             <div className="mt-4 grid gap-3">
+              <div>
+                <label className="text-xs font-semibold text-zinc-700">{t.adminAuthNameLabel}</label>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t.adminAuthNamePlaceholder}
+                  autoComplete="name"
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                />
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-zinc-700">{t.adminAuthUsernameLabel}</label>
                 <input
@@ -155,20 +221,57 @@ export default function AdminUsers({
                   return (
                     <div
                       key={u.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3"
+                      className="rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3"
                     >
-                      <div>
-                        <div className="text-sm font-bold text-zinc-900">{u.username}</div>
-                        <div className="mt-1 text-[11px] text-zinc-500">{t.adminUsersCredentialHint}</div>
-                      </div>
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          {editingId === u.id ? (
+                            <div>
+                              <label className="text-[11px] font-semibold text-zinc-600">{t.adminAuthNameLabel}</label>
+                              <input
+                                value={editingName}
+                                onChange={(e) => setEditingName(e.target.value)}
+                                className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                              />
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <Button variant="secondary" type="button" onClick={cancelEditName} disabled={busy}>
+                                  {t.cancel}
+                                </Button>
+                                <Button variant="primary" type="button" onClick={() => saveEditName(u)} disabled={busy}>
+                                  {t.save}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm font-bold text-zinc-900">{u.name}</div>
+                              <div className="mt-1 text-xs font-semibold text-zinc-600">@{u.username}</div>
+                              <div className="mt-1 text-[11px] text-zinc-500">{t.adminUsersCredentialHint}</div>
+                            </>
+                          )}
+                        </div>
 
-                      <Button
-                        variant="secondary"
-                        disabled={!canDelete || busy}
-                        onClick={() => handleDelete(u)}
-                      >
-                        {t.remove}
-                      </Button>
+                        {editingId !== u.id ? (
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              variant="secondary"
+                              type="button"
+                              onClick={() => startEditName(u)}
+                              disabled={busy}
+                            >
+                              {t.edit}
+                            </Button>
+
+                            <Button
+                              variant="secondary"
+                              disabled={!canDelete || busy}
+                              onClick={() => handleDelete(u)}
+                            >
+                              {t.remove}
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   );
                 })}

@@ -25,6 +25,16 @@ export function normalizeCategories(input) {
   return out.length ? out : base;
 }
 
+const DEFAULT_PRODUCT_IMAGES = {
+  yeti20:
+    "/images/product-yeti-20-a5b608c1-72b8-4bbd-a28a-86f72f82c364-ChatGPT-Image-May-20_-2026-at-05_34_35-PM.png",
+};
+
+const LEGACY_DEFAULT_IMAGES = {
+  yeti20:
+    "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
+};
+
 export function buildDefaultProducts() {
   return [
     {
@@ -40,8 +50,7 @@ export function buildDefaultProducts() {
         es: "Un vaso resistente para el día a día. Personalízalo con nombre, frase o versículo y conviértelo en un regalo memorable.",
         en: "A durable tumbler for everyday life. Customize it with a name, phrase, or verse and turn it into a memorable gift.",
       },
-      image:
-        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
+      image: DEFAULT_PRODUCT_IMAGES.yeti20,
       tags: [
         { es: "Regalo", en: "Gift" },
         { es: "Premium", en: "Premium" },
@@ -101,7 +110,14 @@ export function normalizeProducts(input) {
           }
         : { es: "", en: "" };
 
-    const image = String(item.image ?? "").trim();
+    const baseImage = String(item.image ?? "").trim();
+
+    // Safe migration: if the user still has the original default Yeti image,
+    // upgrade it to the bundled library image.
+    const image =
+      id === "yeti-20" && (!baseImage || baseImage === LEGACY_DEFAULT_IMAGES.yeti20)
+        ? DEFAULT_PRODUCT_IMAGES.yeti20
+        : baseImage;
 
     const tags = Array.isArray(item.tags)
       ? item.tags

@@ -21,6 +21,7 @@ export function normalizeAdminUsers(input) {
     .map((u) => {
       const id = String(u?.id || "").trim();
       const username = String(u?.username || "").trim();
+      const name = String(u?.name || "").trim();
       const salt = typeof u?.salt === "string" ? u.salt : "";
       const hash = typeof u?.hash === "string" ? u.hash : "";
       const algo = u?.algo === "sha256" || u?.algo === "plain" ? u.algo : "sha256";
@@ -28,7 +29,10 @@ export function normalizeAdminUsers(input) {
 
       if (!id || !username) return null;
 
-      return { id, username, salt, hash, algo, createdAt };
+      // Migration: older records didn't have a name.
+      const safeName = name || username;
+
+      return { id, username, name: safeName, salt, hash, algo, createdAt };
     })
     .filter(Boolean);
 }

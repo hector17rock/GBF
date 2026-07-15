@@ -10,6 +10,7 @@ export default function AdminLogin({
   onCreateFirstAdmin,
   onGoHome,
 }) {
+  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -19,21 +20,40 @@ export default function AdminLogin({
   const isSetup = !hasAdmins;
 
   const canSubmit = useMemo(() => {
+    if (isSetup) {
+      if (!name.trim() || !username.trim() || !password.trim()) return false;
+      if (password.trim() !== password2.trim()) return false;
+      return true;
+    }
+
     if (!username.trim() || !password.trim()) return false;
-    if (isSetup && password.trim() !== password2.trim()) return false;
     return true;
-  }, [username, password, password2, isSetup]);
+  }, [name, username, password, password2, isSetup]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage("");
 
+    const n = name.trim();
     const u = username.trim();
     const p = password;
 
-    if (!u || !p) {
-      setMessage(t?.adminAuthRequired || (language === "es" ? "Completa usuario y contraseña." : "Enter username and password."));
-      return;
+    if (isSetup) {
+      if (!n || !u || !p) {
+        setMessage(
+          t?.adminAuthRequiredName ||
+            (language === "es" ? "Completa nombre, usuario y contraseña." : "Enter name, username, and password.")
+        );
+        return;
+      }
+    } else {
+      if (!u || !p) {
+        setMessage(
+          t?.adminAuthRequired ||
+            (language === "es" ? "Completa usuario y contraseña." : "Enter username and password.")
+        );
+        return;
+      }
     }
 
     if (isSetup && password.trim() !== password2.trim()) {
@@ -46,7 +66,7 @@ export default function AdminLogin({
     try {
       const ok = isSetup
         ? await (typeof onCreateFirstAdmin === "function"
-            ? onCreateFirstAdmin({ username: u, password: p })
+            ? onCreateFirstAdmin({ name: n, username: u, password: p })
             : false)
         : await (typeof onLogin === "function" ? onLogin({ username: u, password: p }) : false);
 
@@ -69,6 +89,19 @@ export default function AdminLogin({
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <form onSubmit={handleSubmit} className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
             <div className="grid gap-3">
+              {isSetup ? (
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.adminAuthNameLabel}</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t.adminAuthNamePlaceholder}
+                    autoComplete="name"
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                </div>
+              ) : null}
+
               <div>
                 <label className="text-xs font-semibold text-zinc-700">{t.adminAuthUsernameLabel}</label>
                 <input
