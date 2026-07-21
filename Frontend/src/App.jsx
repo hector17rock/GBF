@@ -704,6 +704,7 @@ function buildShippingLabelHtml({ order, language }) {
 
   const toName = escapeHtml(order?.customer?.name || "");
   const toPhone = escapeHtml(order?.customer?.phone || "");
+  const toEmail = escapeHtml(order?.customer?.email || "");
 
   const ship = order?.shipping || {};
   const lines = [
@@ -737,6 +738,7 @@ function buildShippingLabelHtml({ order, language }) {
       <div class="name">${toName || "—"}</div>
       <div class="address">${toAddress || "<div>—</div>"}</div>
       ${toPhone ? `<div class="phone">${toPhone}</div>` : ""}
+      ${toEmail ? `<div class="muted">${toEmail}</div>` : ""}
     </div>
 
     <div class="footer">
@@ -759,6 +761,7 @@ function buildReceiptHtml({ order, language }) {
 
   const customerName = escapeHtml(order?.customer?.name || "");
   const customerPhone = escapeHtml(order?.customer?.phone || "");
+  const customerEmail = escapeHtml(order?.customer?.email || "");
   const customerNotes = escapeHtml(order?.customer?.notes || "");
 
   const ship = order?.shipping || {};
@@ -854,6 +857,7 @@ function buildReceiptHtml({ order, language }) {
         <div class="cardTitle">${lang === "es" ? "Cliente" : "Customer"}</div>
         <div>${customerName || "—"}</div>
         ${customerPhone ? `<div>${customerPhone}</div>` : ""}
+        ${customerEmail ? `<div>${customerEmail}</div>` : ""}
         ${customerNotes ? `<div class="muted">${customerNotes}</div>` : ""}
       </div>
       <div class="card">
@@ -1474,6 +1478,7 @@ function Checkout({
 
   const name = String(draft.customer?.name || "");
   const phone = String(draft.customer?.phone || "");
+  const email = String(draft.customer?.email || "");
   const notes = String(draft.customer?.notes || "");
 
   const addressLine1 = String(draft.shipping?.addressLine1 || "");
@@ -1544,7 +1549,13 @@ function Checkout({
 
   // Validation: validateCustomerAndShipping
   function validateCustomerAndShipping() {
-    const customerOk = name.trim() && phone.trim();
+    const looksLikeEmail = (value) => {
+      const s = String(value || "").trim();
+      if (!s) return false;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    };
+
+    const customerOk = name.trim() && phone.trim() && looksLikeEmail(email);
     const shippingOk = addressLine1.trim() && city.trim();
     return Boolean(customerOk && shippingOk);
   }
@@ -1615,6 +1626,15 @@ function Checkout({
                 value={phone}
                 onChange={(e) => setDraftCustomerField("phone", e.target.value)}
                 placeholder={t.phonePlaceholder}
+                className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setDraftCustomerField("email", e.target.value)}
+                placeholder={t.emailPlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
               <div>
@@ -2032,8 +2052,21 @@ function CheckoutReview({
 
   // Validation: validateDraft
   function validateDraft() {
-    const customerOk = String(draft?.customer?.name || "").trim() && String(draft?.customer?.phone || "").trim();
-    const shippingOk = String(draft?.shipping?.addressLine1 || "").trim() && String(draft?.shipping?.city || "").trim();
+    const looksLikeEmail = (value) => {
+      const s = String(value || "").trim();
+      if (!s) return false;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    };
+
+    const customerOk =
+      String(draft?.customer?.name || "").trim() &&
+      String(draft?.customer?.phone || "").trim() &&
+      looksLikeEmail(draft?.customer?.email);
+
+    const shippingOk =
+      String(draft?.shipping?.addressLine1 || "").trim() &&
+      String(draft?.shipping?.city || "").trim();
+
     return Boolean(customerOk && shippingOk);
   }
 
@@ -2094,6 +2127,7 @@ function CheckoutReview({
         customer: {
           name: String(draft.customer?.name || "").trim(),
           phone: String(draft.customer?.phone || "").trim(),
+          email: String(draft.customer?.email || "").trim(),
           notes: String(draft.customer?.notes || "").trim(),
         },
         shipping: {
@@ -2141,6 +2175,9 @@ function CheckoutReview({
               </div>
               <div className="mt-1 text-xs text-zinc-600">
                 {String(draft?.customer?.phone || "").trim() || "—"}
+              </div>
+              <div className="mt-1 text-xs text-zinc-600">
+                {String(draft?.customer?.email || "").trim() || "—"}
               </div>
               {String(draft?.customer?.notes || "").trim() ? (
                 <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
@@ -2578,6 +2615,9 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                 </div>
                 {order?.customer?.phone ? (
                   <div className="mt-1 text-xs text-zinc-600">{order.customer.phone}</div>
+                ) : null}
+                {order?.customer?.email ? (
+                  <div className="mt-1 text-xs text-zinc-600">{order.customer.email}</div>
                 ) : null}
                 {order?.customer?.notes ? (
                   <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
@@ -6050,6 +6090,9 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                           {o?.customer?.phone ? (
                             <div className="mt-1 text-xs text-zinc-600">{o.customer.phone}</div>
                           ) : null}
+                          {o?.customer?.email ? (
+                            <div className="mt-1 text-xs text-zinc-600">{o.customer.email}</div>
+                          ) : null}
                           {o?.customer?.notes ? (
                             <div className="mt-2 text-xs text-zinc-600">{o.customer.notes}</div>
                           ) : null}
@@ -7144,6 +7187,36 @@ export default function App() {
         shipping,
       };
     });
+
+    // Capture email for order updates + promotions (saved locally)
+    {
+      const email = String(customer?.email || "")
+        .trim()
+        .toLowerCase();
+
+      const looksLikeEmail = (value) => {
+        const s = String(value || "").trim();
+        if (!s) return false;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+      };
+
+      if (looksLikeEmail(email)) {
+        setNewsletterEmails((prev) => {
+          const base = Array.isArray(prev)
+            ? prev.map((x) => String(x).trim().toLowerCase())
+            : [];
+
+          const next = base.includes(email) ? base : [email, ...base];
+          return next.slice(0, 2000);
+        });
+
+        logActivity({
+          kind: "newsletter",
+          messageEs: `Email guardado desde checkout: ${email}`,
+          messageEn: `Email saved from checkout: ${email}`,
+        });
+      }
+    }
 
     setSales((prev) => {
       const base = Array.isArray(prev) ? prev : [];
