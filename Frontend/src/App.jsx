@@ -696,6 +696,183 @@ function getNextOrderNumber() {
   }
 }
 
+// --------------------------------------
+// Barcode: Code 128 (subset B) as inline SVG
+// --------------------------------------
+const CODE128_TABLE = [
+  "212222",
+  "222122",
+  "222221",
+  "121223",
+  "121322",
+  "131222",
+  "122213",
+  "122312",
+  "132212",
+  "221213",
+  "221312",
+  "231212",
+  "112232",
+  "122132",
+  "122231",
+  "113222",
+  "123122",
+  "123221",
+  "223211",
+  "221132",
+  "221231",
+  "213212",
+  "223112",
+  "312131",
+  "311222",
+  "321122",
+  "321221",
+  "312212",
+  "322112",
+  "322211",
+  "212123",
+  "212321",
+  "232121",
+  "111323",
+  "131123",
+  "131321",
+  "112313",
+  "132113",
+  "132311",
+  "211313",
+  "231113",
+  "231311",
+  "112133",
+  "112331",
+  "132131",
+  "113123",
+  "113321",
+  "133121",
+  "313121",
+  "211331",
+  "231131",
+  "213113",
+  "213311",
+  "213131",
+  "311123",
+  "311321",
+  "331121",
+  "312113",
+  "312311",
+  "332111",
+  "314111",
+  "221411",
+  "431111",
+  "111224",
+  "111422",
+  "121124",
+  "121421",
+  "141122",
+  "141221",
+  "112214",
+  "112412",
+  "122114",
+  "122411",
+  "142112",
+  "142211",
+  "241211",
+  "221114",
+  "413111",
+  "241112",
+  "134111",
+  "111242",
+  "121142",
+  "121241",
+  "114212",
+  "124112",
+  "124211",
+  "411212",
+  "421112",
+  "421211",
+  "212141",
+  "214121",
+  "412121",
+  "111143",
+  "111341",
+  "131141",
+  "114113",
+  "114311",
+  "411113",
+  "411311",
+  "113141",
+  "114131",
+  "311141",
+  "411131",
+  "211412",
+  "211214",
+  "211232",
+  "2331112",
+];
+
+function code128BValueForChar(ch) {
+  const code = typeof ch === "string" && ch.length ? ch.charCodeAt(0) : 0;
+  if (code < 32 || code > 126) return null;
+  return code - 32;
+}
+
+function buildCode128BSequence(text) {
+  const s = String(text || "");
+  if (!s.trim()) return null;
+
+  const values = [];
+  for (const ch of s) {
+    const v = code128BValueForChar(ch);
+    if (v == null) return null;
+    values.push(v);
+  }
+
+  const START_B = 104;
+  const STOP = 106;
+
+  let sum = START_B;
+  for (let i = 0; i < values.length; i += 1) {
+    sum += values[i] * (i + 1);
+  }
+  const check = sum % 103;
+
+  return [START_B, ...values, check, STOP];
+}
+
+function buildCode128Svg(text, { modulePx = 2, heightPx = 56, quietModules = 10 } = {}) {
+  const seq = buildCode128BSequence(text);
+  if (!seq) return "";
+
+  const rects = [];
+  let x = quietModules * modulePx;
+
+  for (const code of seq) {
+    const pattern = CODE128_TABLE[code];
+    if (!pattern) return "";
+
+    let isBar = true;
+    for (const d of String(pattern)) {
+      const w = Number(d) * modulePx;
+      if (isBar) {
+        rects.push(`<rect x="${x}" y="0" width="${w}" height="${heightPx}" />`);
+      }
+      x += w;
+      isBar = !isBar;
+    }
+  }
+
+  x += quietModules * modulePx;
+
+  const widthPx = Math.max(1, x);
+
+  return (
+    `<svg class="barcodeSvg" viewBox="0 0 ${widthPx} ${heightPx}" width="100%" height="${heightPx}" ` +
+    `xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Barcode">` +
+    `<rect x="0" y="0" width="${widthPx}" height="${heightPx}" fill="#fff" />` +
+    `<g fill="#000">${rects.join("")}</g>` +
+    `</svg>`
+  );
+}
+
 
 // Helper: buildShippingLabelHtml
 function buildShippingLabelHtml({ order, language }) {
@@ -703,8 +880,6 @@ function buildShippingLabelHtml({ order, language }) {
   const tr = translations[lang];
 
   const toName = escapeHtml(order?.customer?.name || "");
-  const toPhone = escapeHtml(order?.customer?.phone || "");
-  const toEmail = escapeHtml(order?.customer?.email || "");
 
   const ship = order?.shipping || {};
   const lines = [
@@ -720,6 +895,12 @@ function buildShippingLabelHtml({ order, language }) {
   const toAddress = lines.map((l) => `<div>${escapeHtml(l)}</div>`).join("");
 
   const orderNo = escapeHtml(order?.orderNumber || order?.id || "");
+
+  const trackingRaw = String(order?.trackingNumber || "").trim();
+  const trackingText = trackingRaw.replace(/\s+/g, "").trim();
+  const barcodeSvg = trackingText
+    ? buildCode128Svg(trackingText, { modulePx: 2, heightPx: 56, quietModules: 10 })
+    : "";
 
   return `
   <div class="page">
@@ -737,8 +918,15 @@ function buildShippingLabelHtml({ order, language }) {
       <div class="muted">${escapeHtml(tr.shippingLabelShipTo)}</div>
       <div class="name">${toName || "—"}</div>
       <div class="address">${toAddress || "<div>—</div>"}</div>
-      ${toPhone ? `<div class="phone">${toPhone}</div>` : ""}
-      ${toEmail ? `<div class="muted">${toEmail}</div>` : ""}
+
+      ${barcodeSvg
+        ? `
+      <div class="barcodeBlock">
+        <div class="barcodeLabel">${escapeHtml(tr.ordersTrackingNumberLabel || "Tracking #")}</div>
+        <div class="barcodeImg">${barcodeSvg}</div>
+        <div class="barcodeText">${escapeHtml(trackingText)}</div>
+      </div>`
+        : ""}
     </div>
 
     <div class="footer">
@@ -5812,6 +6000,13 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 .name { margin-top: 6px; font-size: 22px; font-weight: 800; }
 .address { margin-top: 10px; font-size: 18px; line-height: 1.2; font-weight: 700; }
 .phone { margin-top: 10px; font-size: 16px; font-weight: 700; }
+
+.barcodeBlock { margin-top: 14px; padding-top: 10px; border-top: 1px solid #000; }
+.barcodeLabel { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; }
+.barcodeImg { margin-top: 6px; }
+.barcodeSvg { display: block; width: 100%; height: auto; }
+.barcodeText { margin-top: 6px; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: 0.08em; }
+
 .footer { position: absolute; left: 0.25in; right: 0.25in; bottom: 0.25in; }
 .small { font-size: 11px; }
 `;
