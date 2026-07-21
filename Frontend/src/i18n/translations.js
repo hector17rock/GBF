@@ -232,6 +232,8 @@ export const translations = {
     checkoutReviewSubtitle: "Confirma los detalles antes de someter la orden.",
     checkoutEditDetails: "Editar datos",
     checkoutSubmitOrder: "Someter orden",
+    checkoutSlideToSubmit: "Desliza para someter",
+    checkoutSubmitting: "Enviando...",
     checkoutDetailsRequired: "Completa nombre, teléfono y dirección de envío.",
     checkoutPoliciesTitle: "Políticas",
     checkoutPoliciesSubtitle: "Debes aceptar las políticas antes de someter el pago.",
@@ -325,6 +327,7 @@ export const translations = {
     adminAuthRequired: "Completa usuario y contraseña.",
     adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
     adminAuthInvalid: "Usuario o contraseña incorrectos.",
+    adminAuthNotConfigured: "El acceso admin no está configurado. Contacta al administrador.",
     adminAuthDisclaimer:
       "Demo local: las credenciales se guardan en este navegador (localStorage).",
 
@@ -806,6 +809,8 @@ export const translations = {
     checkoutReviewSubtitle: "Confirm the details before submitting your order.",
     checkoutEditDetails: "Edit details",
     checkoutSubmitOrder: "Submit order",
+    checkoutSlideToSubmit: "Slide to submit",
+    checkoutSubmitting: "Submitting...",
     checkoutDetailsRequired: "Please enter your name, phone, and shipping address.",
     checkoutPoliciesTitle: "Policies",
     checkoutPoliciesSubtitle: "You must accept the policies before submitting payment.",
@@ -896,6 +901,7 @@ export const translations = {
     adminAuthRequired: "Enter username and password.",
     adminAuthPasswordMismatch: "Passwords do not match.",
     adminAuthInvalid: "Incorrect username or password.",
+    adminAuthNotConfigured: "Admin access is not configured. Contact the administrator.",
     adminAuthDisclaimer:
       "Local demo: credentials are saved in this browser (localStorage).",
 

@@ -11,6 +11,7 @@ import {
 import { PR_TAX_STATE_RATE_PCT, PR_TAX_MUNICIPAL_RATE_PCT, PR_TAX_TOTAL_RATE_PCT } from "./data/taxes";
 import { l10n, money, roundMoney, parseNumberOr, formatRatePct } from "./utils/format";
 import Button from "./components/Button";
+import SlideToSubmit from "./components/SlideToSubmit";
 import Footer from "./components/Footer";
 import Pill from "./components/Pill";
 import ProductCard from "./components/ProductCard";
@@ -109,6 +110,20 @@ const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 // Catalog defaults + persistence helpers
 // -----------------------------
 // (moved to src/data/defaultCatalog.js)
+
+// -----------------------------
+// IDs (avoid crypto.randomUUID dependency on older browsers)
+// -----------------------------
+let __gbfIdCounter = 0;
+function safeUUID(prefix = "id") {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  __gbfIdCounter = (__gbfIdCounter + 1) % 1_000_000_000;
+  const rand = Math.random().toString(16).slice(2);
+  return `${prefix}-${Date.now()}-${__gbfIdCounter}-${rand}`;
+}
 
 // -----------------------------
 // Card brand helpers (simple client-side detection)
@@ -571,10 +586,7 @@ function fileToDataUrl(file) {
 // Helper: buildUploadFilename
 function buildUploadFilename(prefix, file) {
   const base = String(file?.name || "upload").replace(/\s+/g, "-");
-  const id =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : String(Date.now());
+  const id = safeUUID("upload");
   return `${prefix}-${id}-${base}`;
 }
 
@@ -2207,9 +2219,25 @@ function CheckoutReview({
                 <Button variant="secondary" onClick={onBack}>
                   {t.checkoutEditDetails}
                 </Button>
-                <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
-                  {t.checkoutSubmitOrder}
-                </Button>
+
+                <div className="w-full">
+                  {/* Mobile: slide-to-submit */}
+                  <div className="md:hidden">
+                    <SlideToSubmit
+                      label={t.checkoutSlideToSubmit}
+                      disabledLabel={t.checkoutSubmitting}
+                      disabled={Boolean(submitToken)}
+                      onComplete={submitOrder}
+                    />
+                  </div>
+
+                  {/* Desktop: keep button */}
+                  <div className="hidden md:block">
+                    <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
+                      {t.checkoutSubmitOrder}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -7012,14 +7040,14 @@ export default function App() {
     if (!Array.isArray(cart) || cart.length === 0) return null;
 
     const createdAt = Date.now();
-    const orderId = crypto.randomUUID();
+    const orderId = safeUUID("order");
     const orderNumber = getNextOrderNumber();
 
     const nextPaymentMethod =
       paymentMethod === "paypal" || paymentMethod === "whatsapp" ? "paypal" : "card";
 
     const orderItems = cart.map((it) => ({
-      id: crypto.randomUUID(),
+      id: safeUUID("order_item"),
       productId: String(it.id),
       qty: Number(it.qty) || 0,
       unitPrice: Number(it.price) || 0,
@@ -7101,7 +7129,7 @@ export default function App() {
       const unitCost = Number(productCosts?.[it.productId] ?? 0) || 0;
 
       return {
-        id: crypto.randomUUID(),
+        id: safeUUID("sale_item"),
         createdAt,
         orderId,
         orderNumber,
