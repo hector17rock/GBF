@@ -81,6 +81,10 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
 
     payment_method = "paypal" if str(req.paymentMethod or "").lower() in ("paypal", "whatsapp") else "card"
 
+    # PayPal orders must be created after a successful capture.
+    if payment_method == "paypal":
+        raise HTTPException(status_code=400, detail="paypal_requires_capture")
+
     items = []
     subtotal = 0.0
 

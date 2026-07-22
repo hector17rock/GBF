@@ -312,6 +312,71 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
 
 
 // -----------------------------
+// PayPal JS SDK loader (Smart Buttons)
+// -----------------------------
+let __gbfPayPalSdkKey = "";
+let __gbfPayPalSdkPromise = null;
+
+function loadPayPalSdk({ clientId, currency }) {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return Promise.reject(new Error("paypal_sdk_unavailable"));
+  }
+
+  const id = String(clientId || "").trim();
+  const cur = String(currency || "USD").trim().toUpperCase() || "USD";
+  if (!id) return Promise.reject(new Error("missing_paypal_client_id"));
+
+  const key = `${id}|${cur}`;
+
+  if (window.paypal && __gbfPayPalSdkPromise && __gbfPayPalSdkKey === key) {
+    return __gbfPayPalSdkPromise;
+  }
+
+  // If a different clientId/currency is requested, remove the old script.
+  if (__gbfPayPalSdkKey && __gbfPayPalSdkKey !== key) {
+    const old = document.querySelector('script[data-gbf-paypal-sdk="1"]');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    __gbfPayPalSdkPromise = null;
+  }
+
+  __gbfPayPalSdkKey = key;
+
+  if (__gbfPayPalSdkPromise) return __gbfPayPalSdkPromise;
+
+  __gbfPayPalSdkPromise = new Promise((resolve, reject) => {
+    if (window.paypal) {
+      resolve(window.paypal);
+      return;
+    }
+
+    const existing = document.querySelector('script[data-gbf-paypal-sdk="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.paypal));
+      existing.addEventListener("error", () => reject(new Error("paypal_sdk_load_failed")));
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.defer = true;
+    script.dataset.gbfPaypalSdk = "1";
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(id)}&currency=${encodeURIComponent(cur)}&intent=capture`;
+
+    script.onload = () => {
+      if (window.paypal) resolve(window.paypal);
+      else reject(new Error("paypal_sdk_loaded_but_missing"));
+    };
+
+    script.onerror = () => reject(new Error("paypal_sdk_load_failed"));
+
+    document.head.appendChild(script);
+  });
+
+  return __gbfPayPalSdkPromise;
+}
+
+
+// -----------------------------
 // Hero promo defaults (used by Home + Admin)
 // -----------------------------
 const DEFAULT_HERO_IMAGES = {
@@ -2202,12 +2267,16 @@ function CheckoutReview({
   onBack,
   onRemove,
   onPlaceOrder,
+  serverPublicOk,
+  onGetPayPalConfig,
+  onPayPalCreateOrder,
+  onPayPalCaptureOrder,
   notify,
   t,
   language,
 }) {
-  const cfg = normalizeCheckoutConfig(checkoutConfig);
-  const draft = normalizeCheckoutDraft(checkoutDraft);
+  const cfg = useMemo(() => normalizeCheckoutConfig(checkoutConfig), [checkoutConfig]);
+  const draft = useMemo(() => normalizeCheckoutDraft(checkoutDraft), [checkoutDraft]);
 
   const subtotal = Array.isArray(cart) ? cart.reduce((acc, it) => acc + it.price * it.qty, 0) : 0;
 
@@ -2229,14 +2298,45 @@ function CheckoutReview({
   const [message, setMessage] = useState("");
   const [submitToken, setSubmitToken] = useState(0);
 
-  useEffect(() => {
-    if (!submitToken) return;
-    const timer = window.setTimeout(() => setSubmitToken(0), 2000);
-    return () => window.clearTimeout(timer);
-  }, [submitToken]);
+  const isPayPal = draft.paymentMethod === "paypal";
 
-  // Validation: validateDraft
-  function validateDraft() {
+  const paypalContainerRef = useRef(null);
+  const paypalButtonsRef = useRef(null);
+
+  const [paypalMessage, setPayPalMessage] = useState("");
+  const [paypalBusy, setPayPalBusy] = useState(false);
+
+  const buildPayPalPayload = useCallback(() => {
+    const items = (Array.isArray(cart) ? cart : [])
+      .map((it) => ({
+        productId: String(it?.id ?? "").trim(),
+        qty: Number(it?.qty) || 0,
+        name: it?.name,
+        category: it?.category,
+        personalization: it?.personalization,
+      }))
+      .filter((it) => it.productId && it.qty > 0);
+
+    const customer = {
+      name: String(draft.customer?.name || "").trim(),
+      phone: String(draft.customer?.phone || "").trim(),
+      email: String(draft.customer?.email || "").trim(),
+      notes: String(draft.customer?.notes || "").trim(),
+    };
+
+    const shipping = {
+      addressLine1: String(draft.shipping?.addressLine1 || "").trim(),
+      addressLine2: String(draft.shipping?.addressLine2 || "").trim(),
+      city: String(draft.shipping?.city || "").trim(),
+      stateRegion: String(draft.shipping?.stateRegion || "").trim(),
+      postalCode: String(draft.shipping?.postalCode || "").trim(),
+      country: String(draft.shipping?.country || "").trim(),
+    };
+
+    return { items, customer, shipping };
+  }, [cart, draft]);
+
+  const validateDraft = useCallback(() => {
     const looksLikeEmail = (value) => {
       const s = String(value || "").trim();
       if (!s) return false;
@@ -2253,7 +2353,176 @@ function CheckoutReview({
       String(draft?.shipping?.city || "").trim();
 
     return Boolean(customerOk && shippingOk);
-  }
+  }, [draft]);
+
+  useEffect(() => {
+    if (!submitToken) return;
+    const timer = window.setTimeout(() => setSubmitToken(0), 2000);
+    return () => window.clearTimeout(timer);
+  }, [submitToken]);
+
+  // PayPal Buttons rendering (review step)
+  useEffect(() => {
+    let cancelled = false;
+
+    const clearContainer = () => {
+      const el = paypalContainerRef.current;
+      if (el && typeof el === "object") {
+        try {
+          el.innerHTML = "";
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    (async () => {
+      clearContainer();
+      paypalButtonsRef.current = null;
+      setPayPalMessage("");
+
+      if (!isPayPal) return;
+
+      if (!serverPublicOk) {
+        setPayPalMessage(
+          language === "es"
+            ? "PayPal requiere que el Backend esté encendido."
+            : "PayPal requires the backend server to be running."
+        );
+        return;
+      }
+
+      if (!validateDraft()) return;
+      if (!draft.acceptPolicies) return;
+
+      const payload = buildPayPalPayload();
+      if (!payload.items.length) {
+        setPayPalMessage(t.emptyCart);
+        return;
+      }
+
+      if (typeof onGetPayPalConfig !== "function") {
+        setPayPalMessage(language === "es" ? "PayPal no está disponible." : "PayPal is not available.");
+        return;
+      }
+
+      let cfg = null;
+      try {
+        cfg = await onGetPayPalConfig();
+      } catch {
+        cfg = null;
+      }
+
+      const configured = Boolean(cfg && typeof cfg === "object" && cfg.configured);
+      const clientId = configured ? String(cfg.clientId || "").trim() : "";
+      const currency = configured ? String(cfg.currency || "USD").trim().toUpperCase() : "USD";
+
+      if (!configured || !clientId) {
+        setPayPalMessage(
+          language === "es"
+            ? "PayPal no está configurado en el servidor."
+            : "PayPal is not configured on the server."
+        );
+        return;
+      }
+
+      let paypal = null;
+      try {
+        paypal = await loadPayPalSdk({ clientId, currency });
+      } catch {
+        setPayPalMessage(language === "es" ? "No se pudo cargar PayPal." : "Could not load PayPal.");
+        return;
+      }
+
+      if (cancelled) return;
+
+      if (!paypal || typeof paypal.Buttons !== "function") {
+        setPayPalMessage(language === "es" ? "PayPal no está disponible." : "PayPal is not available.");
+        return;
+      }
+
+      const container = paypalContainerRef.current;
+      if (!container) return;
+      clearContainer();
+
+      const buttons = paypal.Buttons({
+        style: { layout: "vertical" },
+
+        createOrder: async () => {
+          if (typeof onPayPalCreateOrder !== "function") {
+            throw new Error("missing_create_order_handler");
+          }
+
+          const p = buildPayPalPayload();
+          const res = await onPayPalCreateOrder(p);
+          const oid = res && typeof res === "object" ? String(res.paypalOrderId || "").trim() : "";
+          if (!oid) throw new Error("missing_paypal_order_id");
+          return oid;
+        },
+
+        onApprove: async (data) => {
+          if (typeof onPayPalCaptureOrder !== "function") {
+            setPayPalMessage(language === "es" ? "No se pudo completar PayPal." : "Could not complete PayPal.");
+            return;
+          }
+
+          const oid = data && typeof data === "object" ? String(data.orderID || "").trim() : "";
+          if (!oid) {
+            setPayPalMessage(language === "es" ? "PayPal: orderID inválido." : "PayPal: invalid orderID.");
+            return;
+          }
+
+          setPayPalBusy(true);
+          setPayPalMessage("");
+
+          try {
+            const p = buildPayPalPayload();
+            await onPayPalCaptureOrder({ paypalOrderId: oid, ...p });
+          } catch {
+            setPayPalMessage(language === "es" ? "No se pudo capturar el pago." : "Could not capture payment.");
+          } finally {
+            if (!cancelled) setPayPalBusy(false);
+          }
+        },
+
+        onError: () => {
+          setPayPalMessage(language === "es" ? "Error de PayPal." : "PayPal error.");
+        },
+      });
+
+      paypalButtonsRef.current = buttons;
+
+      try {
+        await buttons.render(container);
+      } catch {
+        setPayPalMessage(language === "es" ? "No se pudo mostrar PayPal." : "Could not render PayPal.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      try {
+        const inst = paypalButtonsRef.current;
+        if (inst && typeof inst.close === "function") inst.close();
+        if (inst && typeof inst.destroy === "function") inst.destroy();
+      } catch {
+        // ignore
+      }
+      paypalButtonsRef.current = null;
+      clearContainer();
+    };
+  }, [
+    isPayPal,
+    serverPublicOk,
+    buildPayPalPayload,
+    validateDraft,
+    draft.acceptPolicies,
+    language,
+    t.emptyCart,
+    onGetPayPalConfig,
+    onPayPalCreateOrder,
+    onPayPalCaptureOrder,
+  ]);
 
   function setDraftAcceptPolicies(value) {
     if (typeof setCheckoutDraft !== "function") return;
@@ -2296,6 +2565,12 @@ function CheckoutReview({
 
     if (!draft.acceptPolicies) {
       setMessage(t.checkoutPoliciesRequired);
+      return;
+    }
+
+    // PayPal is processed via the PayPal button (create + approve + capture).
+    if (draft.paymentMethod === "paypal") {
+      setMessage(t.payPalDisclaimer);
       return;
     }
 
@@ -2442,24 +2717,40 @@ function CheckoutReview({
                   {t.checkoutEditDetails}
                 </Button>
 
-                <div className="w-full">
-                  {/* Mobile: slide-to-submit */}
-                  <div className="md:hidden">
-                    <SlideToSubmit
-                      label={t.checkoutSlideToSubmit}
-                      disabledLabel={t.checkoutSubmitting}
-                      disabled={Boolean(submitToken)}
-                      onComplete={submitOrder}
-                    />
-                  </div>
+                {!isPayPal ? (
+                  <div className="w-full">
+                    {/* Mobile: slide-to-submit */}
+                    <div className="md:hidden">
+                      <SlideToSubmit
+                        label={t.checkoutSlideToSubmit}
+                        disabledLabel={t.checkoutSubmitting}
+                        disabled={Boolean(submitToken)}
+                        onComplete={submitOrder}
+                      />
+                    </div>
 
-                  {/* Desktop: keep button */}
-                  <div className="hidden md:block">
-                    <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
-                      {t.checkoutSubmitOrder}
-                    </Button>
+                    {/* Desktop: keep button */}
+                    <div className="hidden md:block">
+                      <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
+                        {t.checkoutSubmitOrder}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="w-full">
+                    <div
+                      className={`rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl ${
+                        paypalBusy ? "pointer-events-none opacity-60" : ""
+                      }`}
+                    >
+                      <div ref={paypalContainerRef} />
+                    </div>
+
+                    {paypalMessage ? (
+                      <div className="mt-2 text-xs font-semibold text-amber-700">{paypalMessage}</div>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -7786,6 +8077,11 @@ export default function App() {
   }) {
     if (!Array.isArray(cart) || cart.length === 0) return null;
 
+    // PayPal is handled via /paypal/* (create + capture) so we never create unpaid PayPal orders.
+    if (String(paymentMethod || "").toLowerCase() === "paypal") {
+      return null;
+    }
+
     // Prefer backend as source of truth for cross-device sync.
     if (serverPublicOk) {
       try {
@@ -8010,6 +8306,97 @@ export default function App() {
     return { orderId, orderNumber };
   }
 
+  const runViewTransitionRef = useRef(runViewTransition);
+  runViewTransitionRef.current = runViewTransition;
+
+  const pushToastRef = useRef(pushToast);
+  pushToastRef.current = pushToast;
+
+  const getPayPalConfig = useCallback(async () => {
+    return apiJson("/paypal/config");
+  }, [apiJson]);
+
+  const createPayPalOrder = useCallback(
+    async ({ items, customer, shipping }) => {
+      if (!serverPublicOk) throw new Error("server_offline");
+
+      return apiJson("/paypal/create-order", {
+        method: "POST",
+        body: {
+          items,
+          customer,
+          shipping,
+        },
+      });
+    },
+    [apiJson, serverPublicOk]
+  );
+
+  const capturePayPalOrderAndFinalize = useCallback(
+    async ({ paypalOrderId, items, customer, shipping }) => {
+      if (!serverPublicOk) throw new Error("server_offline");
+
+      const res = await apiJson("/paypal/capture-order", {
+        method: "POST",
+        body: {
+          paypalOrderId,
+          items,
+          customer,
+          shipping,
+        },
+      });
+
+      const order = res && typeof res === "object" ? res.order : null;
+
+      if (order && typeof order === "object") {
+        if (Array.isArray(res?.orders)) setOrders(res.orders);
+        if (res?.inventory && typeof res.inventory === "object") setInventory(res.inventory);
+        if (Array.isArray(res?.sales)) setSales(res.sales);
+        if (Array.isArray(res?.newsletterEmails)) setNewsletterEmails(res.newsletterEmails);
+
+        const nextRev = Number(res?.revision);
+        if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+
+        setCart([]);
+        setCheckoutDraft(buildDefaultCheckoutDraft());
+
+        const vt = runViewTransitionRef.current;
+        if (typeof vt === "function") {
+          vt(() => {
+            setLastOrderId(order.id);
+            setRoute("order_confirmation");
+          });
+        } else {
+          setLastOrderId(order.id);
+          setRoute("order_confirmation");
+        }
+
+        const toast = pushToastRef.current;
+        if (typeof toast === "function") {
+          toast(t.orderConfirmationToastOrderSent, "success");
+        }
+
+        return { orderId: order.id, orderNumber: order.orderNumber || order.id };
+      }
+
+      return null;
+    },
+    [
+      apiJson,
+      serverPublicOk,
+      t.orderConfirmationToastOrderSent,
+      setOrders,
+      setInventory,
+      setSales,
+      setNewsletterEmails,
+      setServerRevision,
+      setCart,
+      setCheckoutDraft,
+      setLastOrderId,
+      setRoute,
+    ]
+  );
+
   async function lookupOrderStatusByNumber(orderNumber) {
     const q = String(orderNumber || "").trim();
     if (!q) return null;
@@ -8167,6 +8554,10 @@ export default function App() {
             onBack={() => navigate("checkout")}
             onRemove={removeFromCart}
             onPlaceOrder={placeOrder}
+            serverPublicOk={serverPublicOk}
+            onGetPayPalConfig={getPayPalConfig}
+            onPayPalCreateOrder={createPayPalOrder}
+            onPayPalCaptureOrder={capturePayPalOrderAndFinalize}
             notify={pushToast}
             t={t}
             language={language}

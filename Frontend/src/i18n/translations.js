@@ -189,7 +189,7 @@ export const translations = {
       "El IVU y el envío se calculan automáticamente.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pago con tarjeta (Stripe) — demo frontend, sin backend todavía.",
+    checkoutSubtitle: "Pago con PayPal (funcional). Tarjeta (Stripe) próximamente.",
     yourDetails: "Tus datos",
     namePlaceholder: "Nombre",
     phonePlaceholder: "Teléfono",
@@ -201,12 +201,12 @@ export const translations = {
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
-      "Pronto: pagos con tarjeta (Stripe) y PayPal. Demo UI por ahora.",
+      "PayPal disponible. Tarjeta (Stripe) próximamente.",
     paymentMethod: "Método de pago",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
     payByCard: "Tarjeta",
-    payPalDisclaimer: "PayPal (próximamente) — demo frontend.",
+    payPalDisclaimer: "Se abrirá PayPal para completar tu pago.",
     checkoutContinueToReview: "Continuar a revisión",
 
     cardAcceptedLabel: "Tarjetas aceptadas",
@@ -788,7 +788,7 @@ export const translations = {
       "Tax and shipping are calculated automatically.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Card payment (Stripe) — frontend demo, no backend yet.",
+    checkoutSubtitle: "Pay with PayPal. Card (Stripe) coming soon.",
     yourDetails: "Your details",
     namePlaceholder: "Name",
     phonePlaceholder: "Phone",
@@ -800,12 +800,12 @@ export const translations = {
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
-      "Coming soon: card payments (Stripe) and PayPal. UI demo for now.",
+      "PayPal is available. Card (Stripe) coming soon.",
     paymentMethod: "Payment method",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
     payByCard: "Card",
-    payPalDisclaimer: "PayPal (coming soon) — frontend demo.",
+    payPalDisclaimer: "PayPal will open so you can complete your payment.",
     checkoutContinueToReview: "Continue to review",
 
     cardAcceptedLabel: "Cards accepted",

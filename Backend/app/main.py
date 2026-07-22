@@ -21,7 +21,7 @@ from app.config import settings
 from app.database import Base, engine
 import app.models  # noqa: F401 (register models for create_all)
 
-from app.routers import auth, admin_users, state, checkout, public
+from app.routers import auth, admin_users, state, checkout, public, paypal
 
 app = FastAPI(title=settings.app_name)
 
@@ -60,6 +60,7 @@ app.include_router(admin_users.router)
 app.include_router(state.router)
 app.include_router(checkout.router)
 app.include_router(public.router)
+app.include_router(paypal.router)
 
 @app.get("/health")
 def health_check():

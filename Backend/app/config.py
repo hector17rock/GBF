@@ -45,6 +45,13 @@ class Settings(BaseSettings):
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
 
+    # --- PayPal ---
+    # Create sandbox/live API credentials at https://developer.paypal.com/
+    paypal_client_id: str = ""
+    paypal_client_secret: str = ""
+    paypal_environment: str = "sandbox"  # "sandbox" | "live"
+    paypal_currency: str = "USD"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
