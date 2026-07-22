@@ -13,7 +13,12 @@ Usage anywhere else in the backend:
 """
 
 from functools import lru_cache
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+_DEFAULT_SQLITE_PATH = (Path(__file__).resolve().parent.parent / "gbf.db").as_posix()
 
 
 class Settings(BaseSettings):
@@ -24,12 +29,17 @@ class Settings(BaseSettings):
 
     # --- Database ---
     # Example: postgresql+psycopg2://user:password@localhost:5432/gbf
-    database_url: str
+    # Dev default keeps the backend runnable out-of-the-box.
+    database_url: str = f"sqlite:///{_DEFAULT_SQLITE_PATH}"
 
     # --- CORS ---
     # Comma-separated list of allowed origins for the frontend, e.g.
     # "http://localhost:5173,https://tu-tienda.com"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
+    # --- Admin bootstrap ---
+    # If set (or in production), the first-admin bootstrap endpoint requires this token.
+    admin_bootstrap_token: str = ""
 
     # --- Stripe ---
     stripe_secret_key: str = ""

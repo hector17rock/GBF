@@ -18,24 +18,48 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.database import Base, engine
+import app.models  # noqa: F401 (register models for create_all)
+
+from app.routers import auth, admin_users, state, checkout, public
 
 app = FastAPI(title=settings.app_name)
 
-# --- CORS ---
-# Without this, a browser running the frontend at http://localhost:5173
-#blocks every request to this API with a CORS error - even though both
-#run on the same machien. This isn.t optional in development.
-#
-#settings.cors_originis_list reads from CORS_ORIGINS in .env. e.g.:
-#CORS_ORIGINS=http://localhost:5173,https://tu-tienda.com
+# --- DB bootstrap ---
+@app.on_event("startup")
+def _startup_create_tables():
+    Base.metadata.create_all(bind=engine)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+# --- CORS ---
+# Browsers require explicit CORS approval. For local dev + phone testing,
+# allow any origin (no cookies/credentials; we use Bearer tokens).
+
+is_production = settings.environment.lower() == "production"
+
+if is_production:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+# --- Routers ---
+app.include_router(auth.router)
+app.include_router(admin_users.router)
+app.include_router(state.router)
+app.include_router(checkout.router)
+app.include_router(public.router)
 
 @app.get("/health")
 def health_check():

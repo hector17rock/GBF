@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { translations } from "./i18n/translations";
 import { COLLECTIONS, VERSES, FONTS, COLORS, DAILY_VERSES } from "./data/catalog";
@@ -2863,9 +2863,21 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 }
 
 // Page: OrderStatus
-function OrderStatus({ orders, setOrders, notify, t, language }) {
+function OrderStatus({
+  orders,
+  setOrders,
+  notify,
+  t,
+  language,
+  serverPublicOk,
+  onLookupOrderStatus,
+  onSendCancelRequest,
+}) {
   const [orderNumber, setOrderNumber] = useState("");
   const [searchedOrderNumber, setSearchedOrderNumber] = useState("");
+
+  const [serverOrder, setServerOrder] = useState(null);
+  const [busyLookup, setBusyLookup] = useState(false);
 
   const [cancelReason, setCancelReason] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -2873,13 +2885,17 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
   const normalizedQuery = String(searchedOrderNumber || "").trim().toLowerCase();
 
   const order = useMemo(() => {
-    const list = Array.isArray(orders) ? orders : [];
     if (!normalizedQuery) return null;
 
+    if (serverPublicOk) {
+      return serverOrder && typeof serverOrder === "object" ? serverOrder : null;
+    }
+
+    const list = Array.isArray(orders) ? orders : [];
     return (
       list.find((o) => String(o?.orderNumber || "").trim().toLowerCase() === normalizedQuery) || null
     );
-  }, [orders, normalizedQuery]);
+  }, [orders, normalizedQuery, serverPublicOk, serverOrder]);
 
   const status = normalizeOrderStatus(order?.status);
   const statusText = order ? orderStatusLabel(status, t) : "";
@@ -2923,15 +2939,63 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
   const canRequestCancel = Boolean(order) && isOpenOrderStatus(status) && !cancelRequested;
 
   // Handler: submitLookup
-  function submitLookup(e) {
+  async function submitLookup(e) {
     e.preventDefault();
-    setSearchedOrderNumber(orderNumber.trim());
+
+    const q = orderNumber.trim();
+    setSearchedOrderNumber(q);
+
+    if (!q) {
+      setServerOrder(null);
+      return;
+    }
+
+    if (serverPublicOk && typeof onLookupOrderStatus === "function") {
+      setBusyLookup(true);
+      try {
+        const o = await onLookupOrderStatus(q);
+        setServerOrder(o && typeof o === "object" ? o : null);
+      } finally {
+        setBusyLookup(false);
+      }
+    }
   }
 
   // Handler: sendCancelRequest
-  function sendCancelRequest() {
+  async function sendCancelRequest() {
     const reason = cancelReason.trim();
-    if (!order || !reason || typeof setOrders !== "function") return;
+    if (!order || !reason) return;
+
+    // Prefer backend cancel request so it syncs across devices.
+    if (serverPublicOk && typeof onSendCancelRequest === "function") {
+      try {
+        await onSendCancelRequest({ orderNumber: String(order?.orderNumber || "").trim(), reason });
+
+        // Update the local view immediately.
+        setServerOrder((prev) =>
+          prev && typeof prev === "object"
+            ? {
+                ...prev,
+                customerCancelRequestReason: reason,
+                customerCancelRequestedAt: Date.now(),
+                updatedAt: Date.now(),
+              }
+            : prev
+        );
+
+        setCancelReason("");
+        setShowCancelModal(false);
+
+        if (typeof notify === "function") {
+          notify(t.orderStatusCancelRequestSent, "success");
+        }
+        return;
+      } catch {
+        // fall back to local-only below
+      }
+    }
+
+    if (typeof setOrders !== "function") return;
 
     setOrders((prev) => {
       const base = Array.isArray(prev) ? prev : [];
@@ -2971,7 +3035,7 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
               className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
             />
           </div>
-          <Button variant="primary" className="w-full">
+          <Button variant="primary" className="w-full" disabled={busyLookup}>
             {t.orderStatusLookup}
           </Button>
         </form>
@@ -6506,6 +6570,19 @@ export default function App() {
     [API_BASE_URL]
   );
 
+  // ---- Backend state sync (cross-device) ----
+  const [serverRevision, setServerRevision] = useState(0);
+  const serverRevisionRef = useRef(0);
+  useEffect(() => {
+    serverRevisionRef.current = Number(serverRevision) || 0;
+  }, [serverRevision]);
+
+  const [serverPublicOk, setServerPublicOk] = useState(false);
+  const [serverAdminOk, setServerAdminOk] = useState(false);
+
+  // When true, we're applying server state into React state; don't push patches back.
+  const serverHydratingRef = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -6768,6 +6845,67 @@ export default function App() {
       });
 
       await refreshAdminUsers();
+
+      // Load full admin state (and auto-migrate this device's current local data if the server is empty).
+      try {
+        const adminState = await apiJson("/state/admin", { token });
+        setServerAdminOk(true);
+        setServerRevision(Number(adminState?.revision) || 0);
+
+        const serverEmpty = Boolean(adminState?.empty);
+
+        const localHasData =
+          (Array.isArray(products) && products.length > 0) ||
+          (Array.isArray(categories) && categories.length > 0) ||
+          (orders && Array.isArray(orders) && orders.length > 0);
+
+        if (serverEmpty && localHasData) {
+          // Carry over the order counter so backend order numbers continue from the current series.
+          let orderCounter = 0;
+          try {
+            const raw = window.localStorage.getItem(ORDER_COUNTER_STORAGE_KEY);
+            const n = Number(raw);
+            orderCounter = Number.isFinite(n) && n > 0 ? n : 0;
+          } catch {
+            orderCounter = 0;
+          }
+
+          const patch = {
+            orderCounter,
+            heroConfig,
+            categories,
+            products,
+            inventory,
+            productCosts,
+            orders,
+            sales,
+            checkoutConfig,
+            policiesConfig,
+            newsletterEmails,
+            reviewsByProduct,
+            activityLog,
+          };
+
+          await apiJson("/state/admin", {
+            method: "PUT",
+            token,
+            body: { replace: true, patch },
+          });
+
+          const hydrated = await apiJson("/state/admin", { token });
+          setServerRevision(Number(hydrated?.revision) || 0);
+          if (hydrated && typeof hydrated === "object" && hydrated.state && typeof hydrated.state === "object") {
+            applyServerStateSafely(hydrated.state);
+          }
+        } else {
+          if (adminState && typeof adminState === "object" && adminState.state && typeof adminState.state === "object") {
+            applyServerStateSafely(adminState.state);
+          }
+        }
+      } catch {
+        setServerAdminOk(false);
+      }
+
       return true;
     } catch {
       return false;
@@ -6782,8 +6920,19 @@ export default function App() {
       setAdminToken("");
       setCurrentAdminUser(null);
       setAdminUsers([]);
+      setServerAdminOk(false);
       setRoute("home");
     });
+
+    try {
+      pendingAdminPatchRef.current = {};
+      if (pendingAdminPatchTimerRef.current) {
+        window.clearTimeout(pendingAdminPatchTimerRef.current);
+        pendingAdminPatchTimerRef.current = null;
+      }
+    } catch {
+      // ignore
+    }
 
     if (!token) return;
 
@@ -6926,6 +7075,23 @@ export default function App() {
       messageEs: `Reseña añadida (${safeRating}/5): ${id}`,
       messageEn: `Review added (${safeRating}/5): ${id}`,
     });
+
+    // Persist to backend for cross-device sync.
+    if (serverPublicOk) {
+      apiJson("/public/reviews", {
+        method: "POST",
+        body: { productId: id, rating: safeRating, name: safeName, text: safeText },
+      })
+        .then((res) => {
+          if (res && typeof res === "object") {
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    }
   }
 
   const [newsletterEmails, setNewsletterEmails] = useState(() => {
@@ -7055,6 +7221,20 @@ export default function App() {
       messageEs: `Newsletter signup: ${value}`,
       messageEn: `Newsletter signup: ${value}`,
     });
+
+    // Persist to backend for cross-device sync.
+    if (serverPublicOk) {
+      apiJson("/public/newsletter", { method: "POST", body: { email: value } })
+        .then((res) => {
+          if (res && typeof res === "object") {
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    }
   }
 
   const [heroConfig, setHeroConfig] = useState(() => {
@@ -7287,6 +7467,244 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [cart, setCart] = useState([]);
 
+  const isAdminRoute = ADMIN_PROTECTED_ROUTES.has(route);
+
+  const applyServerStateObject = useCallback((st) => {
+    if (!st || typeof st !== "object") return;
+
+    if ("heroConfig" in st && st.heroConfig && typeof st.heroConfig === "object") {
+      setHeroConfig(normalizeHeroConfig(st.heroConfig));
+    }
+    if ("categories" in st && Array.isArray(st.categories)) {
+      setCategories(normalizeCategories(st.categories));
+    }
+    if ("products" in st && Array.isArray(st.products)) {
+      setProducts(normalizeProducts(st.products));
+    }
+    if ("inventory" in st && st.inventory && typeof st.inventory === "object") {
+      setInventory(st.inventory);
+    }
+    if ("checkoutConfig" in st && st.checkoutConfig && typeof st.checkoutConfig === "object") {
+      setCheckoutConfig(normalizeCheckoutConfig(st.checkoutConfig));
+    }
+    if ("policiesConfig" in st && st.policiesConfig && typeof st.policiesConfig === "object") {
+      setPoliciesConfig(normalizePoliciesConfig(st.policiesConfig));
+    }
+    if ("reviewsByProduct" in st && st.reviewsByProduct && typeof st.reviewsByProduct === "object") {
+      setReviewsByProduct(st.reviewsByProduct);
+    }
+
+    // Admin-only blocks
+    if ("productCosts" in st && st.productCosts && typeof st.productCosts === "object") {
+      setProductCosts(st.productCosts);
+    }
+    if ("orders" in st && Array.isArray(st.orders)) {
+      setOrders(st.orders);
+    }
+    if ("sales" in st && Array.isArray(st.sales)) {
+      setSales(st.sales);
+    }
+    if ("newsletterEmails" in st && Array.isArray(st.newsletterEmails)) {
+      setNewsletterEmails(st.newsletterEmails.map((x) => String(x)));
+    }
+    if ("activityLog" in st && Array.isArray(st.activityLog)) {
+      setActivityLog(st.activityLog);
+    }
+  }, []);
+
+  const applyServerStateSafely = useCallback(
+    (st) => {
+      serverHydratingRef.current = true;
+      try {
+        applyServerStateObject(st);
+      } finally {
+        serverHydratingRef.current = false;
+      }
+    },
+    [applyServerStateObject]
+  );
+
+  // Initial public state load (catalog/configs/hero/inventory) from backend
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await apiJson("/state/public");
+        if (cancelled) return;
+
+        setServerPublicOk(true);
+        setServerRevision(Number(data?.revision) || 0);
+
+        if (!data || typeof data !== "object" || data.unchanged) return;
+        applyServerStateSafely(data);
+      } catch {
+        if (cancelled) return;
+        setServerPublicOk(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiJson, applyServerStateSafely]);
+
+  // Poll public state for cross-device updates
+  useEffect(() => {
+    if (!serverPublicOk) return;
+
+    let stopped = false;
+    const id = window.setInterval(() => {
+      (async () => {
+        try {
+          const rev = serverRevisionRef.current;
+          const data = await apiJson(`/state/public?ifRevision=${encodeURIComponent(String(rev))}`);
+          if (stopped) return;
+
+          setServerPublicOk(true);
+
+          if (!data || typeof data !== "object" || data.unchanged) return;
+          setServerRevision(Number(data?.revision) || 0);
+          applyServerStateSafely(data);
+        } catch {
+          if (stopped) return;
+          setServerPublicOk(false);
+        }
+      })();
+    }, 4000);
+
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [serverPublicOk, apiJson, applyServerStateSafely]);
+
+  // Poll admin state when logged in and on admin routes (orders/costs/etc.)
+  useEffect(() => {
+    if (!isAdminAuthed || !isAdminRoute || !adminToken) return;
+
+    let stopped = false;
+    const id = window.setInterval(() => {
+      (async () => {
+        try {
+          const rev = serverRevisionRef.current;
+          const data = await apiJson(`/state/admin?ifRevision=${encodeURIComponent(String(rev))}`, {
+            token: adminToken,
+          });
+          if (stopped) return;
+
+          setServerAdminOk(true);
+
+          if (!data || typeof data !== "object" || data.unchanged) return;
+
+          const nextRev = Number(data?.revision) || 0;
+          setServerRevision(nextRev);
+
+          const st = data?.state;
+          if (st && typeof st === "object") {
+            applyServerStateSafely(st);
+          }
+        } catch {
+          if (stopped) return;
+          setServerAdminOk(false);
+        }
+      })();
+    }, 3500);
+
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [isAdminAuthed, isAdminRoute, adminToken, apiJson, applyServerStateSafely]);
+
+  // Debounced admin patch save (only for admin UI changes)
+  const pendingAdminPatchRef = useRef({});
+  const pendingAdminPatchTimerRef = useRef(null);
+
+  const scheduleAdminPatch = useCallback(
+    (patch) => {
+      if (!isAdminAuthed || !adminToken) return;
+      if (!serverAdminOk) return;
+      if (!patch || typeof patch !== "object") return;
+
+      // Merge into a single pending patch
+      pendingAdminPatchRef.current = { ...pendingAdminPatchRef.current, ...patch };
+
+      if (pendingAdminPatchTimerRef.current) {
+        window.clearTimeout(pendingAdminPatchTimerRef.current);
+      }
+
+      pendingAdminPatchTimerRef.current = window.setTimeout(async () => {
+        const toSend = pendingAdminPatchRef.current;
+        pendingAdminPatchRef.current = {};
+
+        if (!toSend || typeof toSend !== "object" || Object.keys(toSend).length === 0) return;
+        if (serverHydratingRef.current) return;
+
+        try {
+          const res = await apiJson("/state/admin", {
+            method: "PUT",
+            token: adminToken,
+            body: {
+              replace: false,
+              expectedRevision: serverRevisionRef.current,
+              patch: toSend,
+            },
+          });
+
+          setServerAdminOk(true);
+          if (res && typeof res === "object") {
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+          }
+        } catch (err) {
+          // Conflict or offline; polling will reconcile.
+          if (err && typeof err === "object" && err.status === 409) {
+            setServerAdminOk(true);
+          }
+        }
+      }, 700);
+    },
+    [isAdminAuthed, adminToken, serverAdminOk, apiJson]
+  );
+
+  // Admin-side saves (route-scoped to avoid overwriting unrelated sections)
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_homepage" && route !== "admin") return;
+    scheduleAdminPatch({ heroConfig });
+  }, [heroConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_products" && route !== "admin") return;
+    scheduleAdminPatch({ categories, products });
+  }, [categories, products, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_inventory") return;
+    scheduleAdminPatch({ inventory, productCosts });
+  }, [inventory, productCosts, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_checkout") return;
+    scheduleAdminPatch({ checkoutConfig });
+  }, [checkoutConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_policies") return;
+    scheduleAdminPatch({ policiesConfig });
+  }, [policiesConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_orders") return;
+    scheduleAdminPatch({ orders });
+  }, [orders, isAdminAuthed, route, scheduleAdminPatch]);
+
   const cartCount = cart.reduce((acc, it) => acc + it.qty, 0);
 
   const confirmationOrder = useMemo(() => {
@@ -7357,7 +7775,7 @@ export default function App() {
     setCart((prev) => prev.filter((x) => x.key !== key));
   }
   // placeOrder
-  function placeOrder({
+  async function placeOrder({
     customer,
     shipping,
     paymentMethod,
@@ -7367,6 +7785,65 @@ export default function App() {
     shippingFee,
   }) {
     if (!Array.isArray(cart) || cart.length === 0) return null;
+
+    // Prefer backend as source of truth for cross-device sync.
+    if (serverPublicOk) {
+      try {
+        const items = cart
+          .map((it) => ({
+            productId: String(it?.id ?? "").trim(),
+            qty: Number(it?.qty) || 0,
+            unitPrice: Number(it?.price) || 0,
+            name: it?.name,
+            category: it?.category,
+            personalization: it?.personalization,
+          }))
+          .filter((it) => it.productId && it.qty > 0);
+
+        if (items.length) {
+          const res = await apiJson("/checkout/place-order", {
+            method: "POST",
+            body: {
+              items,
+              customer,
+              shipping,
+              paymentMethod,
+              taxRatePct,
+              taxStateRatePct,
+              taxMunicipalRatePct,
+              shippingFee,
+            },
+          });
+
+          const order = res && typeof res === "object" ? res.order : null;
+
+          if (order && typeof order === "object") {
+            // Apply updated server state subsets
+            if (Array.isArray(res?.orders)) setOrders(res.orders);
+            if (res?.inventory && typeof res.inventory === "object") setInventory(res.inventory);
+            if (Array.isArray(res?.sales)) setSales(res.sales);
+            if (Array.isArray(res?.newsletterEmails)) setNewsletterEmails(res.newsletterEmails);
+
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+
+            setCart([]);
+            setCheckoutDraft(buildDefaultCheckoutDraft());
+
+            runViewTransition(() => {
+              setLastOrderId(order.id);
+              setRoute("order_confirmation");
+            });
+
+            pushToast(t.orderConfirmationToastOrderSent, "success");
+
+            return { orderId: order.id, orderNumber: order.orderNumber || order.id };
+          }
+        }
+      } catch {
+        // Fall back to local-only behavior.
+      }
+    }
 
     const createdAt = Date.now();
     const orderId = safeUUID("order");
@@ -7533,6 +8010,43 @@ export default function App() {
     return { orderId, orderNumber };
   }
 
+  async function lookupOrderStatusByNumber(orderNumber) {
+    const q = String(orderNumber || "").trim();
+    if (!q) return null;
+
+    try {
+      const data = await apiJson(`/public/order-status?orderNumber=${encodeURIComponent(q)}`);
+      if (data && typeof data === "object" && data.found && data.order && typeof data.order === "object") {
+        return data.order;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function sendOrderCancelRequest({ orderNumber, reason }) {
+    const on = String(orderNumber || "").trim();
+    const rsn = String(reason || "").trim();
+    if (!on || !rsn) return false;
+
+    try {
+      const res = await apiJson("/public/order-cancel-request", {
+        method: "POST",
+        body: { orderNumber: on, reason: rsn },
+      });
+
+      if (res && typeof res === "object") {
+        const nextRev = Number(res?.revision);
+        if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   const renderRoutedContent = (r) => {
     const orderFlowStep =
       r === "cart" ? 1 : r === "checkout" ? 2 : r === "checkout_review" ? 3 : 0;
@@ -7677,6 +8191,9 @@ export default function App() {
             notify={pushToast}
             t={t}
             language={language}
+            serverPublicOk={serverPublicOk}
+            onLookupOrderStatus={lookupOrderStatusByNumber}
+            onSendCancelRequest={sendOrderCancelRequest}
           />
         ) : null}
 

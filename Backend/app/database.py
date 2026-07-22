@@ -21,7 +21,13 @@ from app.config import settings
 # echo=settings.debug prints every SQL statement to the console while
 # developing — helpful for debugging, noisy in production (settings.debug
 # is False there, so it's silent automatically).
-engine = create_engine(settings.database_url, echo=settings.debug)
+
+connect_args = {}
+if str(settings.database_url).startswith("sqlite"):
+    # Needed for SQLite + FastAPI dev reload.
+    connect_args = {"check_same_thread": False}
+
+engine = create_engine(settings.database_url, echo=settings.debug, connect_args=connect_args)
 
 # autocommit=False, autoflush=False: we control exactly when changes hit the
 # DB (via db.commit() in each route) instead of SQLAlchemy guessing for us.
