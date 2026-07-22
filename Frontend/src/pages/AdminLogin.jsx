@@ -2,33 +2,26 @@ import { useMemo, useState } from "react";
 import Button from "../components/Button";
 import SectionTitle from "../components/SectionTitle";
 
-export default function AdminLogin({ t, language, hasAdmins, onLogin, onGoHome }) {
+export default function AdminLogin({
+  t,
+  language,
+  hasAdmins,
+  onLogin,
+  onGoHome,
+}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const isConfigured = Boolean(hasAdmins);
-
   const canSubmit = useMemo(() => {
-    if (!isConfigured) return false;
     if (!username.trim() || !password.trim()) return false;
     return true;
-  }, [username, password, isConfigured]);
+  }, [username, password]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage("");
-
-    if (!isConfigured) {
-      setMessage(
-        t?.adminAuthNotConfigured ||
-          (language === "es"
-            ? "El acceso admin no está configurado. Contacta al administrador."
-            : "Admin access is not configured. Contact the administrator.")
-      );
-      return;
-    }
 
     const u = username.trim();
     const p = password;
@@ -37,6 +30,17 @@ export default function AdminLogin({ t, language, hasAdmins, onLogin, onGoHome }
       setMessage(
         t?.adminAuthRequired ||
           (language === "es" ? "Completa usuario y contraseña." : "Enter username and password.")
+      );
+      return;
+    }
+
+    // When the API is reachable and confirms there are no admins, block login.
+    if (hasAdmins === false) {
+      setMessage(
+        t?.adminAuthNotConfigured ||
+          (language === "es"
+            ? "El acceso admin no está configurado. Contacta al administrador."
+            : "Admin access is not configured. Contact the administrator.")
       );
       return;
     }
@@ -54,6 +58,7 @@ export default function AdminLogin({ t, language, hasAdmins, onLogin, onGoHome }
     }
   }
 
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
@@ -65,12 +70,21 @@ export default function AdminLogin({ t, language, hasAdmins, onLogin, onGoHome }
             className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl"
           >
             <div className="grid gap-3">
-              {!isConfigured ? (
+              {hasAdmins === false ? (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
                   {t.adminAuthNotConfigured ||
                     (language === "es"
                       ? "El acceso admin no está configurado. Contacta al administrador."
                       : "Admin access is not configured. Contact the administrator.")}
+                </div>
+              ) : null}
+
+              {hasAdmins === null ? (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  {t?.adminAuthServerOffline ||
+                    (language === "es"
+                      ? "No se pudo conectar con el servidor. Verifica que el Backend esté encendido."
+                      : "Could not reach the server. Make sure the Backend is running.")}
                 </div>
               ) : null}
 
@@ -81,8 +95,7 @@ export default function AdminLogin({ t, language, hasAdmins, onLogin, onGoHome }
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={t.adminAuthUsernamePlaceholder}
                   autoComplete="username"
-                  disabled={!isConfigured}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400 disabled:opacity-60"
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
               </div>
 
@@ -94,14 +107,14 @@ export default function AdminLogin({ t, language, hasAdmins, onLogin, onGoHome }
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t.adminAuthPasswordPlaceholder}
                   autoComplete="current-password"
-                  disabled={!isConfigured}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400 disabled:opacity-60"
+                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
               </div>
 
+
               {message ? <div className="text-xs font-semibold text-amber-700">{message}</div> : null}
 
-              <Button variant="primary" className="w-full" disabled={!canSubmit || busy}>
+              <Button variant="primary" className="w-full" disabled={!canSubmit || busy || hasAdmins === false}>
                 {t.adminLoginButton}
               </Button>
 

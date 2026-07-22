@@ -328,9 +328,30 @@ export const translations = {
     adminAuthRequired: "Completa usuario y contraseña.",
     adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
     adminAuthInvalid: "Usuario o contraseña incorrectos.",
-    adminAuthNotConfigured: "El acceso admin no está configurado. Contacta al administrador.",
+    adminAuthNotConfigured:
+      "No hay admins configurados en el servidor. Contacta al administrador.",
+    adminAuthServerOffline:
+      "No se pudo conectar con el servidor. Verifica que el Backend esté encendido.",
     adminAuthDisclaimer:
-      "Demo local: las credenciales se guardan en este navegador (localStorage).",
+      "Acceso admin verificado por el servidor.",
+
+    adminTransferTitle: "Sincronizar admins",
+    adminTransferSubtitle:
+      "Genera un código en tu computadora y pégalo en el celular para usar los mismos admins.",
+    adminTransferGenerate: "Generar código",
+    adminTransferCopy: "Copiar",
+    adminTransferEmpty: "No hay admins para exportar.",
+    adminTransferCopied: "Código copiado.",
+    adminTransferCopyHint: "Copia el código manualmente (selecciona y copia).",
+
+    adminTransferImportTitle: "Importar acceso admin",
+    adminTransferImportSubtitle:
+      "Pega el código desde tu otra computadora/celular para sincronizar admins en este dispositivo.",
+    adminTransferImportPlaceholder: "Pega el código aquí…",
+    adminTransferImportButton: "Importar",
+    adminTransferImportEmpty: "Pega el código para importar.",
+    adminTransferImportSuccess: "Admins importados. Ahora puedes iniciar sesión.",
+    adminTransferImportError: "Código inválido o sin admins.",
 
     adminAuthTipsTitle: "Tips",
     adminAuthTip1: "Usa una contraseña única (no la reutilices).",
@@ -348,7 +369,7 @@ export const translations = {
     adminUsersListTitle: "Usuarios admin",
     adminUsersEmpty: "Aún no hay usuarios admin.",
     adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
-    adminUsersCredentialHint: "Acceso local (este navegador).",
+    adminUsersCredentialHint: "Acceso central (servidor).",
 
     adminStatManagement: "Gestión",
     adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
@@ -903,9 +924,30 @@ export const translations = {
     adminAuthRequired: "Enter username and password.",
     adminAuthPasswordMismatch: "Passwords do not match.",
     adminAuthInvalid: "Incorrect username or password.",
-    adminAuthNotConfigured: "Admin access is not configured. Contact the administrator.",
+    adminAuthNotConfigured:
+      "No admins are configured on the server. Contact the administrator.",
+    adminAuthServerOffline:
+      "Could not reach the server. Make sure the Backend is running.",
     adminAuthDisclaimer:
-      "Local demo: credentials are saved in this browser (localStorage).",
+      "Admin access is verified by the server.",
+
+    adminTransferTitle: "Sync admins",
+    adminTransferSubtitle:
+      "Generate a code on your computer and paste it on your phone to use the same admin users.",
+    adminTransferGenerate: "Generate code",
+    adminTransferCopy: "Copy",
+    adminTransferEmpty: "No admins to export.",
+    adminTransferCopied: "Code copied.",
+    adminTransferCopyHint: "Copy the code manually (select and copy).",
+
+    adminTransferImportTitle: "Import admin access",
+    adminTransferImportSubtitle:
+      "Paste the code from your other computer/phone to sync admins on this device.",
+    adminTransferImportPlaceholder: "Paste the code here…",
+    adminTransferImportButton: "Import",
+    adminTransferImportEmpty: "Paste the code to import.",
+    adminTransferImportSuccess: "Admins imported. You can sign in now.",
+    adminTransferImportError: "Invalid code or no admins found.",
 
     adminAuthTipsTitle: "Tips",
     adminAuthTip1: "Use a unique password (do not reuse it).",
@@ -922,7 +964,7 @@ export const translations = {
     adminUsersListTitle: "Admin users",
     adminUsersEmpty: "No admin users yet.",
     adminUsersCannotDeleteLast: "You cannot delete the last admin.",
-    adminUsersCredentialHint: "Local access (this browser).",
+    adminUsersCredentialHint: "Central access (server).",
 
     adminStatManagement: "Management",
     adminStatManagementBody: "Next: add, edit, and delete products.",

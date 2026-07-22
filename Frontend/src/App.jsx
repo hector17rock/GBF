@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { flushSync } from "react-dom";
 import { translations } from "./i18n/translations";
 import { COLLECTIONS, VERSES, FONTS, COLORS, DAILY_VERSES } from "./data/catalog";
@@ -46,7 +46,6 @@ import {
 } from "./utils/orders";
 import { getPrTaxBreakdownFromOrder } from "./utils/taxes";
 import { escapeHtml, openPrintWindow } from "./utils/print";
-import { buildPasswordRecord, normalizeAdminUsers, verifyPassword } from "./utils/adminAuth";
 
 // =====================================================
 // App.jsx (single-file MVP) — Sections & Functions Index
@@ -93,8 +92,6 @@ const RECENTLY_VIEWED_STORAGE_KEY = "gbf.recentlyViewed.v1";
 const REVIEWS_STORAGE_KEY = "gbf.reviews.v1";
 const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
-const ADMIN_USERS_STORAGE_KEY = "gbf.adminUsers.v1";
-const ADMIN_SESSION_STORAGE_KEY = "gbf.adminSession.v1";
 const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 
 // -----------------------------
@@ -6432,67 +6429,139 @@ export default function App() {
 
   const t = translations[language];
 
-  const [adminUsers, setAdminUsers] = useState(() => {
-    if (typeof window === "undefined") return [];
+  const API_BASE_URL = useMemo(() => {
+    if (typeof window === "undefined") return "";
+
+    const envUrl = String(import.meta?.env?.VITE_API_URL || "").trim();
+    if (envUrl) return envUrl.replace(/\/+$/, "");
+
+    // Dev default: assume backend is running on the same host at :8000
+    const proto = window.location.protocol || "http:";
+    const host = window.location.hostname;
+    return `${proto}//${host}:8000`;
+  }, []);
+
+  const ADMIN_TOKEN_STORAGE_KEY = "gbf.adminToken.v1";
+
+  const [adminToken, setAdminToken] = useState(() => {
+    if (typeof window === "undefined") return "";
     try {
-      const raw = window.localStorage.getItem(ADMIN_USERS_STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return normalizeAdminUsers(parsed);
+      return String(window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "").trim();
     } catch {
-      return [];
+      return "";
     }
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(ADMIN_USERS_STORAGE_KEY, JSON.stringify(normalizeAdminUsers(adminUsers)));
-    } catch {
-      // ignore
-    }
-  }, [adminUsers]);
-
-  const [adminSession, setAdminSession] = useState(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = window.sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : null;
-      if (!parsed || typeof parsed !== "object") return null;
-
-      const userId = String(parsed.userId || "").trim();
-      const username = String(parsed.username || "").trim();
-      const createdAt = typeof parsed.createdAt === "number" ? parsed.createdAt : null;
-
-      if (!userId || !username) return null;
-      return { userId, username, createdAt };
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (!adminSession) {
-        window.sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
+      if (!adminToken) {
+        window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
         return;
       }
-      window.sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, JSON.stringify(adminSession));
+      window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, adminToken);
     } catch {
       // ignore
     }
-  }, [adminSession]);
+  }, [adminToken]);
+
+  const [currentAdminUser, setCurrentAdminUser] = useState(null);
+  const [hasAdmins, setHasAdmins] = useState(null);
+  const [adminUsers, setAdminUsers] = useState([]);
+
+  const apiJson = useCallback(
+    async (path, { method = "GET", body, token } = {}) => {
+      const base = String(API_BASE_URL || "").replace(/\/+$/, "");
+      if (!base) throw new Error("missing_api_base_url");
+
+      const url = `${base}${String(path || "").startsWith("/") ? "" : "/"}${String(path || "")}`;
+
+      const headers = { Accept: "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      if (body !== undefined) headers["Content-Type"] = "application/json";
+
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        const msg =
+          data && typeof data === "object" && "detail" in data ? String(data.detail) : `http_${res.status}`;
+        const err = new Error(msg);
+        err.status = res.status;
+        throw err;
+      }
+
+      return data;
+    },
+    [API_BASE_URL]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await apiJson("/auth/has-admins");
+        if (cancelled) return;
+        setHasAdmins(Boolean(data?.hasAdmins));
+      } catch {
+        if (cancelled) return;
+        setHasAdmins(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiJson]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (!adminToken) {
+        setCurrentAdminUser(null);
+        return;
+      }
+
+      try {
+        const me = await apiJson("/auth/me", { token: adminToken });
+        if (cancelled) return;
+        setCurrentAdminUser(me && typeof me === "object" ? me : null);
+      } catch (err) {
+        if (cancelled) return;
+
+        // Only clear the saved token when the server explicitly rejects it.
+        // For transient network/server errors, keep the current in-memory auth state
+        // to avoid bouncing back to the login screen right after a successful login.
+        if (err && typeof err === "object" && err.status === 401) {
+          setAdminToken("");
+          setCurrentAdminUser(null);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [adminToken, apiJson]);
 
   const [afterLoginRoute, setAfterLoginRoute] = useState("admin");
 
   // Admin auth gate: require login to access admin-only pages.
   const ADMIN_AUTH_ENABLED = true;
 
-  const hasAdmins = Array.isArray(adminUsers) && adminUsers.length > 0;
-  const currentAdminUser = adminSession?.userId
-    ? adminUsers.find((u) => u?.id === adminSession.userId) || null
-    : null;
-  const isAdminAuthed = Boolean(currentAdminUser);
+  const isAdminAuthed = Boolean(adminToken && currentAdminUser);
 
   const prefersReducedMotion = () => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
@@ -6570,83 +6639,104 @@ export default function App() {
     });
   };
 
-  async function buildAdminUserRecord({ name, username, password }) {
-    const n = String(name || "").trim();
-    const u = String(username || "").trim();
-    const p = String(password || "");
-    if (!n || !u || !p.trim()) return null;
+  async function refreshAdminUsers() {
+    if (!adminToken) {
+      setAdminUsers([]);
+      return;
+    }
 
-    const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
-    const salt = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
-
-    const pw = await buildPasswordRecord(p, salt);
-
-    return {
-      id,
-      name: n,
-      username: u,
-      algo: pw.algo,
-      salt: pw.salt,
-      hash: pw.hash,
-      createdAt: Date.now(),
-    };
+    try {
+      const rows = await apiJson("/admin-users", { token: adminToken });
+      setAdminUsers(Array.isArray(rows) ? rows : []);
+    } catch {
+      setAdminUsers([]);
+    }
   }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (!adminToken) {
+        if (cancelled) return;
+        setAdminUsers([]);
+        return;
+      }
+
+      try {
+        const rows = await apiJson("/admin-users", { token: adminToken });
+        if (cancelled) return;
+        setAdminUsers(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (cancelled) return;
+        setAdminUsers([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [adminToken, apiJson]);
 
   async function createAdminUser({ name, username, password }) {
     const n = String(name || "").trim();
     const u = String(username || "").trim();
     const p = String(password || "");
     if (!n || !u || !p.trim()) return false;
+    if (!adminToken) return false;
 
-    const exists = (Array.isArray(adminUsers) ? adminUsers : []).some(
-      (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
-    );
-    if (exists) return false;
-
-    const user = await buildAdminUserRecord({ name: n, username: u, password: p });
-    if (!user) return false;
-
-    setAdminUsers((prev) => {
-      const base = normalizeAdminUsers(prev);
-      return [...base, user];
-    });
-
-    return true;
+    try {
+      await apiJson("/admin-users", {
+        method: "POST",
+        token: adminToken,
+        body: { name: n, username: u, password: p },
+      });
+      await refreshAdminUsers();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function updateAdminUser({ userId, name }) {
     const id = String(userId || "").trim();
     const n = String(name || "").trim();
     if (!id || !n) return false;
+    if (!adminToken) return false;
 
-    setAdminUsers((prev) => {
-      const base = normalizeAdminUsers(prev);
-      return base.map((u) => (u.id === id ? { ...u, name: n } : u));
-    });
-
-    return true;
+    try {
+      await apiJson(`/admin-users/${id}`, {
+        method: "PATCH",
+        token: adminToken,
+        body: { name: n },
+      });
+      await refreshAdminUsers();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function deleteAdminUser({ userId }) {
     const id = String(userId || "").trim();
     if (!id) return false;
+    if (!adminToken) return false;
 
-    const base = Array.isArray(adminUsers) ? adminUsers : [];
-    if (base.length <= 1) return false;
+    try {
+      await apiJson(`/admin-users/${id}`, { method: "DELETE", token: adminToken });
+      await refreshAdminUsers();
 
-    runViewTransition(() => {
-      setAdminUsers((prev) => {
-        const rows = normalizeAdminUsers(prev);
-        return rows.filter((u) => u.id !== id);
-      });
-
-      if (adminSession?.userId === id) {
-        setAdminSession(null);
+      // If the current user was deleted, force logout.
+      if (String(currentAdminUser?.id || "") === id) {
+        setAdminToken("");
+        setCurrentAdminUser(null);
         setRoute("home");
       }
-    });
 
-    return true;
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function loginAdmin({ username, password }) {
@@ -6654,53 +6744,54 @@ export default function App() {
     const p = String(password || "");
     if (!u || !p.trim()) return false;
 
-    const user = (Array.isArray(adminUsers) ? adminUsers : []).find(
-      (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
-    );
-    if (!user) return false;
-
-    const ok = await verifyPassword(user, p);
-    if (!ok) return false;
-
-    const nextRoute =
-      typeof afterLoginRoute === "string" &&
-      afterLoginRoute &&
-      ADMIN_PROTECTED_ROUTES.has(afterLoginRoute)
-        ? afterLoginRoute
-        : "admin";
-
-    runViewTransition(() => {
-      setAdminSession({ userId: user.id, username: user.username, createdAt: Date.now() });
-      setRoute(nextRoute);
-    });
-
-    return true;
-  }
-
-  async function createFirstAdmin({ name, username, password }) {
-    if (hasAdmins) return false;
-
-    const user = await buildAdminUserRecord({ name, username, password });
-    if (!user) return false;
-
-    runViewTransition(() => {
-      setAdminUsers((prev) => {
-        const base = normalizeAdminUsers(prev);
-        return [...base, user];
+    try {
+      const data = await apiJson("/auth/login", {
+        method: "POST",
+        body: { username: u, password: p },
       });
 
-      setAdminSession({ userId: user.id, username: user.username, createdAt: Date.now() });
-      setRoute("admin");
-    });
+      const token = String(data?.token || "").trim();
+      const user = data?.user && typeof data.user === "object" ? data.user : null;
+      if (!token || !user) return false;
 
-    return true;
+      const nextRoute =
+        typeof afterLoginRoute === "string" &&
+        afterLoginRoute &&
+        ADMIN_PROTECTED_ROUTES.has(afterLoginRoute)
+          ? afterLoginRoute
+          : "admin";
+
+      runViewTransition(() => {
+        setAdminToken(token);
+        setCurrentAdminUser(user);
+        setRoute(nextRoute);
+      });
+
+      await refreshAdminUsers();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  function logoutAdmin() {
+
+  async function logoutAdmin() {
+    const token = String(adminToken || "").trim();
+
     runViewTransition(() => {
-      setAdminSession(null);
+      setAdminToken("");
+      setCurrentAdminUser(null);
+      setAdminUsers([]);
       setRoute("home");
     });
+
+    if (!token) return;
+
+    try {
+      await apiJson("/auth/logout", { method: "POST", token });
+    } catch {
+      // ignore
+    }
   }
 
   useEffect(() => {
@@ -7610,7 +7701,6 @@ export default function App() {
             language={language}
             hasAdmins={hasAdmins}
             onLogin={loginAdmin}
-            onCreateFirstAdmin={createFirstAdmin}
             onGoHome={() => navigate("home")}
           />
         ) : null}
@@ -7634,7 +7724,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7686,7 +7775,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7738,7 +7826,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7763,7 +7850,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7785,7 +7871,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7807,7 +7892,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7829,7 +7913,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7851,7 +7934,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7874,7 +7956,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
