@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { translations } from "./i18n/translations";
 import { COLLECTIONS, VERSES, FONTS, COLORS, DAILY_VERSES } from "./data/catalog";
@@ -11,6 +11,7 @@ import {
 import { PR_TAX_STATE_RATE_PCT, PR_TAX_MUNICIPAL_RATE_PCT, PR_TAX_TOTAL_RATE_PCT } from "./data/taxes";
 import { l10n, money, roundMoney, parseNumberOr, formatRatePct } from "./utils/format";
 import Button from "./components/Button";
+import SlideToSubmit from "./components/SlideToSubmit";
 import Footer from "./components/Footer";
 import Pill from "./components/Pill";
 import ProductCard from "./components/ProductCard";
@@ -45,7 +46,6 @@ import {
 } from "./utils/orders";
 import { getPrTaxBreakdownFromOrder } from "./utils/taxes";
 import { escapeHtml, openPrintWindow } from "./utils/print";
-import { buildPasswordRecord, normalizeAdminUsers, verifyPassword } from "./utils/adminAuth";
 
 // =====================================================
 // App.jsx (single-file MVP) — Sections & Functions Index
@@ -92,8 +92,6 @@ const RECENTLY_VIEWED_STORAGE_KEY = "gbf.recentlyViewed.v1";
 const REVIEWS_STORAGE_KEY = "gbf.reviews.v1";
 const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
-const ADMIN_USERS_STORAGE_KEY = "gbf.adminUsers.v1";
-const ADMIN_SESSION_STORAGE_KEY = "gbf.adminSession.v1";
 const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 
 // -----------------------------
@@ -109,6 +107,20 @@ const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 // Catalog defaults + persistence helpers
 // -----------------------------
 // (moved to src/data/defaultCatalog.js)
+
+// -----------------------------
+// IDs (avoid crypto.randomUUID dependency on older browsers)
+// -----------------------------
+let __gbfIdCounter = 0;
+function safeUUID(prefix = "id") {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  __gbfIdCounter = (__gbfIdCounter + 1) % 1_000_000_000;
+  const rand = Math.random().toString(16).slice(2);
+  return `${prefix}-${Date.now()}-${__gbfIdCounter}-${rand}`;
+}
 
 // -----------------------------
 // Card brand helpers (simple client-side detection)
@@ -296,6 +308,71 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
       {logo}
     </span>
   );
+}
+
+
+// -----------------------------
+// PayPal JS SDK loader (Smart Buttons)
+// -----------------------------
+let __gbfPayPalSdkKey = "";
+let __gbfPayPalSdkPromise = null;
+
+function loadPayPalSdk({ clientId, currency }) {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return Promise.reject(new Error("paypal_sdk_unavailable"));
+  }
+
+  const id = String(clientId || "").trim();
+  const cur = String(currency || "USD").trim().toUpperCase() || "USD";
+  if (!id) return Promise.reject(new Error("missing_paypal_client_id"));
+
+  const key = `${id}|${cur}`;
+
+  if (window.paypal && __gbfPayPalSdkPromise && __gbfPayPalSdkKey === key) {
+    return __gbfPayPalSdkPromise;
+  }
+
+  // If a different clientId/currency is requested, remove the old script.
+  if (__gbfPayPalSdkKey && __gbfPayPalSdkKey !== key) {
+    const old = document.querySelector('script[data-gbf-paypal-sdk="1"]');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    __gbfPayPalSdkPromise = null;
+  }
+
+  __gbfPayPalSdkKey = key;
+
+  if (__gbfPayPalSdkPromise) return __gbfPayPalSdkPromise;
+
+  __gbfPayPalSdkPromise = new Promise((resolve, reject) => {
+    if (window.paypal) {
+      resolve(window.paypal);
+      return;
+    }
+
+    const existing = document.querySelector('script[data-gbf-paypal-sdk="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.paypal));
+      existing.addEventListener("error", () => reject(new Error("paypal_sdk_load_failed")));
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.defer = true;
+    script.dataset.gbfPaypalSdk = "1";
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(id)}&currency=${encodeURIComponent(cur)}&intent=capture`;
+
+    script.onload = () => {
+      if (window.paypal) resolve(window.paypal);
+      else reject(new Error("paypal_sdk_loaded_but_missing"));
+    };
+
+    script.onerror = () => reject(new Error("paypal_sdk_load_failed"));
+
+    document.head.appendChild(script);
+  });
+
+  return __gbfPayPalSdkPromise;
 }
 
 
@@ -571,10 +648,7 @@ function fileToDataUrl(file) {
 // Helper: buildUploadFilename
 function buildUploadFilename(prefix, file) {
   const base = String(file?.name || "upload").replace(/\s+/g, "-");
-  const id =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : String(Date.now());
+  const id = safeUUID("upload");
   return `${prefix}-${id}-${base}`;
 }
 
@@ -684,6 +758,183 @@ function getNextOrderNumber() {
   }
 }
 
+// --------------------------------------
+// Barcode: Code 128 (subset B) as inline SVG
+// --------------------------------------
+const CODE128_TABLE = [
+  "212222",
+  "222122",
+  "222221",
+  "121223",
+  "121322",
+  "131222",
+  "122213",
+  "122312",
+  "132212",
+  "221213",
+  "221312",
+  "231212",
+  "112232",
+  "122132",
+  "122231",
+  "113222",
+  "123122",
+  "123221",
+  "223211",
+  "221132",
+  "221231",
+  "213212",
+  "223112",
+  "312131",
+  "311222",
+  "321122",
+  "321221",
+  "312212",
+  "322112",
+  "322211",
+  "212123",
+  "212321",
+  "232121",
+  "111323",
+  "131123",
+  "131321",
+  "112313",
+  "132113",
+  "132311",
+  "211313",
+  "231113",
+  "231311",
+  "112133",
+  "112331",
+  "132131",
+  "113123",
+  "113321",
+  "133121",
+  "313121",
+  "211331",
+  "231131",
+  "213113",
+  "213311",
+  "213131",
+  "311123",
+  "311321",
+  "331121",
+  "312113",
+  "312311",
+  "332111",
+  "314111",
+  "221411",
+  "431111",
+  "111224",
+  "111422",
+  "121124",
+  "121421",
+  "141122",
+  "141221",
+  "112214",
+  "112412",
+  "122114",
+  "122411",
+  "142112",
+  "142211",
+  "241211",
+  "221114",
+  "413111",
+  "241112",
+  "134111",
+  "111242",
+  "121142",
+  "121241",
+  "114212",
+  "124112",
+  "124211",
+  "411212",
+  "421112",
+  "421211",
+  "212141",
+  "214121",
+  "412121",
+  "111143",
+  "111341",
+  "131141",
+  "114113",
+  "114311",
+  "411113",
+  "411311",
+  "113141",
+  "114131",
+  "311141",
+  "411131",
+  "211412",
+  "211214",
+  "211232",
+  "2331112",
+];
+
+function code128BValueForChar(ch) {
+  const code = typeof ch === "string" && ch.length ? ch.charCodeAt(0) : 0;
+  if (code < 32 || code > 126) return null;
+  return code - 32;
+}
+
+function buildCode128BSequence(text) {
+  const s = String(text || "");
+  if (!s.trim()) return null;
+
+  const values = [];
+  for (const ch of s) {
+    const v = code128BValueForChar(ch);
+    if (v == null) return null;
+    values.push(v);
+  }
+
+  const START_B = 104;
+  const STOP = 106;
+
+  let sum = START_B;
+  for (let i = 0; i < values.length; i += 1) {
+    sum += values[i] * (i + 1);
+  }
+  const check = sum % 103;
+
+  return [START_B, ...values, check, STOP];
+}
+
+function buildCode128Svg(text, { modulePx = 2, heightPx = 56, quietModules = 10 } = {}) {
+  const seq = buildCode128BSequence(text);
+  if (!seq) return "";
+
+  const rects = [];
+  let x = quietModules * modulePx;
+
+  for (const code of seq) {
+    const pattern = CODE128_TABLE[code];
+    if (!pattern) return "";
+
+    let isBar = true;
+    for (const d of String(pattern)) {
+      const w = Number(d) * modulePx;
+      if (isBar) {
+        rects.push(`<rect x="${x}" y="0" width="${w}" height="${heightPx}" />`);
+      }
+      x += w;
+      isBar = !isBar;
+    }
+  }
+
+  x += quietModules * modulePx;
+
+  const widthPx = Math.max(1, x);
+
+  return (
+    `<svg class="barcodeSvg" viewBox="0 0 ${widthPx} ${heightPx}" width="100%" height="${heightPx}" ` +
+    `xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Barcode">` +
+    `<rect x="0" y="0" width="${widthPx}" height="${heightPx}" fill="#fff" />` +
+    `<g fill="#000">${rects.join("")}</g>` +
+    `</svg>`
+  );
+}
+
 
 // Helper: buildShippingLabelHtml
 function buildShippingLabelHtml({ order, language }) {
@@ -691,7 +942,6 @@ function buildShippingLabelHtml({ order, language }) {
   const tr = translations[lang];
 
   const toName = escapeHtml(order?.customer?.name || "");
-  const toPhone = escapeHtml(order?.customer?.phone || "");
 
   const ship = order?.shipping || {};
   const lines = [
@@ -707,6 +957,12 @@ function buildShippingLabelHtml({ order, language }) {
   const toAddress = lines.map((l) => `<div>${escapeHtml(l)}</div>`).join("");
 
   const orderNo = escapeHtml(order?.orderNumber || order?.id || "");
+
+  const trackingRaw = String(order?.trackingNumber || "").trim();
+  const trackingText = trackingRaw.replace(/\s+/g, "").trim();
+  const barcodeSvg = trackingText
+    ? buildCode128Svg(trackingText, { modulePx: 2, heightPx: 56, quietModules: 10 })
+    : "";
 
   return `
   <div class="page">
@@ -724,7 +980,15 @@ function buildShippingLabelHtml({ order, language }) {
       <div class="muted">${escapeHtml(tr.shippingLabelShipTo)}</div>
       <div class="name">${toName || "—"}</div>
       <div class="address">${toAddress || "<div>—</div>"}</div>
-      ${toPhone ? `<div class="phone">${toPhone}</div>` : ""}
+
+      ${barcodeSvg
+        ? `
+      <div class="barcodeBlock">
+        <div class="barcodeLabel">${escapeHtml(tr.ordersTrackingNumberLabel || "Tracking #")}</div>
+        <div class="barcodeImg">${barcodeSvg}</div>
+        <div class="barcodeText">${escapeHtml(trackingText)}</div>
+      </div>`
+        : ""}
     </div>
 
     <div class="footer">
@@ -747,6 +1011,7 @@ function buildReceiptHtml({ order, language }) {
 
   const customerName = escapeHtml(order?.customer?.name || "");
   const customerPhone = escapeHtml(order?.customer?.phone || "");
+  const customerEmail = escapeHtml(order?.customer?.email || "");
   const customerNotes = escapeHtml(order?.customer?.notes || "");
 
   const ship = order?.shipping || {};
@@ -842,6 +1107,7 @@ function buildReceiptHtml({ order, language }) {
         <div class="cardTitle">${lang === "es" ? "Cliente" : "Customer"}</div>
         <div>${customerName || "—"}</div>
         ${customerPhone ? `<div>${customerPhone}</div>` : ""}
+        ${customerEmail ? `<div>${customerEmail}</div>` : ""}
         ${customerNotes ? `<div class="muted">${customerNotes}</div>` : ""}
       </div>
       <div class="card">
@@ -1462,6 +1728,7 @@ function Checkout({
 
   const name = String(draft.customer?.name || "");
   const phone = String(draft.customer?.phone || "");
+  const email = String(draft.customer?.email || "");
   const notes = String(draft.customer?.notes || "");
 
   const addressLine1 = String(draft.shipping?.addressLine1 || "");
@@ -1532,7 +1799,13 @@ function Checkout({
 
   // Validation: validateCustomerAndShipping
   function validateCustomerAndShipping() {
-    const customerOk = name.trim() && phone.trim();
+    const looksLikeEmail = (value) => {
+      const s = String(value || "").trim();
+      if (!s) return false;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    };
+
+    const customerOk = name.trim() && phone.trim() && looksLikeEmail(email);
     const shippingOk = addressLine1.trim() && city.trim();
     return Boolean(customerOk && shippingOk);
   }
@@ -1603,6 +1876,15 @@ function Checkout({
                 value={phone}
                 onChange={(e) => setDraftCustomerField("phone", e.target.value)}
                 placeholder={t.phonePlaceholder}
+                className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
+              />
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setDraftCustomerField("email", e.target.value)}
+                placeholder={t.emailPlaceholder}
                 className="w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
               />
               <div>
@@ -1985,12 +2267,16 @@ function CheckoutReview({
   onBack,
   onRemove,
   onPlaceOrder,
+  serverPublicOk,
+  onGetPayPalConfig,
+  onPayPalCreateOrder,
+  onPayPalCaptureOrder,
   notify,
   t,
   language,
 }) {
-  const cfg = normalizeCheckoutConfig(checkoutConfig);
-  const draft = normalizeCheckoutDraft(checkoutDraft);
+  const cfg = useMemo(() => normalizeCheckoutConfig(checkoutConfig), [checkoutConfig]);
+  const draft = useMemo(() => normalizeCheckoutDraft(checkoutDraft), [checkoutDraft]);
 
   const subtotal = Array.isArray(cart) ? cart.reduce((acc, it) => acc + it.price * it.qty, 0) : 0;
 
@@ -2012,18 +2298,231 @@ function CheckoutReview({
   const [message, setMessage] = useState("");
   const [submitToken, setSubmitToken] = useState(0);
 
+  const isPayPal = draft.paymentMethod === "paypal";
+
+  const paypalContainerRef = useRef(null);
+  const paypalButtonsRef = useRef(null);
+
+  const [paypalMessage, setPayPalMessage] = useState("");
+  const [paypalBusy, setPayPalBusy] = useState(false);
+
+  const buildPayPalPayload = useCallback(() => {
+    const items = (Array.isArray(cart) ? cart : [])
+      .map((it) => ({
+        productId: String(it?.id ?? "").trim(),
+        qty: Number(it?.qty) || 0,
+        name: it?.name,
+        category: it?.category,
+        personalization: it?.personalization,
+      }))
+      .filter((it) => it.productId && it.qty > 0);
+
+    const customer = {
+      name: String(draft.customer?.name || "").trim(),
+      phone: String(draft.customer?.phone || "").trim(),
+      email: String(draft.customer?.email || "").trim(),
+      notes: String(draft.customer?.notes || "").trim(),
+    };
+
+    const shipping = {
+      addressLine1: String(draft.shipping?.addressLine1 || "").trim(),
+      addressLine2: String(draft.shipping?.addressLine2 || "").trim(),
+      city: String(draft.shipping?.city || "").trim(),
+      stateRegion: String(draft.shipping?.stateRegion || "").trim(),
+      postalCode: String(draft.shipping?.postalCode || "").trim(),
+      country: String(draft.shipping?.country || "").trim(),
+    };
+
+    return { items, customer, shipping };
+  }, [cart, draft]);
+
+  const validateDraft = useCallback(() => {
+    const looksLikeEmail = (value) => {
+      const s = String(value || "").trim();
+      if (!s) return false;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    };
+
+    const customerOk =
+      String(draft?.customer?.name || "").trim() &&
+      String(draft?.customer?.phone || "").trim() &&
+      looksLikeEmail(draft?.customer?.email);
+
+    const shippingOk =
+      String(draft?.shipping?.addressLine1 || "").trim() &&
+      String(draft?.shipping?.city || "").trim();
+
+    return Boolean(customerOk && shippingOk);
+  }, [draft]);
+
   useEffect(() => {
     if (!submitToken) return;
     const timer = window.setTimeout(() => setSubmitToken(0), 2000);
     return () => window.clearTimeout(timer);
   }, [submitToken]);
 
-  // Validation: validateDraft
-  function validateDraft() {
-    const customerOk = String(draft?.customer?.name || "").trim() && String(draft?.customer?.phone || "").trim();
-    const shippingOk = String(draft?.shipping?.addressLine1 || "").trim() && String(draft?.shipping?.city || "").trim();
-    return Boolean(customerOk && shippingOk);
-  }
+  // PayPal Buttons rendering (review step)
+  useEffect(() => {
+    let cancelled = false;
+
+    const clearContainer = () => {
+      const el = paypalContainerRef.current;
+      if (el && typeof el === "object") {
+        try {
+          el.innerHTML = "";
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    (async () => {
+      clearContainer();
+      paypalButtonsRef.current = null;
+      setPayPalMessage("");
+
+      if (!isPayPal) return;
+
+      if (!serverPublicOk) {
+        setPayPalMessage(
+          language === "es"
+            ? "PayPal requiere que el Backend esté encendido."
+            : "PayPal requires the backend server to be running."
+        );
+        return;
+      }
+
+      if (!validateDraft()) return;
+      if (!draft.acceptPolicies) return;
+
+      const payload = buildPayPalPayload();
+      if (!payload.items.length) {
+        setPayPalMessage(t.emptyCart);
+        return;
+      }
+
+      if (typeof onGetPayPalConfig !== "function") {
+        setPayPalMessage(language === "es" ? "PayPal no está disponible." : "PayPal is not available.");
+        return;
+      }
+
+      let cfg = null;
+      try {
+        cfg = await onGetPayPalConfig();
+      } catch {
+        cfg = null;
+      }
+
+      const configured = Boolean(cfg && typeof cfg === "object" && cfg.configured);
+      const clientId = configured ? String(cfg.clientId || "").trim() : "";
+      const currency = configured ? String(cfg.currency || "USD").trim().toUpperCase() : "USD";
+
+      if (!configured || !clientId) {
+        setPayPalMessage(
+          language === "es"
+            ? "PayPal no está configurado en el servidor."
+            : "PayPal is not configured on the server."
+        );
+        return;
+      }
+
+      let paypal = null;
+      try {
+        paypal = await loadPayPalSdk({ clientId, currency });
+      } catch {
+        setPayPalMessage(language === "es" ? "No se pudo cargar PayPal." : "Could not load PayPal.");
+        return;
+      }
+
+      if (cancelled) return;
+
+      if (!paypal || typeof paypal.Buttons !== "function") {
+        setPayPalMessage(language === "es" ? "PayPal no está disponible." : "PayPal is not available.");
+        return;
+      }
+
+      const container = paypalContainerRef.current;
+      if (!container) return;
+      clearContainer();
+
+      const buttons = paypal.Buttons({
+        style: { layout: "vertical" },
+
+        createOrder: async () => {
+          if (typeof onPayPalCreateOrder !== "function") {
+            throw new Error("missing_create_order_handler");
+          }
+
+          const p = buildPayPalPayload();
+          const res = await onPayPalCreateOrder(p);
+          const oid = res && typeof res === "object" ? String(res.paypalOrderId || "").trim() : "";
+          if (!oid) throw new Error("missing_paypal_order_id");
+          return oid;
+        },
+
+        onApprove: async (data) => {
+          if (typeof onPayPalCaptureOrder !== "function") {
+            setPayPalMessage(language === "es" ? "No se pudo completar PayPal." : "Could not complete PayPal.");
+            return;
+          }
+
+          const oid = data && typeof data === "object" ? String(data.orderID || "").trim() : "";
+          if (!oid) {
+            setPayPalMessage(language === "es" ? "PayPal: orderID inválido." : "PayPal: invalid orderID.");
+            return;
+          }
+
+          setPayPalBusy(true);
+          setPayPalMessage("");
+
+          try {
+            const p = buildPayPalPayload();
+            await onPayPalCaptureOrder({ paypalOrderId: oid, ...p });
+          } catch {
+            setPayPalMessage(language === "es" ? "No se pudo capturar el pago." : "Could not capture payment.");
+          } finally {
+            if (!cancelled) setPayPalBusy(false);
+          }
+        },
+
+        onError: () => {
+          setPayPalMessage(language === "es" ? "Error de PayPal." : "PayPal error.");
+        },
+      });
+
+      paypalButtonsRef.current = buttons;
+
+      try {
+        await buttons.render(container);
+      } catch {
+        setPayPalMessage(language === "es" ? "No se pudo mostrar PayPal." : "Could not render PayPal.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      try {
+        const inst = paypalButtonsRef.current;
+        if (inst && typeof inst.close === "function") inst.close();
+        if (inst && typeof inst.destroy === "function") inst.destroy();
+      } catch {
+        // ignore
+      }
+      paypalButtonsRef.current = null;
+      clearContainer();
+    };
+  }, [
+    isPayPal,
+    serverPublicOk,
+    buildPayPalPayload,
+    validateDraft,
+    draft.acceptPolicies,
+    language,
+    t.emptyCart,
+    onGetPayPalConfig,
+    onPayPalCreateOrder,
+    onPayPalCaptureOrder,
+  ]);
 
   function setDraftAcceptPolicies(value) {
     if (typeof setCheckoutDraft !== "function") return;
@@ -2069,6 +2568,12 @@ function CheckoutReview({
       return;
     }
 
+    // PayPal is processed via the PayPal button (create + approve + capture).
+    if (draft.paymentMethod === "paypal") {
+      setMessage(t.payPalDisclaimer);
+      return;
+    }
+
     setSubmitToken(Date.now());
 
     if (typeof notify === "function") {
@@ -2082,6 +2587,7 @@ function CheckoutReview({
         customer: {
           name: String(draft.customer?.name || "").trim(),
           phone: String(draft.customer?.phone || "").trim(),
+          email: String(draft.customer?.email || "").trim(),
           notes: String(draft.customer?.notes || "").trim(),
         },
         shipping: {
@@ -2129,6 +2635,9 @@ function CheckoutReview({
               </div>
               <div className="mt-1 text-xs text-zinc-600">
                 {String(draft?.customer?.phone || "").trim() || "—"}
+              </div>
+              <div className="mt-1 text-xs text-zinc-600">
+                {String(draft?.customer?.email || "").trim() || "—"}
               </div>
               {String(draft?.customer?.notes || "").trim() ? (
                 <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
@@ -2207,9 +2716,41 @@ function CheckoutReview({
                 <Button variant="secondary" onClick={onBack}>
                   {t.checkoutEditDetails}
                 </Button>
-                <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
-                  {t.checkoutSubmitOrder}
-                </Button>
+
+                {!isPayPal ? (
+                  <div className="w-full">
+                    {/* Mobile: slide-to-submit */}
+                    <div className="md:hidden">
+                      <SlideToSubmit
+                        label={t.checkoutSlideToSubmit}
+                        disabledLabel={t.checkoutSubmitting}
+                        disabled={Boolean(submitToken)}
+                        onComplete={submitOrder}
+                      />
+                    </div>
+
+                    {/* Desktop: keep button */}
+                    <div className="hidden md:block">
+                      <Button variant="primary" onClick={submitOrder} disabled={Boolean(submitToken)}>
+                        {t.checkoutSubmitOrder}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    <div
+                      className={`rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl ${
+                        paypalBusy ? "pointer-events-none opacity-60" : ""
+                      }`}
+                    >
+                      <div ref={paypalContainerRef} />
+                    </div>
+
+                    {paypalMessage ? (
+                      <div className="mt-2 text-xs font-semibold text-amber-700">{paypalMessage}</div>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -2551,6 +3092,9 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                 {order?.customer?.phone ? (
                   <div className="mt-1 text-xs text-zinc-600">{order.customer.phone}</div>
                 ) : null}
+                {order?.customer?.email ? (
+                  <div className="mt-1 text-xs text-zinc-600">{order.customer.email}</div>
+                ) : null}
                 {order?.customer?.notes ? (
                   <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                     <div className="text-[11px] font-semibold text-zinc-500">{t.giftNoteLabel}</div>
@@ -2610,9 +3154,21 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 }
 
 // Page: OrderStatus
-function OrderStatus({ orders, setOrders, notify, t, language }) {
+function OrderStatus({
+  orders,
+  setOrders,
+  notify,
+  t,
+  language,
+  serverPublicOk,
+  onLookupOrderStatus,
+  onSendCancelRequest,
+}) {
   const [orderNumber, setOrderNumber] = useState("");
   const [searchedOrderNumber, setSearchedOrderNumber] = useState("");
+
+  const [serverOrder, setServerOrder] = useState(null);
+  const [busyLookup, setBusyLookup] = useState(false);
 
   const [cancelReason, setCancelReason] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -2620,13 +3176,17 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
   const normalizedQuery = String(searchedOrderNumber || "").trim().toLowerCase();
 
   const order = useMemo(() => {
-    const list = Array.isArray(orders) ? orders : [];
     if (!normalizedQuery) return null;
 
+    if (serverPublicOk) {
+      return serverOrder && typeof serverOrder === "object" ? serverOrder : null;
+    }
+
+    const list = Array.isArray(orders) ? orders : [];
     return (
       list.find((o) => String(o?.orderNumber || "").trim().toLowerCase() === normalizedQuery) || null
     );
-  }, [orders, normalizedQuery]);
+  }, [orders, normalizedQuery, serverPublicOk, serverOrder]);
 
   const status = normalizeOrderStatus(order?.status);
   const statusText = order ? orderStatusLabel(status, t) : "";
@@ -2670,15 +3230,63 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
   const canRequestCancel = Boolean(order) && isOpenOrderStatus(status) && !cancelRequested;
 
   // Handler: submitLookup
-  function submitLookup(e) {
+  async function submitLookup(e) {
     e.preventDefault();
-    setSearchedOrderNumber(orderNumber.trim());
+
+    const q = orderNumber.trim();
+    setSearchedOrderNumber(q);
+
+    if (!q) {
+      setServerOrder(null);
+      return;
+    }
+
+    if (serverPublicOk && typeof onLookupOrderStatus === "function") {
+      setBusyLookup(true);
+      try {
+        const o = await onLookupOrderStatus(q);
+        setServerOrder(o && typeof o === "object" ? o : null);
+      } finally {
+        setBusyLookup(false);
+      }
+    }
   }
 
   // Handler: sendCancelRequest
-  function sendCancelRequest() {
+  async function sendCancelRequest() {
     const reason = cancelReason.trim();
-    if (!order || !reason || typeof setOrders !== "function") return;
+    if (!order || !reason) return;
+
+    // Prefer backend cancel request so it syncs across devices.
+    if (serverPublicOk && typeof onSendCancelRequest === "function") {
+      try {
+        await onSendCancelRequest({ orderNumber: String(order?.orderNumber || "").trim(), reason });
+
+        // Update the local view immediately.
+        setServerOrder((prev) =>
+          prev && typeof prev === "object"
+            ? {
+                ...prev,
+                customerCancelRequestReason: reason,
+                customerCancelRequestedAt: Date.now(),
+                updatedAt: Date.now(),
+              }
+            : prev
+        );
+
+        setCancelReason("");
+        setShowCancelModal(false);
+
+        if (typeof notify === "function") {
+          notify(t.orderStatusCancelRequestSent, "success");
+        }
+        return;
+      } catch {
+        // fall back to local-only below
+      }
+    }
+
+    if (typeof setOrders !== "function") return;
 
     setOrders((prev) => {
       const base = Array.isArray(prev) ? prev : [];
@@ -2718,7 +3326,7 @@ function OrderStatus({ orders, setOrders, notify, t, language }) {
               className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
             />
           </div>
-          <Button variant="primary" className="w-full">
+          <Button variant="primary" className="w-full" disabled={busyLookup}>
             {t.orderStatusLookup}
           </Button>
         </form>
@@ -5744,6 +6352,13 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 .name { margin-top: 6px; font-size: 22px; font-weight: 800; }
 .address { margin-top: 10px; font-size: 18px; line-height: 1.2; font-weight: 700; }
 .phone { margin-top: 10px; font-size: 16px; font-weight: 700; }
+
+.barcodeBlock { margin-top: 14px; padding-top: 10px; border-top: 1px solid #000; }
+.barcodeLabel { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; }
+.barcodeImg { margin-top: 6px; }
+.barcodeSvg { display: block; width: 100%; height: auto; }
+.barcodeText { margin-top: 6px; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: 0.08em; }
+
 .footer { position: absolute; left: 0.25in; right: 0.25in; bottom: 0.25in; }
 .small { font-size: 11px; }
 `;
@@ -6022,6 +6637,9 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                           {o?.customer?.phone ? (
                             <div className="mt-1 text-xs text-zinc-600">{o.customer.phone}</div>
                           ) : null}
+                          {o?.customer?.email ? (
+                            <div className="mt-1 text-xs text-zinc-600">{o.customer.email}</div>
+                          ) : null}
                           {o?.customer?.notes ? (
                             <div className="mt-2 text-xs text-zinc-600">{o.customer.notes}</div>
                           ) : null}
@@ -6166,67 +6784,152 @@ export default function App() {
 
   const t = translations[language];
 
-  const [adminUsers, setAdminUsers] = useState(() => {
-    if (typeof window === "undefined") return [];
+  const API_BASE_URL = useMemo(() => {
+    if (typeof window === "undefined") return "";
+
+    const envUrl = String(import.meta?.env?.VITE_API_URL || "").trim();
+    if (envUrl) return envUrl.replace(/\/+$/, "");
+
+    // Dev default: assume backend is running on the same host at :8000
+    const proto = window.location.protocol || "http:";
+    const host = window.location.hostname;
+    return `${proto}//${host}:8000`;
+  }, []);
+
+  const ADMIN_TOKEN_STORAGE_KEY = "gbf.adminToken.v1";
+
+  const [adminToken, setAdminToken] = useState(() => {
+    if (typeof window === "undefined") return "";
     try {
-      const raw = window.localStorage.getItem(ADMIN_USERS_STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return normalizeAdminUsers(parsed);
+      return String(window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "").trim();
     } catch {
-      return [];
+      return "";
     }
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(ADMIN_USERS_STORAGE_KEY, JSON.stringify(normalizeAdminUsers(adminUsers)));
-    } catch {
-      // ignore
-    }
-  }, [adminUsers]);
-
-  const [adminSession, setAdminSession] = useState(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = window.sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : null;
-      if (!parsed || typeof parsed !== "object") return null;
-
-      const userId = String(parsed.userId || "").trim();
-      const username = String(parsed.username || "").trim();
-      const createdAt = typeof parsed.createdAt === "number" ? parsed.createdAt : null;
-
-      if (!userId || !username) return null;
-      return { userId, username, createdAt };
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (!adminSession) {
-        window.sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
+      if (!adminToken) {
+        window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
         return;
       }
-      window.sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, JSON.stringify(adminSession));
+      window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, adminToken);
     } catch {
       // ignore
     }
-  }, [adminSession]);
+  }, [adminToken]);
+
+  const [currentAdminUser, setCurrentAdminUser] = useState(null);
+  const [hasAdmins, setHasAdmins] = useState(null);
+  const [adminUsers, setAdminUsers] = useState([]);
+
+  const apiJson = useCallback(
+    async (path, { method = "GET", body, token } = {}) => {
+      const base = String(API_BASE_URL || "").replace(/\/+$/, "");
+      if (!base) throw new Error("missing_api_base_url");
+
+      const url = `${base}${String(path || "").startsWith("/") ? "" : "/"}${String(path || "")}`;
+
+      const headers = { Accept: "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      if (body !== undefined) headers["Content-Type"] = "application/json";
+
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        const msg =
+          data && typeof data === "object" && "detail" in data ? String(data.detail) : `http_${res.status}`;
+        const err = new Error(msg);
+        err.status = res.status;
+        throw err;
+      }
+
+      return data;
+    },
+    [API_BASE_URL]
+  );
+
+  // ---- Backend state sync (cross-device) ----
+  const [serverRevision, setServerRevision] = useState(0);
+  const serverRevisionRef = useRef(0);
+  useEffect(() => {
+    serverRevisionRef.current = Number(serverRevision) || 0;
+  }, [serverRevision]);
+
+  const [serverPublicOk, setServerPublicOk] = useState(false);
+  const [serverAdminOk, setServerAdminOk] = useState(false);
+
+  // When true, we're applying server state into React state; don't push patches back.
+  const serverHydratingRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await apiJson("/auth/has-admins");
+        if (cancelled) return;
+        setHasAdmins(Boolean(data?.hasAdmins));
+      } catch {
+        if (cancelled) return;
+        setHasAdmins(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiJson]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (!adminToken) {
+        setCurrentAdminUser(null);
+        return;
+      }
+
+      try {
+        const me = await apiJson("/auth/me", { token: adminToken });
+        if (cancelled) return;
+        setCurrentAdminUser(me && typeof me === "object" ? me : null);
+      } catch (err) {
+        if (cancelled) return;
+
+        // Only clear the saved token when the server explicitly rejects it.
+        // For transient network/server errors, keep the current in-memory auth state
+        // to avoid bouncing back to the login screen right after a successful login.
+        if (err && typeof err === "object" && err.status === 401) {
+          setAdminToken("");
+          setCurrentAdminUser(null);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [adminToken, apiJson]);
 
   const [afterLoginRoute, setAfterLoginRoute] = useState("admin");
 
   // Admin auth gate: require login to access admin-only pages.
   const ADMIN_AUTH_ENABLED = true;
 
-  const hasAdmins = Array.isArray(adminUsers) && adminUsers.length > 0;
-  const currentAdminUser = adminSession?.userId
-    ? adminUsers.find((u) => u?.id === adminSession.userId) || null
-    : null;
-  const isAdminAuthed = Boolean(currentAdminUser);
+  const isAdminAuthed = Boolean(adminToken && currentAdminUser);
 
   const prefersReducedMotion = () => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
@@ -6304,83 +7007,104 @@ export default function App() {
     });
   };
 
-  async function buildAdminUserRecord({ name, username, password }) {
-    const n = String(name || "").trim();
-    const u = String(username || "").trim();
-    const p = String(password || "");
-    if (!n || !u || !p.trim()) return null;
+  async function refreshAdminUsers() {
+    if (!adminToken) {
+      setAdminUsers([]);
+      return;
+    }
 
-    const id = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
-    const salt = typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
-
-    const pw = await buildPasswordRecord(p, salt);
-
-    return {
-      id,
-      name: n,
-      username: u,
-      algo: pw.algo,
-      salt: pw.salt,
-      hash: pw.hash,
-      createdAt: Date.now(),
-    };
+    try {
+      const rows = await apiJson("/admin-users", { token: adminToken });
+      setAdminUsers(Array.isArray(rows) ? rows : []);
+    } catch {
+      setAdminUsers([]);
+    }
   }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (!adminToken) {
+        if (cancelled) return;
+        setAdminUsers([]);
+        return;
+      }
+
+      try {
+        const rows = await apiJson("/admin-users", { token: adminToken });
+        if (cancelled) return;
+        setAdminUsers(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (cancelled) return;
+        setAdminUsers([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [adminToken, apiJson]);
 
   async function createAdminUser({ name, username, password }) {
     const n = String(name || "").trim();
     const u = String(username || "").trim();
     const p = String(password || "");
     if (!n || !u || !p.trim()) return false;
+    if (!adminToken) return false;
 
-    const exists = (Array.isArray(adminUsers) ? adminUsers : []).some(
-      (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
-    );
-    if (exists) return false;
-
-    const user = await buildAdminUserRecord({ name: n, username: u, password: p });
-    if (!user) return false;
-
-    setAdminUsers((prev) => {
-      const base = normalizeAdminUsers(prev);
-      return [...base, user];
-    });
-
-    return true;
+    try {
+      await apiJson("/admin-users", {
+        method: "POST",
+        token: adminToken,
+        body: { name: n, username: u, password: p },
+      });
+      await refreshAdminUsers();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function updateAdminUser({ userId, name }) {
     const id = String(userId || "").trim();
     const n = String(name || "").trim();
     if (!id || !n) return false;
+    if (!adminToken) return false;
 
-    setAdminUsers((prev) => {
-      const base = normalizeAdminUsers(prev);
-      return base.map((u) => (u.id === id ? { ...u, name: n } : u));
-    });
-
-    return true;
+    try {
+      await apiJson(`/admin-users/${id}`, {
+        method: "PATCH",
+        token: adminToken,
+        body: { name: n },
+      });
+      await refreshAdminUsers();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function deleteAdminUser({ userId }) {
     const id = String(userId || "").trim();
     if (!id) return false;
+    if (!adminToken) return false;
 
-    const base = Array.isArray(adminUsers) ? adminUsers : [];
-    if (base.length <= 1) return false;
+    try {
+      await apiJson(`/admin-users/${id}`, { method: "DELETE", token: adminToken });
+      await refreshAdminUsers();
 
-    runViewTransition(() => {
-      setAdminUsers((prev) => {
-        const rows = normalizeAdminUsers(prev);
-        return rows.filter((u) => u.id !== id);
-      });
-
-      if (adminSession?.userId === id) {
-        setAdminSession(null);
+      // If the current user was deleted, force logout.
+      if (String(currentAdminUser?.id || "") === id) {
+        setAdminToken("");
+        setCurrentAdminUser(null);
         setRoute("home");
       }
-    });
 
-    return true;
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function loginAdmin({ username, password }) {
@@ -6388,53 +7112,126 @@ export default function App() {
     const p = String(password || "");
     if (!u || !p.trim()) return false;
 
-    const user = (Array.isArray(adminUsers) ? adminUsers : []).find(
-      (x) => String(x?.username || "").trim().toLowerCase() === u.toLowerCase()
-    );
-    if (!user) return false;
-
-    const ok = await verifyPassword(user, p);
-    if (!ok) return false;
-
-    const nextRoute =
-      typeof afterLoginRoute === "string" &&
-      afterLoginRoute &&
-      ADMIN_PROTECTED_ROUTES.has(afterLoginRoute)
-        ? afterLoginRoute
-        : "admin";
-
-    runViewTransition(() => {
-      setAdminSession({ userId: user.id, username: user.username, createdAt: Date.now() });
-      setRoute(nextRoute);
-    });
-
-    return true;
-  }
-
-  async function createFirstAdmin({ name, username, password }) {
-    if (hasAdmins) return false;
-
-    const user = await buildAdminUserRecord({ name, username, password });
-    if (!user) return false;
-
-    runViewTransition(() => {
-      setAdminUsers((prev) => {
-        const base = normalizeAdminUsers(prev);
-        return [...base, user];
+    try {
+      const data = await apiJson("/auth/login", {
+        method: "POST",
+        body: { username: u, password: p },
       });
 
-      setAdminSession({ userId: user.id, username: user.username, createdAt: Date.now() });
-      setRoute("admin");
-    });
+      const token = String(data?.token || "").trim();
+      const user = data?.user && typeof data.user === "object" ? data.user : null;
+      if (!token || !user) return false;
 
-    return true;
+      const nextRoute =
+        typeof afterLoginRoute === "string" &&
+        afterLoginRoute &&
+        ADMIN_PROTECTED_ROUTES.has(afterLoginRoute)
+          ? afterLoginRoute
+          : "admin";
+
+      runViewTransition(() => {
+        setAdminToken(token);
+        setCurrentAdminUser(user);
+        setRoute(nextRoute);
+      });
+
+      await refreshAdminUsers();
+
+      // Load full admin state (and auto-migrate this device's current local data if the server is empty).
+      try {
+        const adminState = await apiJson("/state/admin", { token });
+        setServerAdminOk(true);
+        setServerRevision(Number(adminState?.revision) || 0);
+
+        const serverEmpty = Boolean(adminState?.empty);
+
+        const localHasData =
+          (Array.isArray(products) && products.length > 0) ||
+          (Array.isArray(categories) && categories.length > 0) ||
+          (orders && Array.isArray(orders) && orders.length > 0);
+
+        if (serverEmpty && localHasData) {
+          // Carry over the order counter so backend order numbers continue from the current series.
+          let orderCounter = 0;
+          try {
+            const raw = window.localStorage.getItem(ORDER_COUNTER_STORAGE_KEY);
+            const n = Number(raw);
+            orderCounter = Number.isFinite(n) && n > 0 ? n : 0;
+          } catch {
+            orderCounter = 0;
+          }
+
+          const patch = {
+            orderCounter,
+            heroConfig,
+            categories,
+            products,
+            inventory,
+            productCosts,
+            orders,
+            sales,
+            checkoutConfig,
+            policiesConfig,
+            newsletterEmails,
+            reviewsByProduct,
+            activityLog,
+          };
+
+          await apiJson("/state/admin", {
+            method: "PUT",
+            token,
+            body: { replace: true, patch },
+          });
+
+          const hydrated = await apiJson("/state/admin", { token });
+          setServerRevision(Number(hydrated?.revision) || 0);
+          if (hydrated && typeof hydrated === "object" && hydrated.state && typeof hydrated.state === "object") {
+            applyServerStateSafely(hydrated.state);
+          }
+        } else {
+          if (adminState && typeof adminState === "object" && adminState.state && typeof adminState.state === "object") {
+            applyServerStateSafely(adminState.state);
+          }
+        }
+      } catch {
+        setServerAdminOk(false);
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  function logoutAdmin() {
+
+  async function logoutAdmin() {
+    const token = String(adminToken || "").trim();
+
     runViewTransition(() => {
-      setAdminSession(null);
+      setAdminToken("");
+      setCurrentAdminUser(null);
+      setAdminUsers([]);
+      setServerAdminOk(false);
       setRoute("home");
     });
+
+    try {
+      pendingAdminPatchRef.current = {};
+      if (pendingAdminPatchTimerRef.current) {
+        window.clearTimeout(pendingAdminPatchTimerRef.current);
+        pendingAdminPatchTimerRef.current = null;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (!token) return;
+
+    try {
+      await apiJson("/auth/logout", { method: "POST", token });
+    } catch {
+      // ignore
+    }
   }
 
   useEffect(() => {
@@ -6569,6 +7366,23 @@ export default function App() {
       messageEs: `Reseña añadida (${safeRating}/5): ${id}`,
       messageEn: `Review added (${safeRating}/5): ${id}`,
     });
+
+    // Persist to backend for cross-device sync.
+    if (serverPublicOk) {
+      apiJson("/public/reviews", {
+        method: "POST",
+        body: { productId: id, rating: safeRating, name: safeName, text: safeText },
+      })
+        .then((res) => {
+          if (res && typeof res === "object") {
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    }
   }
 
   const [newsletterEmails, setNewsletterEmails] = useState(() => {
@@ -6698,6 +7512,20 @@ export default function App() {
       messageEs: `Newsletter signup: ${value}`,
       messageEn: `Newsletter signup: ${value}`,
     });
+
+    // Persist to backend for cross-device sync.
+    if (serverPublicOk) {
+      apiJson("/public/newsletter", { method: "POST", body: { email: value } })
+        .then((res) => {
+          if (res && typeof res === "object") {
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    }
   }
 
   const [heroConfig, setHeroConfig] = useState(() => {
@@ -6930,6 +7758,244 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [cart, setCart] = useState([]);
 
+  const isAdminRoute = ADMIN_PROTECTED_ROUTES.has(route);
+
+  const applyServerStateObject = useCallback((st) => {
+    if (!st || typeof st !== "object") return;
+
+    if ("heroConfig" in st && st.heroConfig && typeof st.heroConfig === "object") {
+      setHeroConfig(normalizeHeroConfig(st.heroConfig));
+    }
+    if ("categories" in st && Array.isArray(st.categories)) {
+      setCategories(normalizeCategories(st.categories));
+    }
+    if ("products" in st && Array.isArray(st.products)) {
+      setProducts(normalizeProducts(st.products));
+    }
+    if ("inventory" in st && st.inventory && typeof st.inventory === "object") {
+      setInventory(st.inventory);
+    }
+    if ("checkoutConfig" in st && st.checkoutConfig && typeof st.checkoutConfig === "object") {
+      setCheckoutConfig(normalizeCheckoutConfig(st.checkoutConfig));
+    }
+    if ("policiesConfig" in st && st.policiesConfig && typeof st.policiesConfig === "object") {
+      setPoliciesConfig(normalizePoliciesConfig(st.policiesConfig));
+    }
+    if ("reviewsByProduct" in st && st.reviewsByProduct && typeof st.reviewsByProduct === "object") {
+      setReviewsByProduct(st.reviewsByProduct);
+    }
+
+    // Admin-only blocks
+    if ("productCosts" in st && st.productCosts && typeof st.productCosts === "object") {
+      setProductCosts(st.productCosts);
+    }
+    if ("orders" in st && Array.isArray(st.orders)) {
+      setOrders(st.orders);
+    }
+    if ("sales" in st && Array.isArray(st.sales)) {
+      setSales(st.sales);
+    }
+    if ("newsletterEmails" in st && Array.isArray(st.newsletterEmails)) {
+      setNewsletterEmails(st.newsletterEmails.map((x) => String(x)));
+    }
+    if ("activityLog" in st && Array.isArray(st.activityLog)) {
+      setActivityLog(st.activityLog);
+    }
+  }, []);
+
+  const applyServerStateSafely = useCallback(
+    (st) => {
+      serverHydratingRef.current = true;
+      try {
+        applyServerStateObject(st);
+      } finally {
+        serverHydratingRef.current = false;
+      }
+    },
+    [applyServerStateObject]
+  );
+
+  // Initial public state load (catalog/configs/hero/inventory) from backend
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await apiJson("/state/public");
+        if (cancelled) return;
+
+        setServerPublicOk(true);
+        setServerRevision(Number(data?.revision) || 0);
+
+        if (!data || typeof data !== "object" || data.unchanged) return;
+        applyServerStateSafely(data);
+      } catch {
+        if (cancelled) return;
+        setServerPublicOk(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiJson, applyServerStateSafely]);
+
+  // Poll public state for cross-device updates
+  useEffect(() => {
+    if (!serverPublicOk) return;
+
+    let stopped = false;
+    const id = window.setInterval(() => {
+      (async () => {
+        try {
+          const rev = serverRevisionRef.current;
+          const data = await apiJson(`/state/public?ifRevision=${encodeURIComponent(String(rev))}`);
+          if (stopped) return;
+
+          setServerPublicOk(true);
+
+          if (!data || typeof data !== "object" || data.unchanged) return;
+          setServerRevision(Number(data?.revision) || 0);
+          applyServerStateSafely(data);
+        } catch {
+          if (stopped) return;
+          setServerPublicOk(false);
+        }
+      })();
+    }, 4000);
+
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [serverPublicOk, apiJson, applyServerStateSafely]);
+
+  // Poll admin state when logged in and on admin routes (orders/costs/etc.)
+  useEffect(() => {
+    if (!isAdminAuthed || !isAdminRoute || !adminToken) return;
+
+    let stopped = false;
+    const id = window.setInterval(() => {
+      (async () => {
+        try {
+          const rev = serverRevisionRef.current;
+          const data = await apiJson(`/state/admin?ifRevision=${encodeURIComponent(String(rev))}`, {
+            token: adminToken,
+          });
+          if (stopped) return;
+
+          setServerAdminOk(true);
+
+          if (!data || typeof data !== "object" || data.unchanged) return;
+
+          const nextRev = Number(data?.revision) || 0;
+          setServerRevision(nextRev);
+
+          const st = data?.state;
+          if (st && typeof st === "object") {
+            applyServerStateSafely(st);
+          }
+        } catch {
+          if (stopped) return;
+          setServerAdminOk(false);
+        }
+      })();
+    }, 3500);
+
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [isAdminAuthed, isAdminRoute, adminToken, apiJson, applyServerStateSafely]);
+
+  // Debounced admin patch save (only for admin UI changes)
+  const pendingAdminPatchRef = useRef({});
+  const pendingAdminPatchTimerRef = useRef(null);
+
+  const scheduleAdminPatch = useCallback(
+    (patch) => {
+      if (!isAdminAuthed || !adminToken) return;
+      if (!serverAdminOk) return;
+      if (!patch || typeof patch !== "object") return;
+
+      // Merge into a single pending patch
+      pendingAdminPatchRef.current = { ...pendingAdminPatchRef.current, ...patch };
+
+      if (pendingAdminPatchTimerRef.current) {
+        window.clearTimeout(pendingAdminPatchTimerRef.current);
+      }
+
+      pendingAdminPatchTimerRef.current = window.setTimeout(async () => {
+        const toSend = pendingAdminPatchRef.current;
+        pendingAdminPatchRef.current = {};
+
+        if (!toSend || typeof toSend !== "object" || Object.keys(toSend).length === 0) return;
+        if (serverHydratingRef.current) return;
+
+        try {
+          const res = await apiJson("/state/admin", {
+            method: "PUT",
+            token: adminToken,
+            body: {
+              replace: false,
+              expectedRevision: serverRevisionRef.current,
+              patch: toSend,
+            },
+          });
+
+          setServerAdminOk(true);
+          if (res && typeof res === "object") {
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+          }
+        } catch (err) {
+          // Conflict or offline; polling will reconcile.
+          if (err && typeof err === "object" && err.status === 409) {
+            setServerAdminOk(true);
+          }
+        }
+      }, 700);
+    },
+    [isAdminAuthed, adminToken, serverAdminOk, apiJson]
+  );
+
+  // Admin-side saves (route-scoped to avoid overwriting unrelated sections)
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_homepage" && route !== "admin") return;
+    scheduleAdminPatch({ heroConfig });
+  }, [heroConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_products" && route !== "admin") return;
+    scheduleAdminPatch({ categories, products });
+  }, [categories, products, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_inventory") return;
+    scheduleAdminPatch({ inventory, productCosts });
+  }, [inventory, productCosts, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_checkout") return;
+    scheduleAdminPatch({ checkoutConfig });
+  }, [checkoutConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_policies") return;
+    scheduleAdminPatch({ policiesConfig });
+  }, [policiesConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_orders") return;
+    scheduleAdminPatch({ orders });
+  }, [orders, isAdminAuthed, route, scheduleAdminPatch]);
+
   const cartCount = cart.reduce((acc, it) => acc + it.qty, 0);
 
   const confirmationOrder = useMemo(() => {
@@ -7000,7 +8066,7 @@ export default function App() {
     setCart((prev) => prev.filter((x) => x.key !== key));
   }
   // placeOrder
-  function placeOrder({
+  async function placeOrder({
     customer,
     shipping,
     paymentMethod,
@@ -7011,15 +8077,79 @@ export default function App() {
   }) {
     if (!Array.isArray(cart) || cart.length === 0) return null;
 
+    // PayPal is handled via /paypal/* (create + capture) so we never create unpaid PayPal orders.
+    if (String(paymentMethod || "").toLowerCase() === "paypal") {
+      return null;
+    }
+
+    // Prefer backend as source of truth for cross-device sync.
+    if (serverPublicOk) {
+      try {
+        const items = cart
+          .map((it) => ({
+            productId: String(it?.id ?? "").trim(),
+            qty: Number(it?.qty) || 0,
+            unitPrice: Number(it?.price) || 0,
+            name: it?.name,
+            category: it?.category,
+            personalization: it?.personalization,
+          }))
+          .filter((it) => it.productId && it.qty > 0);
+
+        if (items.length) {
+          const res = await apiJson("/checkout/place-order", {
+            method: "POST",
+            body: {
+              items,
+              customer,
+              shipping,
+              paymentMethod,
+              taxRatePct,
+              taxStateRatePct,
+              taxMunicipalRatePct,
+              shippingFee,
+            },
+          });
+
+          const order = res && typeof res === "object" ? res.order : null;
+
+          if (order && typeof order === "object") {
+            // Apply updated server state subsets
+            if (Array.isArray(res?.orders)) setOrders(res.orders);
+            if (res?.inventory && typeof res.inventory === "object") setInventory(res.inventory);
+            if (Array.isArray(res?.sales)) setSales(res.sales);
+            if (Array.isArray(res?.newsletterEmails)) setNewsletterEmails(res.newsletterEmails);
+
+            const nextRev = Number(res?.revision);
+            if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+
+            setCart([]);
+            setCheckoutDraft(buildDefaultCheckoutDraft());
+
+            runViewTransition(() => {
+              setLastOrderId(order.id);
+              setRoute("order_confirmation");
+            });
+
+            pushToast(t.orderConfirmationToastOrderSent, "success");
+
+            return { orderId: order.id, orderNumber: order.orderNumber || order.id };
+          }
+        }
+      } catch {
+        // Fall back to local-only behavior.
+      }
+    }
+
     const createdAt = Date.now();
-    const orderId = crypto.randomUUID();
+    const orderId = safeUUID("order");
     const orderNumber = getNextOrderNumber();
 
     const nextPaymentMethod =
       paymentMethod === "paypal" || paymentMethod === "whatsapp" ? "paypal" : "card";
 
     const orderItems = cart.map((it) => ({
-      id: crypto.randomUUID(),
+      id: safeUUID("order_item"),
       productId: String(it.id),
       qty: Number(it.qty) || 0,
       unitPrice: Number(it.price) || 0,
@@ -7101,7 +8231,7 @@ export default function App() {
       const unitCost = Number(productCosts?.[it.productId] ?? 0) || 0;
 
       return {
-        id: crypto.randomUUID(),
+        id: safeUUID("sale_item"),
         createdAt,
         orderId,
         orderNumber,
@@ -7116,6 +8246,36 @@ export default function App() {
         shipping,
       };
     });
+
+    // Capture email for order updates + promotions (saved locally)
+    {
+      const email = String(customer?.email || "")
+        .trim()
+        .toLowerCase();
+
+      const looksLikeEmail = (value) => {
+        const s = String(value || "").trim();
+        if (!s) return false;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+      };
+
+      if (looksLikeEmail(email)) {
+        setNewsletterEmails((prev) => {
+          const base = Array.isArray(prev)
+            ? prev.map((x) => String(x).trim().toLowerCase())
+            : [];
+
+          const next = base.includes(email) ? base : [email, ...base];
+          return next.slice(0, 2000);
+        });
+
+        logActivity({
+          kind: "newsletter",
+          messageEs: `Email guardado desde checkout: ${email}`,
+          messageEn: `Email saved from checkout: ${email}`,
+        });
+      }
+    }
 
     setSales((prev) => {
       const base = Array.isArray(prev) ? prev : [];
@@ -7144,6 +8304,134 @@ export default function App() {
     pushToast(t.orderConfirmationToastOrderSent, "success");
 
     return { orderId, orderNumber };
+  }
+
+  const runViewTransitionRef = useRef(runViewTransition);
+  runViewTransitionRef.current = runViewTransition;
+
+  const pushToastRef = useRef(pushToast);
+  pushToastRef.current = pushToast;
+
+  const getPayPalConfig = useCallback(async () => {
+    return apiJson("/paypal/config");
+  }, [apiJson]);
+
+  const createPayPalOrder = useCallback(
+    async ({ items, customer, shipping }) => {
+      if (!serverPublicOk) throw new Error("server_offline");
+
+      return apiJson("/paypal/create-order", {
+        method: "POST",
+        body: {
+          items,
+          customer,
+          shipping,
+        },
+      });
+    },
+    [apiJson, serverPublicOk]
+  );
+
+  const capturePayPalOrderAndFinalize = useCallback(
+    async ({ paypalOrderId, items, customer, shipping }) => {
+      if (!serverPublicOk) throw new Error("server_offline");
+
+      const res = await apiJson("/paypal/capture-order", {
+        method: "POST",
+        body: {
+          paypalOrderId,
+          items,
+          customer,
+          shipping,
+        },
+      });
+
+      const order = res && typeof res === "object" ? res.order : null;
+
+      if (order && typeof order === "object") {
+        if (Array.isArray(res?.orders)) setOrders(res.orders);
+        if (res?.inventory && typeof res.inventory === "object") setInventory(res.inventory);
+        if (Array.isArray(res?.sales)) setSales(res.sales);
+        if (Array.isArray(res?.newsletterEmails)) setNewsletterEmails(res.newsletterEmails);
+
+        const nextRev = Number(res?.revision);
+        if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+
+        setCart([]);
+        setCheckoutDraft(buildDefaultCheckoutDraft());
+
+        const vt = runViewTransitionRef.current;
+        if (typeof vt === "function") {
+          vt(() => {
+            setLastOrderId(order.id);
+            setRoute("order_confirmation");
+          });
+        } else {
+          setLastOrderId(order.id);
+          setRoute("order_confirmation");
+        }
+
+        const toast = pushToastRef.current;
+        if (typeof toast === "function") {
+          toast(t.orderConfirmationToastOrderSent, "success");
+        }
+
+        return { orderId: order.id, orderNumber: order.orderNumber || order.id };
+      }
+
+      return null;
+    },
+    [
+      apiJson,
+      serverPublicOk,
+      t.orderConfirmationToastOrderSent,
+      setOrders,
+      setInventory,
+      setSales,
+      setNewsletterEmails,
+      setServerRevision,
+      setCart,
+      setCheckoutDraft,
+      setLastOrderId,
+      setRoute,
+    ]
+  );
+
+  async function lookupOrderStatusByNumber(orderNumber) {
+    const q = String(orderNumber || "").trim();
+    if (!q) return null;
+
+    try {
+      const data = await apiJson(`/public/order-status?orderNumber=${encodeURIComponent(q)}`);
+      if (data && typeof data === "object" && data.found && data.order && typeof data.order === "object") {
+        return data.order;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function sendOrderCancelRequest({ orderNumber, reason }) {
+    const on = String(orderNumber || "").trim();
+    const rsn = String(reason || "").trim();
+    if (!on || !rsn) return false;
+
+    try {
+      const res = await apiJson("/public/order-cancel-request", {
+        method: "POST",
+        body: { orderNumber: on, reason: rsn },
+      });
+
+      if (res && typeof res === "object") {
+        const nextRev = Number(res?.revision);
+        if (Number.isFinite(nextRev)) setServerRevision(nextRev);
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   const renderRoutedContent = (r) => {
@@ -7266,6 +8554,10 @@ export default function App() {
             onBack={() => navigate("checkout")}
             onRemove={removeFromCart}
             onPlaceOrder={placeOrder}
+            serverPublicOk={serverPublicOk}
+            onGetPayPalConfig={getPayPalConfig}
+            onPayPalCreateOrder={createPayPalOrder}
+            onPayPalCaptureOrder={capturePayPalOrderAndFinalize}
             notify={pushToast}
             t={t}
             language={language}
@@ -7290,6 +8582,9 @@ export default function App() {
             notify={pushToast}
             t={t}
             language={language}
+            serverPublicOk={serverPublicOk}
+            onLookupOrderStatus={lookupOrderStatusByNumber}
+            onSendCancelRequest={sendOrderCancelRequest}
           />
         ) : null}
 
@@ -7314,7 +8609,6 @@ export default function App() {
             language={language}
             hasAdmins={hasAdmins}
             onLogin={loginAdmin}
-            onCreateFirstAdmin={createFirstAdmin}
             onGoHome={() => navigate("home")}
           />
         ) : null}
@@ -7338,7 +8632,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7390,7 +8683,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7442,7 +8734,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7467,7 +8758,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7489,7 +8779,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7511,7 +8800,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7533,7 +8821,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7555,7 +8842,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )
@@ -7578,7 +8864,6 @@ export default function App() {
               language={language}
               hasAdmins={hasAdmins}
               onLogin={loginAdmin}
-              onCreateFirstAdmin={createFirstAdmin}
               onGoHome={() => navigate("home")}
             />
           )

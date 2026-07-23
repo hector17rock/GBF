@@ -39,6 +39,7 @@ export function buildDefaultCheckoutDraft() {
     customer: {
       name: "",
       phone: "",
+      email: "",
       notes: "",
     },
     shipping: {

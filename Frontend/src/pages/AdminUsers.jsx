@@ -9,6 +9,7 @@ export default function AdminUsers({
   onCreateUser,
   onUpdateUser,
   onDeleteUser,
+  onExportAdminUsersCode,
   onBack,
   onLogout,
 }) {
@@ -21,6 +22,9 @@ export default function AdminUsers({
 
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState("");
+
+  const [transferCode, setTransferCode] = useState("");
+  const [transferMsg, setTransferMsg] = useState("");
 
   const users = Array.isArray(adminUsers) ? adminUsers : [];
 
@@ -130,6 +134,51 @@ export default function AdminUsers({
     }
   }
 
+  function generateTransferCode() {
+    setTransferMsg("");
+    if (typeof onExportAdminUsersCode !== "function") return;
+
+    const code = String(onExportAdminUsersCode() || "").trim();
+    setTransferCode(code);
+
+    if (!code) {
+      setTransferMsg(
+        t?.adminTransferEmpty ||
+          (language === "es" ? "No hay admins para exportar." : "No admins to export.")
+      );
+    }
+  }
+
+  async function copyTransferCode() {
+    setTransferMsg("");
+
+    const code = String(transferCode || "").trim();
+    if (!code) {
+      generateTransferCode();
+      return;
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+        setTransferMsg(
+          t?.adminTransferCopied ||
+            (language === "es" ? "Código copiado." : "Code copied.")
+        );
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    setTransferMsg(
+      t?.adminTransferCopyHint ||
+        (language === "es"
+          ? "Copia el código manualmente (selecciona y copia)."
+          : "Copy the code manually (select and copy).")
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
@@ -211,6 +260,35 @@ export default function AdminUsers({
 
           <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-extrabold text-zinc-900">{t.adminUsersListTitle}</div>
+
+            {typeof onExportAdminUsersCode === "function" ? (
+              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4">
+                <div className="text-xs font-semibold text-zinc-600">{t.adminTransferTitle}</div>
+                <div className="mt-1 text-xs leading-5 text-zinc-500">{t.adminTransferSubtitle}</div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button variant="secondary" type="button" onClick={generateTransferCode}>
+                    {t.adminTransferGenerate}
+                  </Button>
+                  <Button variant="secondary" type="button" onClick={copyTransferCode}>
+                    {t.adminTransferCopy}
+                  </Button>
+                </div>
+
+                {transferMsg ? (
+                  <div className="mt-2 text-xs font-semibold text-amber-700">{transferMsg}</div>
+                ) : null}
+
+                {transferCode ? (
+                  <textarea
+                    value={transferCode}
+                    readOnly
+                    rows={4}
+                    className="mt-3 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-xs leading-5 text-zinc-700 outline-none"
+                  />
+                ) : null}
+              </div>
+            ) : null}
 
             {!users.length ? (
               <div className="mt-3 text-sm text-zinc-600">{t.adminUsersEmpty}</div>

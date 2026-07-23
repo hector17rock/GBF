@@ -189,10 +189,11 @@ export const translations = {
       "El IVU y el envío se calculan automáticamente.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pago con tarjeta (Stripe) — demo frontend, sin backend todavía.",
+    checkoutSubtitle: "Pago con PayPal (funcional). Tarjeta (Stripe) próximamente.",
     yourDetails: "Tus datos",
     namePlaceholder: "Nombre",
     phonePlaceholder: "Teléfono",
+    emailPlaceholder: "Email",
     notesPlaceholder: "Notas (ej: para regalo, fecha, etc.)",
     giftNoteLabel: "Mensaje para regalo (opcional)",
     giftNotePlaceholder: "Escribe un mensaje corto para la tarjeta o el empaque...",
@@ -200,12 +201,12 @@ export const translations = {
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
-      "Pronto: pagos con tarjeta (Stripe) y PayPal. Demo UI por ahora.",
+      "PayPal disponible. Tarjeta (Stripe) próximamente.",
     paymentMethod: "Método de pago",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
     payByCard: "Tarjeta",
-    payPalDisclaimer: "PayPal (próximamente) — demo frontend.",
+    payPalDisclaimer: "Se abrirá PayPal para completar tu pago.",
     checkoutContinueToReview: "Continuar a revisión",
 
     cardAcceptedLabel: "Tarjetas aceptadas",
@@ -232,7 +233,9 @@ export const translations = {
     checkoutReviewSubtitle: "Confirma los detalles antes de someter la orden.",
     checkoutEditDetails: "Editar datos",
     checkoutSubmitOrder: "Someter orden",
-    checkoutDetailsRequired: "Completa nombre, teléfono y dirección de envío.",
+    checkoutSlideToSubmit: "Desliza para someter",
+    checkoutSubmitting: "Enviando...",
+    checkoutDetailsRequired: "Completa nombre, teléfono, email y dirección de envío.",
     checkoutPoliciesTitle: "Políticas",
     checkoutPoliciesSubtitle: "Debes aceptar las políticas antes de someter el pago.",
     checkoutPoliciesViewLink: "Ver Políticas",
@@ -325,8 +328,30 @@ export const translations = {
     adminAuthRequired: "Completa usuario y contraseña.",
     adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
     adminAuthInvalid: "Usuario o contraseña incorrectos.",
+    adminAuthNotConfigured:
+      "No hay admins configurados en el servidor. Contacta al administrador.",
+    adminAuthServerOffline:
+      "No se pudo conectar con el servidor. Verifica que el Backend esté encendido.",
     adminAuthDisclaimer:
-      "Demo local: las credenciales se guardan en este navegador (localStorage).",
+      "Acceso admin verificado por el servidor.",
+
+    adminTransferTitle: "Sincronizar admins",
+    adminTransferSubtitle:
+      "Genera un código en tu computadora y pégalo en el celular para usar los mismos admins.",
+    adminTransferGenerate: "Generar código",
+    adminTransferCopy: "Copiar",
+    adminTransferEmpty: "No hay admins para exportar.",
+    adminTransferCopied: "Código copiado.",
+    adminTransferCopyHint: "Copia el código manualmente (selecciona y copia).",
+
+    adminTransferImportTitle: "Importar acceso admin",
+    adminTransferImportSubtitle:
+      "Pega el código desde tu otra computadora/celular para sincronizar admins en este dispositivo.",
+    adminTransferImportPlaceholder: "Pega el código aquí…",
+    adminTransferImportButton: "Importar",
+    adminTransferImportEmpty: "Pega el código para importar.",
+    adminTransferImportSuccess: "Admins importados. Ahora puedes iniciar sesión.",
+    adminTransferImportError: "Código inválido o sin admins.",
 
     adminAuthTipsTitle: "Tips",
     adminAuthTip1: "Usa una contraseña única (no la reutilices).",
@@ -344,7 +369,7 @@ export const translations = {
     adminUsersListTitle: "Usuarios admin",
     adminUsersEmpty: "Aún no hay usuarios admin.",
     adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
-    adminUsersCredentialHint: "Acceso local (este navegador).",
+    adminUsersCredentialHint: "Acceso central (servidor).",
 
     adminStatManagement: "Gestión",
     adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
@@ -763,10 +788,11 @@ export const translations = {
       "Tax and shipping are calculated automatically.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Card payment (Stripe) — frontend demo, no backend yet.",
+    checkoutSubtitle: "Pay with PayPal. Card (Stripe) coming soon.",
     yourDetails: "Your details",
     namePlaceholder: "Name",
     phonePlaceholder: "Phone",
+    emailPlaceholder: "Email",
     notesPlaceholder: "Notes (e.g. gift, date, etc.)",
     giftNoteLabel: "Gift note (optional)",
     giftNotePlaceholder: "Write a short message for the card or packaging...",
@@ -774,12 +800,12 @@ export const translations = {
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
-      "Coming soon: card payments (Stripe) and PayPal. UI demo for now.",
+      "PayPal is available. Card (Stripe) coming soon.",
     paymentMethod: "Payment method",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
     payByCard: "Card",
-    payPalDisclaimer: "PayPal (coming soon) — frontend demo.",
+    payPalDisclaimer: "PayPal will open so you can complete your payment.",
     checkoutContinueToReview: "Continue to review",
 
     cardAcceptedLabel: "Cards accepted",
@@ -806,7 +832,9 @@ export const translations = {
     checkoutReviewSubtitle: "Confirm the details before submitting your order.",
     checkoutEditDetails: "Edit details",
     checkoutSubmitOrder: "Submit order",
-    checkoutDetailsRequired: "Please enter your name, phone, and shipping address.",
+    checkoutSlideToSubmit: "Slide to submit",
+    checkoutSubmitting: "Submitting...",
+    checkoutDetailsRequired: "Please enter your name, phone, email, and shipping address.",
     checkoutPoliciesTitle: "Policies",
     checkoutPoliciesSubtitle: "You must accept the policies before submitting payment.",
     checkoutPoliciesViewLink: "View Policies",
@@ -896,8 +924,30 @@ export const translations = {
     adminAuthRequired: "Enter username and password.",
     adminAuthPasswordMismatch: "Passwords do not match.",
     adminAuthInvalid: "Incorrect username or password.",
+    adminAuthNotConfigured:
+      "No admins are configured on the server. Contact the administrator.",
+    adminAuthServerOffline:
+      "Could not reach the server. Make sure the Backend is running.",
     adminAuthDisclaimer:
-      "Local demo: credentials are saved in this browser (localStorage).",
+      "Admin access is verified by the server.",
+
+    adminTransferTitle: "Sync admins",
+    adminTransferSubtitle:
+      "Generate a code on your computer and paste it on your phone to use the same admin users.",
+    adminTransferGenerate: "Generate code",
+    adminTransferCopy: "Copy",
+    adminTransferEmpty: "No admins to export.",
+    adminTransferCopied: "Code copied.",
+    adminTransferCopyHint: "Copy the code manually (select and copy).",
+
+    adminTransferImportTitle: "Import admin access",
+    adminTransferImportSubtitle:
+      "Paste the code from your other computer/phone to sync admins on this device.",
+    adminTransferImportPlaceholder: "Paste the code here…",
+    adminTransferImportButton: "Import",
+    adminTransferImportEmpty: "Paste the code to import.",
+    adminTransferImportSuccess: "Admins imported. You can sign in now.",
+    adminTransferImportError: "Invalid code or no admins found.",
 
     adminAuthTipsTitle: "Tips",
     adminAuthTip1: "Use a unique password (do not reuse it).",
@@ -914,7 +964,7 @@ export const translations = {
     adminUsersListTitle: "Admin users",
     adminUsersEmpty: "No admin users yet.",
     adminUsersCannotDeleteLast: "You cannot delete the last admin.",
-    adminUsersCredentialHint: "Local access (this browser).",
+    adminUsersCredentialHint: "Central access (server).",
 
     adminStatManagement: "Management",
     adminStatManagementBody: "Next: add, edit, and delete products.",
