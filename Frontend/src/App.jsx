@@ -221,6 +221,8 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
   const base = "inline-flex h-9 w-[78px] items-center justify-center rounded-xl border bg-white p-1";
   const border = active ? "border-zinc-900" : "border-zinc-200";
 
+  const [imgFailed, setImgFailed] = useState(false);
+
   const title =
     brand === "visa"
       ? "Visa"
@@ -243,21 +245,6 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
       ? PROVIDED_LOGOS.discover
       : "";
 
-  if (imgSrc) {
-    return (
-      <span title={title} className={`${base} ${border} ${className}`.trim()}>
-        <img
-          src={imgSrc}
-          alt={title}
-          className="block h-7 w-[70px] object-contain"
-          loading="eager"
-          decoding="async"
-          draggable={false}
-        />
-      </span>
-    );
-  }
-
   const commonSvgProps = {
     viewBox: "0 0 72 32",
     preserveAspectRatio: "xMidYMid meet",
@@ -276,8 +263,34 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
     letterSpacing: 1,
   };
 
-  const logo =
-    brand === "amex" ? (
+  const fallbackLogo =
+    brand === "visa" ? (
+      <svg {...commonSvgProps}>
+        <rect x="2" y="6" width="68" height="20" rx="6" fill="#1A1F71" />
+        <text {...textProps} fill="#fff" fontSize="11">
+          VISA
+        </text>
+      </svg>
+    ) : brand === "mastercard" ? (
+      <svg {...commonSvgProps}>
+        <rect x="2" y="6" width="68" height="20" rx="6" fill="#ffffff" stroke="#e5e7eb" />
+        <circle cx="33" cy="16" r="7" fill="#EB001B" opacity="0.95" />
+        <circle cx="39" cy="16" r="7" fill="#F79E1B" opacity="0.95" />
+        <text
+          x="36"
+          y="26"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#111"
+          fontSize="6"
+          fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+          fontWeight="900"
+          letterSpacing="0.6"
+        >
+          MC
+        </text>
+      </svg>
+    ) : brand === "amex" ? (
       <svg {...commonSvgProps}>
         <rect x="2" y="6" width="68" height="20" rx="6" fill="#2E77BC" />
         <text {...textProps} fill="#fff" fontSize="11">
@@ -303,9 +316,27 @@ function CreditCardBrandLogo({ brand, active = false, className = "" }) {
       </svg>
     ) : null;
 
+  // Prefer the PNG, but fall back to SVG if the image fails to load
+  // (intermittent network/cache issues, dev server restarts, etc.)
+  if (imgSrc && !imgFailed) {
+    return (
+      <span title={title} className={`${base} ${border} ${className}`.trim()}>
+        <img
+          src={imgSrc}
+          alt={title}
+          className="block h-7 w-[70px] object-contain"
+          loading="eager"
+          decoding="async"
+          draggable={false}
+          onError={() => setImgFailed(true)}
+        />
+      </span>
+    );
+  }
+
   return (
     <span title={title} className={`${base} ${border} ${className}`.trim()}>
-      {logo}
+      {fallbackLogo}
     </span>
   );
 }
