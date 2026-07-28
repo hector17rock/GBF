@@ -39,7 +39,7 @@ export default function Cart({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#F8F6F2]/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA] p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionTitle title={t.cartTitle} subtitle={t.cartSubtitle} />
           <div className="flex items-center gap-2">

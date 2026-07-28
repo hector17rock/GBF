@@ -1887,14 +1887,14 @@ function Checkout({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA] p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <SectionTitle title={t.checkoutTitle} subtitle={t.checkoutSubtitle} />
-          <div className="text-lg font-bold text-zinc-900">{money(grandTotal, language)}</div>
+          <div className="text-lg font-bold text-[#2B2B2B]">{money(grandTotal, language)}</div>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+          <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
             <div className="text-sm font-bold text-zinc-900">{t.yourDetails}</div>
             <div className="mt-4 grid gap-3">
               <input
@@ -1931,7 +1931,7 @@ function Checkout({
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+            <div className="mt-6 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.shippingTitle}</div>
               <div className="mt-1 text-xs leading-5 text-zinc-600">{t.shippingSubtitle}</div>
 
@@ -2021,7 +2021,7 @@ function Checkout({
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+            <div className="mt-6 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.checkoutPaymentTitle}</div>
               <div className="mt-1 text-xs leading-5 text-zinc-600">
                 {t.checkoutPaymentSubtitle}
@@ -2202,11 +2202,11 @@ function Checkout({
           </div>
 
           <div>
-            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+            <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
               <div className="mt-4 grid gap-3">
                 {cart.map((it) => (
-                  <div key={it.key} className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                  <div key={it.key} className="rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold text-zinc-500">
@@ -2230,7 +2230,7 @@ function Checkout({
                 ))}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+              <div className="mt-4 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between text-sm">
                     <div className="font-semibold text-zinc-700">{t.checkoutSubtotal}</div>
@@ -2263,7 +2263,7 @@ function Checkout({
                     <div className="font-bold text-zinc-900">{money(shippingFeeAmount, language)}</div>
                   </div>
 
-                  <div className="mt-1 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-base">
+                  <div className="mt-1 flex items-center justify-between border-t border-[#DDD6CA]/60 pt-3 text-base">
                     <div className="font-extrabold text-zinc-900">{t.checkoutGrandTotal}</div>
                     <div className="text-lg font-extrabold text-zinc-900">
                       {money(grandTotal, language)}
@@ -2274,7 +2274,7 @@ function Checkout({
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+              <div className="mt-4 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 text-sm text-[#6B6B6B] shadow-sm backdrop-blur-xl">
                 {t.checkoutCompleteHint}
               </div>
             </div>
@@ -2651,15 +2651,15 @@ function CheckoutReview({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA] p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <SectionTitle title={t.checkoutReviewTitle} subtitle={t.checkoutReviewSubtitle} />
-          <div className="text-lg font-bold text-zinc-900">{money(grandTotal, language)}</div>
+          <div className="text-lg font-bold text-[#2B2B2B]">{money(grandTotal, language)}</div>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div>
-            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+            <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.yourDetails}</div>
               <div className="mt-2 text-sm font-extrabold text-zinc-900">
                 {String(draft?.customer?.name || "").trim() || "—"}
@@ -2671,13 +2671,13 @@ function CheckoutReview({
                 {String(draft?.customer?.email || "").trim() || "—"}
               </div>
               {String(draft?.customer?.notes || "").trim() ? (
-                <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="mt-3 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                   <div className="text-[11px] font-semibold text-zinc-500">{t.giftNoteLabel}</div>
                   <div className="mt-2 text-xs leading-5 text-zinc-700">{String(draft.customer.notes)}</div>
                 </div>
               ) : null}
 
-              <div className="mt-6 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+              <div className="mt-6 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                 <div className="text-xs font-semibold text-zinc-500">{t.shippingTitle}</div>
                 <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
                   {shipLines || "—"}
@@ -2685,7 +2685,7 @@ function CheckoutReview({
               </div>
 
               {/* Policies acceptance */}
-              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+              <div className="mt-4 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-bold text-zinc-900">{t.checkoutPoliciesTitle}</div>
@@ -2708,7 +2708,7 @@ function CheckoutReview({
                     {publishedPolicies.map((p) => (
                       <details
                         key={p.id}
-                        className="rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3"
+                        className="rounded-2xl border border-[#DDD6CA]/60 bg-white/55 px-4 py-3"
                       >
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900">
                           <span>{p.name}</span>
@@ -2728,7 +2728,7 @@ function CheckoutReview({
                   <div className="mt-3 text-sm text-zinc-600">{t.policiesPublicEmpty}</div>
                 )}
 
-                <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3">
+                <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={Boolean(draft.acceptPolicies)}
@@ -2770,7 +2770,7 @@ function CheckoutReview({
                 ) : (
                   <div className="w-full">
                     <div
-                      className={`rounded-2xl border border-zinc-200/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl ${
+                      className={`rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl ${
                         paypalBusy ? "pointer-events-none opacity-60" : ""
                       }`}
                     >
@@ -2787,7 +2787,7 @@ function CheckoutReview({
           </div>
 
           <div>
-            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
+            <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.summary}</div>
 
               {Array.isArray(cart) && cart.length > 0 ? (
@@ -2795,7 +2795,7 @@ function CheckoutReview({
                   {cart.map((it) => (
                     <div
                       key={it.key}
-                      className="flex items-start justify-between gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                      className="flex items-start justify-between gap-3 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
                     >
                       <div>
                         <div className="text-xs font-semibold text-zinc-500">{it.category}</div>
@@ -2829,12 +2829,12 @@ function CheckoutReview({
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+                <div className="mt-4 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 text-sm text-[#6B6B6B] shadow-sm backdrop-blur-xl">
                   {t.emptyCart}
                 </div>
               )}
 
-              <div className="mt-4 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+              <div className="mt-4 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                 <div className="grid gap-2 text-sm">
                   <div className="flex items-center justify-between">
                     <div className="text-zinc-600">{t.checkoutSubtotal}</div>
@@ -2862,7 +2862,7 @@ function CheckoutReview({
                     <div className="text-zinc-600">{t.checkoutShippingFee}</div>
                     <div className="font-semibold text-zinc-900">{money(shippingFeeAmount, language)}</div>
                   </div>
-                  <div className="mt-1 flex items-center justify-between border-t border-zinc-200/60 pt-3">
+                  <div className="mt-1 flex items-center justify-between border-t border-[#DDD6CA]/60 pt-3">
                     <div className="font-extrabold text-zinc-900">{t.checkoutGrandTotal}</div>
                     <div className="text-lg font-extrabold text-zinc-900">{money(grandTotal, language)}</div>
                   </div>
@@ -2979,16 +2979,16 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA] p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.orderConfirmationTitle} subtitle={t.orderConfirmationSubtitle} />
 
         {!order ? (
-          <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+          <div className="rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 text-sm text-[#6B6B6B] shadow-sm backdrop-blur-xl">
             {t.orderConfirmationNotFound}
           </div>
         ) : (
           <div className="grid gap-4">
-            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="flex items-start gap-3">
                   <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-900">
@@ -3035,7 +3035,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                <div className="rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                   <div className="text-xs font-semibold text-zinc-500">
                     {language === "es" ? "Próximos pasos" : "Next steps"}
                   </div>
@@ -3051,7 +3051,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <div className="text-sm font-bold text-zinc-900">
@@ -3085,7 +3085,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                       <div className="text-zinc-600">{t.checkoutShippingFee}</div>
                       <div className="font-semibold text-zinc-900">{money(shippingFee, language)}</div>
                     </div>
-                    <div className="mt-2 flex items-center justify-between border-t border-zinc-200/60 pt-2">
+                    <div className="mt-2 flex items-center justify-between border-t border-[#DDD6CA]/60 pt-2">
                       <div className="font-extrabold text-zinc-900">{t.checkoutGrandTotal}</div>
                       <div className="font-extrabold text-zinc-900">{money(orderTotal, language)}</div>
                     </div>
@@ -3115,7 +3115,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+              <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
                 <div className="text-xs font-semibold text-zinc-500">{t.ordersCustomer}</div>
                 <div className="mt-1 text-sm font-bold text-zinc-900">
                   {order?.customer?.name || "—"}
@@ -3127,14 +3127,14 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
                   <div className="mt-1 text-xs text-zinc-600">{order.customer.email}</div>
                 ) : null}
                 {order?.customer?.notes ? (
-                  <div className="mt-3 rounded-2xl border border-zinc-200/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
+                  <div className="mt-3 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                     <div className="text-[11px] font-semibold text-zinc-500">{t.giftNoteLabel}</div>
                     <div className="mt-2 text-xs leading-5 text-zinc-700">{order.customer.notes}</div>
                   </div>
                 ) : null}
               </div>
 
-              <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+              <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
                 <div className="text-xs font-semibold text-zinc-500">{t.ordersShipping}</div>
                 <pre className="mt-2 whitespace-pre-wrap text-xs leading-5 text-zinc-700">
                   {shipLines || "—"}
@@ -3142,13 +3142,13 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
               <div className="text-sm font-bold text-zinc-900">{t.ordersItems}</div>
               <div className="mt-3 grid gap-2">
                 {items.map((it) => (
                   <div
                     key={it.id}
-                    className="flex items-start justify-between gap-3 rounded-2xl border border-zinc-200/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
+                    className="flex items-start justify-between gap-3 rounded-2xl border border-[#DDD6CA]/60 bg-white/55 px-4 py-3 shadow-sm backdrop-blur-xl"
                   >
                     <div>
                       <div className="text-sm font-semibold text-zinc-900">

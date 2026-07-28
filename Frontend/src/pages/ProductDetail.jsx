@@ -165,7 +165,7 @@ export default function ProductDetail({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+      <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA] p-6 shadow-sm backdrop-blur-xl md:p-10">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onBack}>
@@ -233,7 +233,7 @@ export default function ProductDetail({
               })}
             </div>
 
-            <div className="order-1 overflow-hidden rounded-[28px] border border-zinc-200 bg-white lg:order-2">
+            <div className="order-1 overflow-hidden rounded-[28px] border border-[#DDD6CA] bg-white lg:order-2">
               <div className="relative">
                 {active?.src ? (
                   <img
@@ -456,7 +456,7 @@ export default function ProductDetail({
               ) : null}
 
               {/* Accordions */}
-              <div className="mt-2 divide-y divide-zinc-200/60 rounded-[24px] border border-zinc-200/60 bg-white/55 shadow-sm backdrop-blur-xl">
+              <div className="mt-2 divide-y divide-[#DDD6CA]/60 rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 shadow-sm backdrop-blur-xl">
                 <details className="group p-4" open>
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900">
                     <span>{language === "es" ? "Entrega y devoluciones" : "Delivery & returns"}</span>
