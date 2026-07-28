@@ -156,7 +156,7 @@ export const translations = {
 
     addToCart: "Añadir al carrito",
     continueExploring: "Seguir explorando",
-    toastProductAdded: (name) => `Producto añadido: ${name}`,
+    toastProductAdded: (name) => `Añadido al carrito: ${name}`,
     toastCategoryCreated: (name) => `Categoría creada: ${name}`,
     toastProductCreated: (name) => `Producto creado: ${name}`,
     toastProductDeleted: (name) => `Producto eliminado: ${name}`,

@@ -133,7 +133,7 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
         <div className="fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-black/20 backdrop-blur-[2px] gbfMenuOverlayIn"
             aria-label={closeMenuLabel}
             onClick={() => setMenuOpen(false)}
           />
@@ -143,7 +143,7 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
             role="dialog"
             aria-modal="true"
             aria-label={menuLabel}
-            className="absolute right-4 top-4 w-[min(92vw,360px)] rounded-[28px] border border-zinc-200/60 bg-white/75 p-4 shadow-xl backdrop-blur-xl"
+            className="absolute right-4 top-4 w-[min(92vw,360px)] rounded-[28px] border border-zinc-200/60 bg-white/75 p-4 shadow-xl backdrop-blur-xl gbfMenuPanelIn"
           >
             <div className="flex items-center justify-between">
               <div className="text-sm font-extrabold text-zinc-900">{menuLabel}</div>
@@ -169,71 +169,95 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
             <div className="mt-3 grid gap-1">
               <button
                 onClick={() => go("home")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "home" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "home"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "40ms" }}
               >
                 {t.navHome}
               </button>
               <button
                 onClick={() => go("catalog")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "catalog" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "catalog"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "70ms" }}
               >
                 {t.navCatalog}
               </button>
               <button
                 onClick={() => go("wishlist")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "wishlist" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "wishlist"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "100ms" }}
               >
                 {t.navWishlist}
               </button>
               <button
                 onClick={() => go("blog")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "blog" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "blog"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "130ms" }}
               >
                 {t.navBlog}
               </button>
               <button
                 onClick={() => go("about")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "about" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "about"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "160ms" }}
               >
                 {t.navValues}
               </button>
               <button
                 onClick={() => go("faq")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "faq" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "faq"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "190ms" }}
               >
                 {t.navFaq}
               </button>
               <button
                 onClick={() => go("policies")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "policies" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "policies"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "220ms" }}
               >
                 {t.navPolicies}
               </button>
               <button
                 onClick={() => go("order_status")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                  route === "order_status" ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
+                  route === "order_status"
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "250ms" }}
               >
                 {t.navOrderStatus}
               </button>
               <button
                 onClick={() => go("admin")}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30 ${
                   route === "admin" ||
                   route === "admin_orders" ||
                   route === "admin_profit" ||
@@ -243,23 +267,42 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
                   route === "admin_product_preview" ||
                   route === "admin_login" ||
                   route === "admin_users"
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-800 hover:bg-zinc-100"
-                }`}
+                    ? "bg-zinc-900 text-white shadow-sm"
+                    : "text-zinc-800 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-[1px]"
+                } gbfMenuItemIn`}
+                style={{ animationDelay: "280ms" }}
               >
                 {t.navAdmin}
               </button>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2 gbfMenuItemIn" style={{ animationDelay: "320ms" }}>
               <Button variant="secondary" onClick={() => setLanguage(language === "es" ? "en" : "es")}>
                 {language === "es" ? "EN" : "ES"}
               </Button>
-              <Button variant="secondary" onClick={() => go("cart")}>
-                {t.cart}
-              </Button>
             </div>
           </div>
+
+          <style>{`
+            @keyframes gbfMenuFadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes gbfMenuPanelIn {
+              from { opacity: 0; transform: translate3d(0, -10px, 0) scale(0.98); }
+              to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            }
+            @keyframes gbfMenuItemIn {
+              from { opacity: 0; transform: translate3d(10px, 0, 0); }
+              to { opacity: 1; transform: translate3d(0, 0, 0); }
+            }
+            .gbfMenuOverlayIn { animation: gbfMenuFadeIn 160ms ease-out both; }
+            .gbfMenuPanelIn { animation: gbfMenuPanelIn 210ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+            .gbfMenuItemIn { animation: gbfMenuItemIn 260ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+            @media (prefers-reduced-motion: reduce) {
+              .gbfMenuOverlayIn, .gbfMenuPanelIn, .gbfMenuItemIn { animation: none !important; }
+            }
+          `}</style>
         </div>
       ) : null}
     </div>

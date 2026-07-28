@@ -8062,9 +8062,9 @@ export default function App() {
 
     const name = l10n(product?.name, language) || "";
     if (typeof t.toastProductAdded === "function") {
-      pushToast(t.toastProductAdded(name || "Producto"));
+      pushToast(t.toastProductAdded(name || (language === "es" ? "Producto" : "Product")), "success");
     } else {
-      pushToast(language === "es" ? "Producto añadido" : "Added to cart");
+      pushToast(language === "es" ? "Añadido al carrito" : "Added to cart", "success");
     }
 
     runViewTransition(() => {
