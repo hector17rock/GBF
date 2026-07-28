@@ -664,13 +664,13 @@ function normalizeHeroConfig(input) {
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
-      reject(new Error("No file"));
+      reject(new Error("upload_no_file"));
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => reject(new Error("upload_read_failed"));
     reader.readAsDataURL(file);
   });
 }
@@ -684,6 +684,27 @@ function buildUploadFilename(prefix, file) {
 }
 
 
+// Helper: uploadErrorDetail
+function uploadErrorDetail(err, t) {
+  const code = String(err?.message || "").trim();
+
+  if (code === "upload_no_file") return t.uploadErrorNoFile;
+  if (code === "upload_read_failed") return t.uploadErrorReadFailed;
+  if (code === "upload_failed") return t.uploadErrorGeneric;
+
+  const m = /^upload_failed_(\d+)$/.exec(code);
+  if (m) {
+    const status = Number(m[1]);
+    if (typeof t.uploadErrorHttpStatus === "function") {
+      return t.uploadErrorHttpStatus(status);
+    }
+    return code;
+  }
+
+  // Last resort: show raw message, or a generic localized string.
+  return code || t.uploadErrorGeneric;
+}
+
 // Helper: uploadImageToPublicImages (dev-server endpoint)
 async function uploadImageToPublicImages({ file, filename }) {
   const dataUrl = await fileToDataUrl(file);
@@ -696,8 +717,12 @@ async function uploadImageToPublicImages({ file, filename }) {
 
   const json = await res.json().catch(() => null);
 
-  if (!res.ok || !json?.ok || typeof json?.url !== "string") {
-    throw new Error(json?.error || `Upload failed (${res.status})`);
+  if (!res.ok) {
+    throw new Error(`upload_failed_${res.status}`);
+  }
+
+  if (!json?.ok || typeof json?.url !== "string") {
+    throw new Error("upload_failed");
   }
 
   return json.url;
@@ -1077,8 +1102,8 @@ function buildReceiptHtml({ order, language }) {
       const pText = escapeHtml(p.text || "");
       const pVerse = escapeHtml(p.verse || "");
       const pExtra = [
-        pText ? `${lang === "es" ? "Texto" : "Text"}: ${pText}` : "",
-        pVerse ? `${lang === "es" ? "Versículo" : "Verse"}: ${pVerse}` : "",
+        pText ? `${tr.labelText}: ${pText}` : "",
+        pVerse ? `${tr.labelVerse}: ${pVerse}` : "",
       ]
         .filter(Boolean)
         .join(" · ");
@@ -1126,31 +1151,31 @@ function buildReceiptHtml({ order, language }) {
           <img class="brandLogo" src="/gbficon.png" alt="Grow by Faith®" />
           <div class="brandName">Grow by Faith<span style="font-size:0.6em; vertical-align:super; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; font-weight:700;">®</span></div>
         </div>
-        <div class="muted">${lang === "es" ? "Recibo" : "Receipt"}</div>
+        <div class="muted">${escapeHtml(tr.receiptTitle)}</div>
       </div>
       <div class="right">
-        <div class="muted">${lang === "es" ? "Orden" : "Order"}</div>
+        <div class="muted">${escapeHtml(tr.ordersOrder)}</div>
         <div class="orderNo">${orderNo}</div>
         <div class="muted">${escapeHtml(createdAt)}</div>
       </div>
     </div>
 
     <div class="muted" style="margin-top: 6px;">
-      ${lang === "es" ? "Método de pago" : "Payment method"}: ${escapeHtml(paymentText)}
-      ${tracking ? ` · ${lang === "es" ? "Tracking" : "Tracking"}: ${tracking}` : ""}
-      ${etaText ? ` · ${lang === "es" ? "Tiempo" : "ETA"}: ${etaText}` : ""}
+      ${escapeHtml(tr.ordersPaymentMethod)}: ${escapeHtml(paymentText)}
+      ${tracking ? ` · ${escapeHtml(tr.orderStatusTracking)}: ${tracking}` : ""}
+      ${etaText ? ` · ${escapeHtml(tr.orderStatusEta)}: ${etaText}` : ""}
     </div>
 
     <div class="grid">
       <div class="card">
-        <div class="cardTitle">${lang === "es" ? "Cliente" : "Customer"}</div>
+        <div class="cardTitle">${escapeHtml(tr.ordersCustomer)}</div>
         <div>${customerName || "—"}</div>
         ${customerPhone ? `<div>${customerPhone}</div>` : ""}
         ${customerEmail ? `<div>${customerEmail}</div>` : ""}
         ${customerNotes ? `<div class="muted">${customerNotes}</div>` : ""}
       </div>
       <div class="card">
-        <div class="cardTitle">${lang === "es" ? "Envío" : "Shipping"}</div>
+        <div class="cardTitle">${escapeHtml(tr.ordersShipping)}</div>
         ${shipHtml || "<div>—</div>"}
       </div>
     </div>
@@ -1158,10 +1183,10 @@ function buildReceiptHtml({ order, language }) {
     <table class="items">
       <thead>
         <tr>
-          <th>${lang === "es" ? "Artículo" : "Item"}</th>
-          <th class="qty">${lang === "es" ? "Cant." : "Qty"}</th>
-          <th class="money">${lang === "es" ? "Precio" : "Price"}</th>
-          <th class="money">${lang === "es" ? "Total" : "Total"}</th>
+          <th>${escapeHtml(tr.ordersItems)}</th>
+          <th class="qty">${escapeHtml(tr.qty)}</th>
+          <th class="money">${escapeHtml(tr.productPriceLabel)}</th>
+          <th class="money">${escapeHtml(tr.total)}</th>
         </tr>
       </thead>
       <tbody>
@@ -1171,7 +1196,7 @@ function buildReceiptHtml({ order, language }) {
 
     <div style="margin-top: 14px;">
       <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
-        <div class="muted">${lang === "es" ? "Subtotal" : "Subtotal"}</div>
+        <div class="muted">${escapeHtml(tr.checkoutSubtotal)}</div>
         <div class="money">${escapeHtml(money(subtotal, lang))}</div>
       </div>
       <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
@@ -1187,18 +1212,18 @@ function buildReceiptHtml({ order, language }) {
         <div class="money">${escapeHtml(money(prTax.totalAmount, lang))}</div>
       </div>
       <div style="display:flex; justify-content: space-between; gap: 12px; margin-top: 6px;">
-        <div class="muted">${lang === "es" ? "Envío" : "Shipping"}</div>
+        <div class="muted">${escapeHtml(tr.checkoutShippingFee)}</div>
         <div class="money">${escapeHtml(money(shippingFee, lang))}</div>
       </div>
     </div>
 
     <div class="totalRow">
-      <div class="muted">${lang === "es" ? "Total" : "Total"}</div>
+      <div class="muted">${escapeHtml(tr.total)}</div>
       <div class="total">${escapeHtml(money(total, lang))}</div>
     </div>
 
     <div class="muted footer">
-      ${lang === "es" ? "Imprime y guarda como PDF para archivarlo." : "Print and save as PDF to archive."}
+      ${escapeHtml(tr.ordersReceiptHint)}
     </div>
   </div>`;
 }
@@ -2459,11 +2484,7 @@ function CheckoutReview({
       if (!isPayPal) return;
 
       if (!serverPublicOk) {
-        setPayPalMessage(
-          language === "es"
-            ? "PayPal requiere que el Backend esté encendido."
-            : "PayPal requires the backend server to be running."
-        );
+        setPayPalMessage(t.paypalRequiresBackend);
         return;
       }
 
@@ -2477,7 +2498,7 @@ function CheckoutReview({
       }
 
       if (typeof onGetPayPalConfig !== "function") {
-        setPayPalMessage(language === "es" ? "PayPal no está disponible." : "PayPal is not available.");
+        setPayPalMessage(t.paypalNotAvailable);
         return;
       }
 
@@ -2493,11 +2514,7 @@ function CheckoutReview({
       const currency = configured ? String(cfg.currency || "USD").trim().toUpperCase() : "USD";
 
       if (!configured || !clientId) {
-        setPayPalMessage(
-          language === "es"
-            ? "PayPal no está configurado en el servidor."
-            : "PayPal is not configured on the server."
-        );
+        setPayPalMessage(t.paypalNotConfigured);
         return;
       }
 
@@ -2505,14 +2522,14 @@ function CheckoutReview({
       try {
         paypal = await loadPayPalSdk({ clientId, currency });
       } catch {
-        setPayPalMessage(language === "es" ? "No se pudo cargar PayPal." : "Could not load PayPal.");
+        setPayPalMessage(t.paypalCouldNotLoad);
         return;
       }
 
       if (cancelled) return;
 
       if (!paypal || typeof paypal.Buttons !== "function") {
-        setPayPalMessage(language === "es" ? "PayPal no está disponible." : "PayPal is not available.");
+        setPayPalMessage(t.paypalNotAvailable);
         return;
       }
 
@@ -2537,13 +2554,13 @@ function CheckoutReview({
 
         onApprove: async (data) => {
           if (typeof onPayPalCaptureOrder !== "function") {
-            setPayPalMessage(language === "es" ? "No se pudo completar PayPal." : "Could not complete PayPal.");
+            setPayPalMessage(t.paypalCouldNotComplete);
             return;
           }
 
           const oid = data && typeof data === "object" ? String(data.orderID || "").trim() : "";
           if (!oid) {
-            setPayPalMessage(language === "es" ? "PayPal: orderID inválido." : "PayPal: invalid orderID.");
+            setPayPalMessage(t.paypalInvalidOrderId);
             return;
           }
 
@@ -2554,14 +2571,14 @@ function CheckoutReview({
             const p = buildPayPalPayload();
             await onPayPalCaptureOrder({ paypalOrderId: oid, ...p });
           } catch {
-            setPayPalMessage(language === "es" ? "No se pudo capturar el pago." : "Could not capture payment.");
+            setPayPalMessage(t.paypalCouldNotCapturePayment);
           } finally {
             if (!cancelled) setPayPalBusy(false);
           }
         },
 
         onError: () => {
-          setPayPalMessage(language === "es" ? "Error de PayPal." : "PayPal error.");
+          setPayPalMessage(t.paypalError);
         },
       });
 
@@ -2570,7 +2587,7 @@ function CheckoutReview({
       try {
         await buttons.render(container);
       } catch {
-        setPayPalMessage(language === "es" ? "No se pudo mostrar PayPal." : "Could not render PayPal.");
+        setPayPalMessage(t.paypalCouldNotRender);
       }
     })();
 
@@ -2594,6 +2611,15 @@ function CheckoutReview({
     draft.acceptPolicies,
     language,
     t.emptyCart,
+    t.paypalRequiresBackend,
+    t.paypalNotAvailable,
+    t.paypalNotConfigured,
+    t.paypalCouldNotLoad,
+    t.paypalCouldNotComplete,
+    t.paypalInvalidOrderId,
+    t.paypalCouldNotCapturePayment,
+    t.paypalError,
+    t.paypalCouldNotRender,
     onGetPayPalConfig,
     onPayPalCreateOrder,
     onPayPalCaptureOrder,
@@ -2965,18 +2991,11 @@ function OrderConfirmation({ order, onGoHome, t, language }) {
     ? Number(order.total)
     : roundMoney(subtotal + prTax.totalAmount + shippingFee);
 
-  const nextSteps =
-    language === "es"
-      ? [
-          "Guarda tu número de orden por si necesitas ayuda.",
-          "Prepararemos tu pedido y te enviaremos el tracking cuando esté listo.",
-          "Si deseas hacer cambios, escríbenos con tu número de orden.",
-        ]
-      : [
-          "Save your order number in case you need help.",
-          "We'll prepare your order and share tracking once it's ready.",
-          "If you need changes, message us with your order number.",
-        ];
+  const nextSteps = [
+    t.orderConfirmationNextStep1,
+    t.orderConfirmationNextStep2,
+    t.orderConfirmationNextStep3,
+  ];
 
   // printReceipt
   function printReceipt() {
@@ -3052,7 +3071,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 
                   <div>
                     <div className="text-sm font-extrabold text-zinc-900">
-                      {language === "es" ? "¡Gracias por tu orden!" : "Thanks for your order!"}
+                      {t.orderConfirmationThanksTitle}
                     </div>
                     {createdLabel ? (
                       <div className="mt-1 text-xs text-zinc-600">
@@ -3081,7 +3100,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
 
                 <div className="rounded-2xl border border-[#DDD6CA]/60 bg-white/55 p-4 shadow-sm backdrop-blur-xl">
                   <div className="text-xs font-semibold text-zinc-500">
-                    {language === "es" ? "Próximos pasos" : "Next steps"}
+                    {t.orderConfirmationNextStepsTitle}
                   </div>
                   <ul className="mt-2 grid gap-2 text-sm text-zinc-700">
                     {nextSteps.map((s) => (
@@ -3576,39 +3595,8 @@ function OrderStatus({
 }
 
 // Page: Blog
-function Blog({ t, language }) {
-  const posts = [
-    {
-      title: {
-        es: "Cómo empezar un journal de oración",
-        en: "How to start a prayer journal",
-      },
-      excerpt: {
-        es: "Una estructura simple de 10 minutos al día para crecer en fe y constancia.",
-        en: "A simple 10-minute daily structure to grow in faith and consistency.",
-      },
-    },
-    {
-      title: {
-        es: "3 maneras de regalar con propósito",
-        en: "3 ways to gift with purpose",
-      },
-      excerpt: {
-        es: "Ideas para personalizar un Yeti o un journal y bendecir a alguien.",
-        en: "Ideas to customize a Yeti or a journal and bless someone.",
-      },
-    },
-    {
-      title: {
-        es: "Identidad: cuando te sientes inestable",
-        en: "Identity: when you feel unstable",
-      },
-      excerpt: {
-        es: "Una lectura corta para recordar quién eres y cómo volver a la calma.",
-        en: "A short read to remember who you are and how to return to calm.",
-      },
-    },
-  ];
+function Blog({ t }) {
+  const posts = Array.isArray(t?.blogPosts) ? t.blogPosts : [];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -3617,15 +3605,11 @@ function Blog({ t, language }) {
         <div className="grid gap-3 md:grid-cols-3">
           {posts.map((p, idx) => (
             <div
-              key={`${l10n(p.title, "en") || l10n(p.title, "es")}-${idx}`}
+              key={`${String(p?.title || "post")}-${idx}`}
               className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
             >
-              <div className="text-sm font-bold text-zinc-900">
-                {l10n(p.title, language)}
-              </div>
-              <div className="mt-2 text-sm leading-6 text-zinc-600">
-                {l10n(p.excerpt, language)}
-              </div>
+              <div className="text-sm font-bold text-zinc-900">{p?.title}</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-600">{p?.excerpt}</div>
               <div className="mt-4">
                 <Pill>{t.read}</Pill>
               </div>
@@ -3640,46 +3624,8 @@ function Blog({ t, language }) {
 }
 
 // Page: About
-function About({ t, language }) {
-  const values = [
-    {
-      icon: "faith",
-      title: { es: "Fe", en: "Faith" },
-      desc: {
-        es: "Todo lo que hacemos está fundamentado en la Palabra.",
-        en: "Everything we do is grounded in the Word.",
-      },
-    },
-    {
-      icon: "integrity",
-      title: { es: "Integridad", en: "Integrity" },
-      desc: {
-        es: "Operamos con transparencia, honestidad y responsabilidad.",
-        en: "We operate with transparency, honesty, and accountability.",
-      },
-    },
-    {
-      icon: "service",
-      title: { es: "Servicio", en: "Service" },
-      desc: { es: "Servimos con amor y excelencia.", en: "We serve with love and excellence." },
-    },
-    {
-      icon: "hope",
-      title: { es: "Esperanza", en: "Hope" },
-      desc: {
-        es: "Promovemos mensajes que edifican y transforman vidas.",
-        en: "We promote messages that build up and transform lives.",
-      },
-    },
-    {
-      icon: "community",
-      title: { es: "Comunidad", en: "Community" },
-      desc: {
-        es: "Fomentamos unidad entre creyentes y quienes buscan.",
-        en: "We foster unity among believers and seekers.",
-      },
-    },
-  ];
+function About({ t }) {
+  const values = Array.isArray(t?.valuesItems) ? t.valuesItems : [];
 
   function ValuesIcon({ kind, className = "h-5 w-5" }) {
     const common = {
@@ -3761,7 +3707,7 @@ function About({ t, language }) {
         <div className="grid gap-3 md:grid-cols-2">
           {values.map((v, idx) => (
             <div
-              key={`${l10n(v.title, "en") || l10n(v.title, "es")}-${idx}`}
+              key={`${String(v?.title || "value")}-${idx}`}
               className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
             >
               <div className="flex items-start gap-3">
@@ -3769,12 +3715,8 @@ function About({ t, language }) {
                   <ValuesIcon kind={v.icon} className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-sm font-bold text-zinc-900">
-                    {l10n(v.title, language)}
-                  </div>
-                  <div className="mt-2 text-sm leading-6 text-zinc-600">
-                    {l10n(v.desc, language)}
-                  </div>
+                  <div className="text-sm font-bold text-zinc-900">{v?.title}</div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-600">{v?.desc}</div>
                 </div>
               </div>
             </div>
@@ -4082,7 +4024,7 @@ function AdminPanel({
     } catch (err) {
       setUploadErrors((prev) => ({
         ...(prev || {}),
-        [key]: err?.message || "Upload failed",
+        [key]: uploadErrorDetail(err, t),
       }));
     } finally {
       setUploading((prev) => ({ ...(prev || {}), [key]: false }));
@@ -4479,12 +4421,12 @@ function AdminPanel({
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           <div className="text-xs font-semibold text-zinc-500">
-            {language === "es" ? "Bienvenido" : "Welcome"}
+            {t.adminWelcome}
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <div className="text-base font-extrabold text-zinc-900">
-              {adminName || (language === "es" ? "Administrador" : "Admin")}
+              {adminName || t.adminDefaultName}
             </div>
 
             {adminUsername && adminUsername !== adminName ? (
@@ -4495,10 +4437,10 @@ function AdminPanel({
 
         <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 px-5 py-3 shadow-sm backdrop-blur-xl">
           <div className="text-xs font-semibold text-zinc-700">
-            {language === "es" ? "Fecha:" : "Date:"} <span className="font-normal text-zinc-600">{dateText}</span>
+            {t.adminDateLabel} <span className="font-normal text-zinc-600">{dateText}</span>
           </div>
           <div className="mt-1 text-xs font-semibold text-zinc-700">
-            {language === "es" ? "Hora:" : "Time:"} <span className="font-normal text-zinc-600">{timeText}</span>
+            {t.adminTimeLabel} <span className="font-normal text-zinc-600">{timeText}</span>
           </div>
         </div>
       </div>
@@ -4858,7 +4800,7 @@ function AdminPanel({
                   step="0.01"
                   value={newProduct.price}
                   onChange={handleNewProductChange}
-                  placeholder={language === "es" ? "Ej: 35" : "e.g. 35"}
+                  placeholder={t.productPricePlaceholderExample}
                   required
                   className="mt-2 w-full rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-zinc-400"
                 />
@@ -5247,7 +5189,7 @@ function AdminHomepage({ heroConfig, setHeroConfig, t, language, onBack }) {
     } catch (err) {
       setUploadErrors((prev) => ({
         ...(prev || {}),
-        [key]: err?.message || "Upload failed",
+        [key]: uploadErrorDetail(err, t),
       }));
     } finally {
       setUploading((prev) => ({ ...(prev || {}), [key]: false }));
@@ -8277,7 +8219,7 @@ export default function App() {
     if (typeof t.toastProductAdded === "function") {
       pushToast(t.toastProductAdded(name || (language === "es" ? "Producto" : "Product")), "success");
     } else {
-      pushToast(language === "es" ? "Añadido al carrito" : "Added to cart", "success");
+      pushToast(t.toastProductAdded(l10n(product.name, language)), "success");
     }
 
     runViewTransition(() => {
@@ -9129,7 +9071,7 @@ export default function App() {
 
       <div className="text-[#2B2B2B]">
         <PageTransition key="gbf-route" routeKey={route} render={renderRoutedContent} />
-        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+        <ToastStack toasts={toasts} onDismiss={dismissToast} t={t} />
         <div className="pb-10" />
       </div>
     </div>

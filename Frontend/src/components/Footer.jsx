@@ -41,7 +41,7 @@ export default function Footer({ t }) {
                 draggable={false}
               />
             </Pill>
-            <Pill>Blog</Pill>
+            <Pill>{t.navBlog}</Pill>
             <Pill>
               <img
                 src="/paypallogo.png"

@@ -3,7 +3,7 @@ import Footer from "../components/Footer";
 import SectionTitle from "../components/SectionTitle";
 import { normalizePoliciesConfig } from "../utils/policies";
 
-export default function Policies({ policiesConfig, t, language }) {
+export default function Policies({ policiesConfig, t }) {
   const normalized = useMemo(() => normalizePoliciesConfig(policiesConfig), [policiesConfig]);
 
   const published = useMemo(() => {
@@ -26,15 +26,9 @@ export default function Policies({ policiesConfig, t, language }) {
     return ok ? requestedOpenId : published[0]?.id || "";
   }, [requestedOpenId, published]);
 
-  const subtitle =
-    t?.policiesPublicSubtitle ||
-    (language === "es" ? "Información importante" : "Important information");
+  const subtitle = t.policiesPublicSubtitle;
 
-  const emptyText =
-    t?.policiesPublicEmpty ||
-    (language === "es"
-      ? "Aún no hay políticas publicadas."
-      : "No policies have been published yet.");
+  const emptyText = t.policiesPublicEmpty;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">

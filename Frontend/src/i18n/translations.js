@@ -2,9 +2,6 @@
 // i18n: translations (ES/EN)
 // (moved out of App.jsx)
 // -----------------------------
-// -----------------------------
-// i18n: translations (ES/EN)
-// -----------------------------
 export const translations = {
   es: {
     tagline: "Productos con propósito",
@@ -151,6 +148,7 @@ export const translations = {
     searchPlaceholder: "Buscar",
 
     back: "Volver",
+    close: "Cerrar",
     preview: "Vista previa",
     previewFallbackText: "Tu frase o nombre aquí",
 
@@ -225,6 +223,17 @@ export const translations = {
     payByWhatsApp: "PayPal",
     payByCard: "Tarjeta",
     payPalDisclaimer: "Se abrirá PayPal para completar tu pago.",
+
+    paypalRequiresBackend: "PayPal requiere que el Backend esté encendido.",
+    paypalNotAvailable: "PayPal no está disponible.",
+    paypalNotConfigured: "PayPal no está configurado en el servidor.",
+    paypalCouldNotLoad: "No se pudo cargar PayPal.",
+    paypalCouldNotComplete: "No se pudo completar PayPal.",
+    paypalInvalidOrderId: "PayPal: orderID inválido.",
+    paypalCouldNotCapturePayment: "No se pudo capturar el pago.",
+    paypalError: "Error de PayPal.",
+    paypalCouldNotRender: "No se pudo mostrar PayPal.",
+
     checkoutContinueToReview: "Continuar a revisión",
 
     cardAcceptedLabel: "Tarjetas aceptadas",
@@ -303,18 +312,85 @@ export const translations = {
     blogSubtitle:
       "Contenido de lectura corta para enganchar y nutrir a la audiencia.",
     read: "Leer",
+    blogPosts: [
+      {
+        title: "Cómo empezar un journal de oración",
+        excerpt: "Una estructura simple de 10 minutos al día para crecer en fe y constancia.",
+      },
+      {
+        title: "3 maneras de regalar con propósito",
+        excerpt: "Ideas para personalizar un Yeti o un journal y bendecir a alguien.",
+      },
+      {
+        title: "Identidad: cuando te sientes inestable",
+        excerpt: "Una lectura corta para recordar quién eres y cómo volver a la calma.",
+      },
+    ],
 
     valuesTitle: "Valores",
     valuesSubtitle: "Nuestro fundamento",
+    valuesItems: [
+      {
+        icon: "faith",
+        title: "Fe",
+        desc: "Todo lo que hacemos está fundamentado en la Palabra.",
+      },
+      {
+        icon: "integrity",
+        title: "Integridad",
+        desc: "Operamos con transparencia, honestidad y responsabilidad.",
+      },
+      {
+        icon: "service",
+        title: "Servicio",
+        desc: "Servimos con amor y excelencia.",
+      },
+      {
+        icon: "hope",
+        title: "Esperanza",
+        desc: "Promovemos mensajes que edifican y transforman vidas.",
+      },
+      {
+        icon: "community",
+        title: "Comunidad",
+        desc: "Fomentamos unidad entre creyentes y quienes buscan.",
+      },
+    ],
     missionTitle: "Misión",
     missionText:
       "Compartir el amor de Cristo a través de cada producto. Que cada artículo sea una herramienta de evangelismo, esperanza y fe.",
 
     faqTitle: "FAQ",
     faqSubtitle: "Envío, personalización, tiempos y pagos.",
+    faqItems: [
+      {
+        q: "¿Cuánto tarda el envío?",
+        a: "La mayoría de órdenes se procesan en 1–2 días hábiles. Envío típico: 3–5 días (puede variar por temporada).",
+      },
+      {
+        q: "¿Cómo funciona la personalización?",
+        a: "Puedes añadir nombre/frase + un versículo. En el detalle del producto verás una vista previa para ayudarte a decidir.",
+      },
+      {
+        q: "¿Puedo cambiar o cancelar una orden?",
+        a: "Si la orden aún no está enviada, puedes solicitar cancelación desde “Estatus de Orden”. Si ya está enviada, te ayudamos con el próximo paso.",
+      },
+      {
+        q: "¿Qué métodos de pago aceptan?",
+        a: "Aceptamos tarjeta y PayPal (en este MVP es una demo visual; luego se integra pago real).",
+      },
+      {
+        q: "¿Qué pasa si un producto no tiene stock?",
+        a: "Si quedan pocas unidades, verás un badge de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
+      },
+    ],
 
     adminTitle: "Panel de administración",
     adminSubtitle: "Gestiona visualmente los productos de la tienda.",
+    adminWelcome: "Bienvenido",
+    adminDefaultName: "Administrador",
+    adminDateLabel: "Fecha:",
+    adminTimeLabel: "Hora:",
     adminStatProducts: "Productos",
     adminStatProductsBody: "Artículos activos en catálogo.",
     adminStatMode: "Usuario de Administrador",
@@ -384,6 +460,8 @@ export const translations = {
     adminUsersCreateButton: "Crear usuario",
     adminUsersCreateError: "Ese usuario ya existe o hubo un error.",
     adminUsersDeleteError: "No se pudo eliminar.",
+    adminUsersNameRequired: "Completa el nombre.",
+    adminUsersUpdateError: "No se pudo actualizar.",
     adminUsersListTitle: "Usuarios admin",
     adminUsersEmpty: "Aún no hay usuarios admin.",
     adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
@@ -476,6 +554,7 @@ export const translations = {
     ordersTotal: "Total",
     ordersPrintLabel: "Imprimir etiqueta de envío",
     ordersPrintReceipt: "Recibo (PDF)",
+    receiptTitle: "Recibo",
     shippingLabelOrder: "Orden",
     shippingLabelShipTo: "ENVIAR A",
     shippingLabelPrintedFromAdmin: "Impreso desde Admin",
@@ -506,6 +585,11 @@ export const translations = {
     orderConfirmationGoAdmin: "Ir a Admin",
     orderConfirmationNotFound: "No encontramos esa orden.",
     orderConfirmationToastOrderSent: "Orden enviada",
+    orderConfirmationThanksTitle: "¡Gracias por tu orden!",
+    orderConfirmationNextStepsTitle: "Próximos pasos",
+    orderConfirmationNextStep1: "Guarda tu número de orden por si necesitas ayuda.",
+    orderConfirmationNextStep2: "Prepararemos tu pedido y te enviaremos el tracking cuando esté listo.",
+    orderConfirmationNextStep3: "Si deseas hacer cambios, escríbenos con tu número de orden.",
 
     orderStatusTitle: "Estatus de Orden",
     orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estatus en tiempo real.",
@@ -574,8 +658,12 @@ export const translations = {
 
     uploadImageLabel: "Subir imagen",
     uploading: "Subiendo...",
-    uploadFailed: "Error al subir:",
-    uploadDevOnlyHint: "Funciona solo en desarrollo (npm run dev).",
+    uploadFailed: "Error de subida:",
+    uploadErrorNoFile: "No se seleccionó un archivo.",
+    uploadErrorReadFailed: "No se pudo leer el archivo.",
+    uploadErrorGeneric: "No se pudo subir la imagen.",
+    uploadErrorHttpStatus: (status) => `Error del servidor (HTTP ${status}).`,
+    uploadDevOnlyHint: "Solo funciona en desarrollo (npm run dev).",
 
     heroAdminTypeLabel: "Tipo",
     heroAdminTypeContent: "Solo actualizar contenido",
@@ -603,7 +691,8 @@ export const translations = {
     productNamePlaceholder: "Ej: Yeti personalizado 30oz",
     productCategoryLabel: "Categoría",
     productPriceLabel: "Precio",
-    productImageLabel: "Imagen URL",
+    productPricePlaceholderExample: "Ej: 35",
+    productImageLabel: "Imagen",
     productImagePlaceholder: "https://...",
     productShortLabel: "Descripción corta",
     productShortPlaceholder: "Ej: Vaso premium con mensaje de fe.",
@@ -768,6 +857,7 @@ export const translations = {
     searchPlaceholder: "Search",
 
     back: "Back",
+    close: "Close",
     preview: "Preview",
     previewFallbackText: "Your phrase or name here",
 
@@ -841,7 +931,18 @@ export const translations = {
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
     payByCard: "Card",
-    payPalDisclaimer: "PayPal will open so you can complete your payment.",
+    payPalDisclaimer: "PayPal will open to complete your payment.",
+
+    paypalRequiresBackend: "PayPal requires the backend server to be running.",
+    paypalNotAvailable: "PayPal is not available.",
+    paypalNotConfigured: "PayPal is not configured on the server.",
+    paypalCouldNotLoad: "Could not load PayPal.",
+    paypalCouldNotComplete: "Could not complete PayPal.",
+    paypalInvalidOrderId: "PayPal: invalid orderID.",
+    paypalCouldNotCapturePayment: "Could not capture payment.",
+    paypalError: "PayPal error.",
+    paypalCouldNotRender: "Could not render PayPal.",
+
     checkoutContinueToReview: "Continue to review",
 
     cardAcceptedLabel: "Cards accepted",
@@ -918,18 +1019,85 @@ export const translations = {
     blogTitle: "Blog",
     blogSubtitle: "Short reads to attract and nurture your audience.",
     read: "Read",
+    blogPosts: [
+      {
+        title: "How to start a prayer journal",
+        excerpt: "A simple 10-minute daily structure to grow in faith and consistency.",
+      },
+      {
+        title: "3 ways to gift with purpose",
+        excerpt: "Ideas to customize a Yeti or a journal and bless someone.",
+      },
+      {
+        title: "Identity: when you feel unstable",
+        excerpt: "A short read to remember who you are and how to return to calm.",
+      },
+    ],
 
     valuesTitle: "Values",
     valuesSubtitle: "Our foundation",
+    valuesItems: [
+      {
+        icon: "faith",
+        title: "Faith",
+        desc: "Everything we do is grounded in the Word.",
+      },
+      {
+        icon: "integrity",
+        title: "Integrity",
+        desc: "We operate with transparency, honesty, and accountability.",
+      },
+      {
+        icon: "service",
+        title: "Service",
+        desc: "We serve with love and excellence.",
+      },
+      {
+        icon: "hope",
+        title: "Hope",
+        desc: "We promote messages that build up and transform lives.",
+      },
+      {
+        icon: "community",
+        title: "Community",
+        desc: "We foster unity among believers and seekers.",
+      },
+    ],
     missionTitle: "Mission",
     missionText:
       "Share the love of Christ through every product. May each item be a tool for evangelism, hope, and faith.",
 
     faqTitle: "FAQ",
     faqSubtitle: "Shipping, customization, timing, and payments.",
+    faqItems: [
+      {
+        q: "How long does shipping take?",
+        a: "Most orders are processed within 1–2 business days. Typical shipping: 3–5 days (may vary by season).",
+      },
+      {
+        q: "How does customization work?",
+        a: "You can add a name/phrase + a verse. On the product detail page you'll see a preview to help you decide.",
+      },
+      {
+        q: "Can I change or cancel an order?",
+        a: "If the order hasn't shipped yet, you can request cancellation from “Order Status”. If it has shipped, we’ll help with next steps.",
+      },
+      {
+        q: "What payment methods do you accept?",
+        a: "We accept card and PayPal (this MVP is a visual demo; real payments will be integrated later).",
+      },
+      {
+        q: "What if an item is out of stock?",
+        a: "If stock is low, you’ll see a low-stock badge. If it runs out, we’ll suggest similar alternatives.",
+      },
+    ],
 
     adminTitle: "Admin panel",
     adminSubtitle: "Visually manage the store's products.",
+    adminWelcome: "Welcome",
+    adminDefaultName: "Admin",
+    adminDateLabel: "Date:",
+    adminTimeLabel: "Time:",
     adminStatProducts: "Products",
     adminStatProductsBody: "Active items in the catalog.",
     adminStatMode: "Admin user",
@@ -997,6 +1165,8 @@ export const translations = {
     adminUsersCreateButton: "Create user",
     adminUsersCreateError: "That user already exists or there was an error.",
     adminUsersDeleteError: "Could not delete.",
+    adminUsersNameRequired: "Enter a name.",
+    adminUsersUpdateError: "Could not update.",
     adminUsersListTitle: "Admin users",
     adminUsersEmpty: "No admin users yet.",
     adminUsersCannotDeleteLast: "You cannot delete the last admin.",
@@ -1089,6 +1259,7 @@ export const translations = {
     ordersTotal: "Total",
     ordersPrintLabel: "Print label",
     ordersPrintReceipt: "Receipt (PDF)",
+    receiptTitle: "Receipt",
     shippingLabelOrder: "Order",
     shippingLabelShipTo: "SHIP TO",
     shippingLabelPrintedFromAdmin: "Printed from Admin",
@@ -1119,6 +1290,11 @@ export const translations = {
     orderConfirmationGoAdmin: "Go to Admin",
     orderConfirmationNotFound: "We couldn't find that order.",
     orderConfirmationToastOrderSent: "Order sent",
+    orderConfirmationThanksTitle: "Thanks for your order!",
+    orderConfirmationNextStepsTitle: "Next steps",
+    orderConfirmationNextStep1: "Save your order number in case you need help.",
+    orderConfirmationNextStep2: "We'll prepare your order and share tracking once it's ready.",
+    orderConfirmationNextStep3: "If you need changes, message us with your order number.",
 
     orderStatusTitle: "Order status",
     orderStatusSubtitle: "Enter your confirmation number to see real-time status.",
@@ -1188,6 +1364,10 @@ export const translations = {
     uploadImageLabel: "Upload image",
     uploading: "Uploading...",
     uploadFailed: "Upload error:",
+    uploadErrorNoFile: "No file selected.",
+    uploadErrorReadFailed: "Could not read file.",
+    uploadErrorGeneric: "Could not upload image.",
+    uploadErrorHttpStatus: (status) => `Server error (HTTP ${status}).`,
     uploadDevOnlyHint: "Only works in development (npm run dev).",
 
     heroAdminTypeLabel: "Type",
@@ -1215,6 +1395,7 @@ export const translations = {
     productNamePlaceholder: "e.g. Custom 30oz Yeti",
     productCategoryLabel: "Category",
     productPriceLabel: "Price",
+    productPricePlaceholderExample: "e.g. 35",
     productImageLabel: "Image URL",
     productImagePlaceholder: "https://...",
     productShortLabel: "Short description",

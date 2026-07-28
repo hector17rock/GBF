@@ -4,7 +4,6 @@ import SectionTitle from "../components/SectionTitle";
 
 export default function AdminLogin({
   t,
-  language,
   hasAdmins,
   onLogin,
   onGoHome,
@@ -27,21 +26,13 @@ export default function AdminLogin({
     const p = password;
 
     if (!u || !p) {
-      setMessage(
-        t?.adminAuthRequired ||
-          (language === "es" ? "Completa usuario y contraseña." : "Enter username and password.")
-      );
+      setMessage(t.adminAuthRequired);
       return;
     }
 
     // When the API is reachable and confirms there are no admins, block login.
     if (hasAdmins === false) {
-      setMessage(
-        t?.adminAuthNotConfigured ||
-          (language === "es"
-            ? "El acceso admin no está configurado. Contacta al administrador."
-            : "Admin access is not configured. Contact the administrator.")
-      );
+      setMessage(t.adminAuthNotConfigured);
       return;
     }
 
@@ -51,7 +42,7 @@ export default function AdminLogin({
       const ok = await (typeof onLogin === "function" ? onLogin({ username: u, password: p }) : false);
 
       if (!ok) {
-        setMessage(t?.adminAuthInvalid || (language === "es" ? "Acceso denegado." : "Access denied."));
+        setMessage(t.adminAuthInvalid);
       }
     } finally {
       setBusy(false);
@@ -72,19 +63,13 @@ export default function AdminLogin({
             <div className="grid gap-3">
               {hasAdmins === false ? (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  {t.adminAuthNotConfigured ||
-                    (language === "es"
-                      ? "El acceso admin no está configurado. Contacta al administrador."
-                      : "Admin access is not configured. Contact the administrator.")}
+                  {t.adminAuthNotConfigured}
                 </div>
               ) : null}
 
               {hasAdmins === null ? (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  {t?.adminAuthServerOffline ||
-                    (language === "es"
-                      ? "No se pudo conectar con el servidor. Verifica que el Backend esté encendido."
-                      : "Could not reach the server. Make sure the Backend is running.")}
+                  {t.adminAuthServerOffline}
                 </div>
               ) : null}
 

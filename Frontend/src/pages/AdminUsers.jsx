@@ -4,7 +4,6 @@ import SectionTitle from "../components/SectionTitle";
 
 export default function AdminUsers({
   t,
-  language,
   adminUsers,
   onCreateUser,
   onUpdateUser,
@@ -42,15 +41,12 @@ export default function AdminUsers({
     const u = username.trim();
 
     if (!n || !u || !password.trim()) {
-      setMessage(
-        t?.adminAuthRequiredName ||
-          (language === "es" ? "Completa nombre, usuario y contraseña." : "Enter name, username, and password.")
-      );
+      setMessage(t.adminAuthRequiredName);
       return;
     }
 
     if (password.trim() !== password2.trim()) {
-      setMessage(t?.adminAuthPasswordMismatch || (language === "es" ? "Las contraseñas no coinciden." : "Passwords do not match."));
+      setMessage(t.adminAuthPasswordMismatch);
       return;
     }
 
@@ -60,7 +56,7 @@ export default function AdminUsers({
       const ok =
         typeof onCreateUser === "function" ? await onCreateUser({ name: n, username: u, password }) : false;
       if (!ok) {
-        setMessage(t?.adminUsersCreateError || (language === "es" ? "No se pudo crear el admin." : "Could not create admin."));
+        setMessage(t.adminUsersCreateError);
         return;
       }
 
@@ -88,7 +84,7 @@ export default function AdminUsers({
     try {
       const ok = typeof onDeleteUser === "function" ? await onDeleteUser({ userId: u.id }) : false;
       if (!ok) {
-        setMessage(t?.adminUsersDeleteError || (language === "es" ? "No se pudo eliminar." : "Could not delete."));
+        setMessage(t.adminUsersDeleteError);
       }
     } finally {
       setBusy(false);
@@ -111,10 +107,7 @@ export default function AdminUsers({
     if (!u?.id) return;
     const next = String(editingName || "").trim();
     if (!next) {
-      setMessage(
-        t?.adminAuthRequiredName ||
-          (language === "es" ? "Completa nombre, usuario y contraseña." : "Enter name, username, and password.")
-      );
+      setMessage(t.adminUsersNameRequired);
       return;
     }
 
@@ -124,7 +117,7 @@ export default function AdminUsers({
     try {
       const ok = typeof onUpdateUser === "function" ? await onUpdateUser({ userId: u.id, name: next }) : false;
       if (!ok) {
-        setMessage(language === "es" ? "No se pudo actualizar." : "Could not update.");
+        setMessage(t.adminUsersUpdateError);
         return;
       }
 
@@ -142,10 +135,7 @@ export default function AdminUsers({
     setTransferCode(code);
 
     if (!code) {
-      setTransferMsg(
-        t?.adminTransferEmpty ||
-          (language === "es" ? "No hay admins para exportar." : "No admins to export.")
-      );
+      setTransferMsg(t.adminTransferEmpty);
     }
   }
 
@@ -161,22 +151,14 @@ export default function AdminUsers({
     try {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(code);
-        setTransferMsg(
-          t?.adminTransferCopied ||
-            (language === "es" ? "Código copiado." : "Code copied.")
-        );
+        setTransferMsg(t.adminTransferCopied);
         return;
       }
     } catch {
       // ignore
     }
 
-    setTransferMsg(
-      t?.adminTransferCopyHint ||
-        (language === "es"
-          ? "Copia el código manualmente (selecciona y copia)."
-          : "Copy the code manually (select and copy).")
-    );
+    setTransferMsg(t.adminTransferCopyHint);
   }
 
   return (

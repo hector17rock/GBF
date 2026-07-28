@@ -1,11 +1,12 @@
-export default function ToastStack({ toasts = [], onDismiss }) {
+export default function ToastStack({ toasts = [], onDismiss, t: tr }) {
   if (!Array.isArray(toasts) || toasts.length === 0) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 pointer-events-none">
       <div className="grid w-full max-w-md gap-3 md:w-[440px]">
-        {toasts.map((t) => {
-          const tone = t?.tone === "danger" ? "danger" : t?.tone === "info" ? "info" : "success";
+        {toasts.map((toast) => {
+          const tone =
+            toast?.tone === "danger" ? "danger" : toast?.tone === "info" ? "info" : "success";
 
           // UX: keep the icon language simple.
           // - success/info => checkmark
@@ -19,7 +20,7 @@ export default function ToastStack({ toasts = [], onDismiss }) {
 
           return (
             <div
-              key={t.id}
+              key={toast.id}
               className="relative pointer-events-auto overflow-hidden rounded-[26px] border border-white/35 bg-white/20 px-6 py-6 shadow-2xl backdrop-blur-2xl backdrop-saturate-150"
               style={{
                 animation: "gbfToastIn 240ms cubic-bezier(0.22, 1, 0.36, 1)",
@@ -50,8 +51,8 @@ export default function ToastStack({ toasts = [], onDismiss }) {
                 <button
                   type="button"
                   className="absolute right-3 top-3 z-10 rounded-full px-2 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-white/25"
-                  onClick={() => onDismiss(t.id)}
-                  aria-label="Close"
+                  onClick={() => onDismiss(toast.id)}
+                  aria-label={tr?.close || "Close"}
                 >
                   ×
                 </button>
@@ -90,7 +91,7 @@ export default function ToastStack({ toasts = [], onDismiss }) {
                 </div>
 
                 <div className="mt-4 text-[15px] font-extrabold leading-6 text-[#2B2B2B]">
-                  {String(t?.message || "")}
+                  {String(toast?.message || "")}
                 </div>
               </div>
 
