@@ -19,6 +19,24 @@ export const translations = {
     navWishlist: "Favoritos",
     navAdmin: "Admin",
 
+    // Common UI (menu/buttons/ARIA)
+    menu: "Menú",
+    openMenu: "Abrir menú",
+    closeMenu: "Cerrar menú",
+    previous: "Anterior",
+    next: "Siguiente",
+    imageNLabel: (n) => `Imagen ${n}`,
+    anonymous: "Anónimo",
+    ratingAriaLabel: (value) => `Calificación ${value} de 5`,
+    rating5StarsLabel: "5 estrellas",
+    barcodeAriaLabel: "Código de barras",
+
+    // Product detail
+    productDetailGoCheckoutShort: "Pagar",
+    productDetailDeliveryReturnsTitle: "Entrega y devoluciones",
+    productDetailDeliveryReturnsBody:
+      "Envíos y devoluciones (demo). Luego puedes conectar un proveedor real y políticas oficiales.",
+
     explore: "Explorar",
     cart: "Carrito",
 
@@ -617,6 +635,24 @@ export const translations = {
     navOrderStatus: "Order Status",
     navWishlist: "Wishlist",
     navAdmin: "Admin",
+
+    // Common UI (menu/buttons/ARIA)
+    menu: "Menu",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+    previous: "Previous",
+    next: "Next",
+    imageNLabel: (n) => `Image ${n}`,
+    anonymous: "Anonymous",
+    ratingAriaLabel: (value) => `Rating ${value} out of 5`,
+    rating5StarsLabel: "5 stars",
+    barcodeAriaLabel: "Barcode",
+
+    // Product detail
+    productDetailGoCheckoutShort: "Checkout",
+    productDetailDeliveryReturnsTitle: "Delivery & returns",
+    productDetailDeliveryReturnsBody:
+      "Shipping and returns (demo). You can later connect real carriers and official policies.",
 
     explore: "Explore",
     cart: "Cart",

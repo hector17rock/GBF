@@ -65,7 +65,7 @@ export default function ProductCard({
             className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DDD6CA] bg-[#F8F6F2]/90 text-[#6B6B6B] shadow-sm transition hover:bg-[#F8F6F2] ${
               isFavorite ? "text-[#2B2B2B]" : ""
             }`}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={isFavorite ? t.favRemove : t.favAdd}
           >
             <svg
               viewBox="0 0 24 24"
@@ -95,7 +95,7 @@ export default function ProductCard({
 
         {hasRatings ? (
           <div className="mt-3 flex items-center gap-2 text-xs text-[#6B6B6B]">
-            <StarRow value={avg} />
+            <StarRow value={avg} t={t} />
             <span className="font-semibold text-[#2B2B2B]">{avg.toFixed(1)}</span>
             <span className="text-[#6B6B6B]">({count})</span>
           </div>
@@ -111,13 +111,16 @@ export default function ProductCard({
   );
 }
 
-function StarRow({ value }) {
+function StarRow({ value, t }) {
   const v = Number(value);
   const safe = Number.isFinite(v) ? Math.max(0, Math.min(5, v)) : 0;
   const filled = Math.round(safe);
 
+  const aria =
+    t && typeof t.ratingAriaLabel === "function" ? t.ratingAriaLabel(safe.toFixed(1)) : `Rating ${safe.toFixed(1)} out of 5`;
+
   return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`Rating ${safe.toFixed(1)} out of 5`}>
+    <span className="inline-flex items-center gap-0.5" aria-label={aria}>
       {Array.from({ length: 5 }).map((_, i) => {
         const on = i < filled;
         return (

@@ -210,7 +210,8 @@ export default function ProductDetail({
             <div className="order-2 flex gap-2 overflow-auto lg:order-1 lg:flex-col">
               {gallery.map((g, idx) => {
                 const selected = idx === activeImg;
-                const label = language === "es" ? `Imagen ${idx + 1}` : `Image ${idx + 1}`;
+                const label =
+                  typeof t?.imageNLabel === "function" ? t.imageNLabel(idx + 1) : `Image ${idx + 1}`;
 
                 return (
                   <button
@@ -287,7 +288,7 @@ export default function ProductDetail({
                       type="button"
                       onClick={goPrev}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/70 text-zinc-900 shadow-sm backdrop-blur-xl transition hover:bg-white"
-                      aria-label={language === "es" ? "Anterior" : "Previous"}
+                      aria-label={t.previous}
                     >
                       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -297,7 +298,7 @@ export default function ProductDetail({
                       type="button"
                       onClick={goNext}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/70 text-zinc-900 shadow-sm backdrop-blur-xl transition hover:bg-white"
-                      aria-label={language === "es" ? "Siguiente" : "Next"}
+                      aria-label={t.next}
                     >
                       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -332,7 +333,7 @@ export default function ProductDetail({
 
                 {hasRatings ? (
                   <div className="mt-2 flex items-center gap-2 text-xs text-zinc-600">
-                    <StarRow value={avg} />
+                    <StarRow value={avg} t={t} />
                     <span className="font-semibold text-zinc-700">{avg.toFixed(1)}</span>
                     <span className="text-zinc-500">({count})</span>
                   </div>
@@ -444,7 +445,7 @@ export default function ProductDetail({
 
                 {typeof onGoCheckout === "function" ? (
                   <Button variant="secondary" onClick={handleCheckout} className="w-full justify-center">
-                    {language === "es" ? "Pagar" : "Checkout"}
+                    {t.productDetailGoCheckoutShort}
                   </Button>
                 ) : null}
               </div>
@@ -459,7 +460,7 @@ export default function ProductDetail({
               <div className="mt-2 divide-y divide-[#DDD6CA]/60 rounded-[24px] border border-[#DDD6CA]/60 bg-white/55 shadow-sm backdrop-blur-xl">
                 <details className="group p-4" open>
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-zinc-900">
-                    <span>{language === "es" ? "Entrega y devoluciones" : "Delivery & returns"}</span>
+                    <span>{t.productDetailDeliveryReturnsTitle}</span>
                     <span className="text-zinc-500 transition group-open:rotate-180">
                       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -467,9 +468,7 @@ export default function ProductDetail({
                     </span>
                   </summary>
                   <div className="mt-3 text-sm leading-6 text-zinc-600">
-                    {language === "es"
-                      ? "Envíos y devoluciones (demo). Luego puedes conectar un proveedor real y políticas oficiales."
-                      : "Shipping and returns (demo). You can later connect real carriers and official policies."}
+                    {t.productDetailDeliveryReturnsBody}
                   </div>
                 </details>
 
@@ -500,10 +499,10 @@ export default function ProductDetail({
                               <div>
                                 <div className="text-sm font-bold text-zinc-900">
                                   {String(r?.name || "").trim() ||
-                                    (language === "es" ? "Anónimo" : "Anonymous")}
+                                    t.anonymous}
                                 </div>
                                 <div className="mt-1">
-                                  <StarRow value={Number(r?.rating) || 0} />
+                                  <StarRow value={Number(r?.rating) || 0} t={t} />
                                 </div>
                               </div>
                               <div className="text-xs text-zinc-500">
@@ -576,8 +575,8 @@ export default function ProductDetail({
         {/* Related */}
         {related.length ? (
           <div className="mt-10">
-            <div className="text-sm font-extrabold tracking-[0.2em] text-zinc-500">
-              {language === "es" ? "TAMBIÉN TE PUEDE GUSTAR" : "YOU MIGHT ALSO LIKE"}
+            <div className="text-sm font-extrabold tracking-[0.2em] text-zinc-500 uppercase">
+              {t.relatedTitle}
             </div>
             <div className="mt-4 flex gap-3 overflow-auto pb-2">
               {related.map((p) => (
@@ -605,13 +604,16 @@ export default function ProductDetail({
   );
 }
 
-function StarRow({ value }) {
+function StarRow({ value, t }) {
   const v = Number(value);
   const safe = Number.isFinite(v) ? Math.max(0, Math.min(5, v)) : 0;
   const filled = Math.round(safe);
 
+  const aria =
+    t && typeof t.ratingAriaLabel === "function" ? t.ratingAriaLabel(safe.toFixed(1)) : `Rating ${safe.toFixed(1)} out of 5`;
+
   return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`Rating ${safe.toFixed(1)} out of 5`}>
+    <span className="inline-flex items-center gap-0.5" aria-label={aria}>
       {Array.from({ length: 5 }).map((_, i) => {
         const on = i < filled;
         return (

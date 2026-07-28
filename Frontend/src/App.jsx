@@ -931,7 +931,10 @@ function buildCode128BSequence(text) {
   return [START_B, ...values, check, STOP];
 }
 
-function buildCode128Svg(text, { modulePx = 2, heightPx = 56, quietModules = 10 } = {}) {
+function buildCode128Svg(
+  text,
+  { modulePx = 2, heightPx = 56, quietModules = 10, ariaLabel = "Barcode" } = {}
+) {
   const seq = buildCode128BSequence(text);
   if (!seq) return "";
 
@@ -959,7 +962,7 @@ function buildCode128Svg(text, { modulePx = 2, heightPx = 56, quietModules = 10 
 
   return (
     `<svg class="barcodeSvg" viewBox="0 0 ${widthPx} ${heightPx}" width="100%" height="${heightPx}" ` +
-    `xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Barcode">` +
+    `xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeHtml(ariaLabel)}">` +
     `<rect x="0" y="0" width="${widthPx}" height="${heightPx}" fill="#fff" />` +
     `<g fill="#000">${rects.join("")}</g>` +
     `</svg>`
@@ -992,7 +995,12 @@ function buildShippingLabelHtml({ order, language }) {
   const trackingRaw = String(order?.trackingNumber || "").trim();
   const trackingText = trackingRaw.replace(/\s+/g, "").trim();
   const barcodeSvg = trackingText
-    ? buildCode128Svg(trackingText, { modulePx: 2, heightPx: 56, quietModules: 10 })
+    ? buildCode128Svg(trackingText, {
+        modulePx: 2,
+        heightPx: 56,
+        quietModules: 10,
+        ariaLabel: tr.barcodeAriaLabel || "Barcode",
+      })
     : "";
 
   return `
@@ -1708,7 +1716,7 @@ function Home({
         <SectionTitle title={t.testimonialsTitle} subtitle={t.testimonialsSubtitle} />
         <div className="grid gap-3 md:grid-cols-3">
           {TESTIMONIALS.map((x) => (
-            <TestimonialCard key={x.id} testimonial={x} language={language} />
+            <TestimonialCard key={x.id} testimonial={x} language={language} t={t} />
           ))}
         </div>
       </div>

@@ -15,9 +15,9 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
 
-  const menuLabel = language === "es" ? "Menú" : "Menu";
-  const openMenuLabel = language === "es" ? "Abrir menú" : "Open menu";
-  const closeMenuLabel = language === "es" ? "Cerrar menú" : "Close menu";
+  const menuLabel = t.menu;
+  const openMenuLabel = t.openMenu;
+  const closeMenuLabel = t.closeMenu;
 
   const go = (nextRoute) => {
     setMenuOpen(false);
