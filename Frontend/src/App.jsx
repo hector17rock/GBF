@@ -1366,8 +1366,28 @@ function OrderFlowStepper({ currentStep = 1, t }) {
   const safeStep = Math.min(Math.max(1, Number(currentStep) || 1), total);
   const progressPct = total <= 1 ? 0 : ((safeStep - 1) / (total - 1)) * 100;
 
+  // Animate: rely on CSS transitions + remount-triggered keyframe animations.
+  // (Lint rule in this repo forbids setState() inside useEffect.)
+
   return (
     <div className="mx-auto max-w-6xl px-4 pt-4">
+      <style>{`
+        @keyframes gbfStepBadgePop {
+          0% { transform: scale(0.82); filter: blur(0px); }
+          55% { transform: scale(1.12); }
+          100% { transform: scale(1); }
+        }
+        @keyframes gbfStepBadgeComplete {
+          0% { transform: scale(1); }
+          45% { transform: scale(1.12); }
+          100% { transform: scale(1); }
+        }
+        @keyframes gbfStepCheckIn {
+          0% { opacity: 0; transform: scale(0.6); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+
       <div className="rounded-[24px] border border-[#DDD6CA]/60 bg-[#F8F6F2]/70 p-4 shadow-sm backdrop-blur-xl">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs font-semibold text-zinc-600">
@@ -1378,7 +1398,7 @@ function OrderFlowStepper({ currentStep = 1, t }) {
         <div className="relative mt-3">
           <div className="h-2 w-full rounded-full bg-[#DDD6CA]" />
           <div
-            className="absolute left-0 top-0 h-2 rounded-full bg-[#355E3B]"
+            className="absolute left-0 top-0 h-2 rounded-full bg-[#355E3B] will-change-[width] transition-[width] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -1389,16 +1409,31 @@ function OrderFlowStepper({ currentStep = 1, t }) {
             const done = n < safeStep;
             const current = n === safeStep;
 
+            // Pop the active badge and the badge immediately before it (the one that just got completed).
+            const pulseCurrent = current;
+            const pulseComplete = safeStep > 1 && n === safeStep - 1 && done;
+
+            const badgeBase =
+              "inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-extrabold shadow-[0_1px_0_rgba(0,0,0,0.06)] transition-[transform,background-color,border-color,color,box-shadow] duration-500 ease-out";
+
+            const badgeTone = done
+              ? "border-[#A8B99A] bg-[#A8B99A]/25 text-[#2B2B2B]"
+              : current
+              ? "border-[#355E3B] bg-[#355E3B] text-white shadow-[0_6px_18px_rgba(53,94,59,0.18)]"
+              : "border-[#DDD6CA] bg-[#F8F6F2] text-[#2B2B2B]";
+
+            const badgeMotion = pulseCurrent
+              ? "[animation:gbfStepBadgePop_520ms_cubic-bezier(0.22,1,0.36,1)]"
+              : pulseComplete
+              ? "[animation:gbfStepBadgeComplete_520ms_cubic-bezier(0.22,1,0.36,1)]"
+              : "";
+
             return (
               <div key={s.key} className="flex flex-col items-center gap-1 text-center">
                 <span
-                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-extrabold ${
-                    done
-                      ? "border-[#A8B99A] bg-[#A8B99A]/25 text-[#2B2B2B]"
-                      : current
-                      ? "border-[#355E3B] bg-[#355E3B] text-white"
-                      : "border-[#DDD6CA] bg-[#F8F6F2] text-[#2B2B2B]"
-                  }`}
+                  // Remount on step changes so the animation reliably replays.
+                  key={pulseCurrent || pulseComplete ? `${n}-${safeStep}` : `${n}-${done ? 1 : 0}-${current ? 1 : 0}`}
+                  className={`${badgeBase} ${badgeTone} ${badgeMotion}`}
                   aria-label={`${n}`}
                 >
                   {done ? (
@@ -1409,7 +1444,7 @@ function OrderFlowStepper({ currentStep = 1, t }) {
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-4 w-4"
+                      className="h-4 w-4 [animation:gbfStepCheckIn_240ms_ease-out]"
                       aria-hidden="true"
                     >
                       <path d="M20 6L9 17l-5-5" />
@@ -1418,8 +1453,9 @@ function OrderFlowStepper({ currentStep = 1, t }) {
                     n
                   )}
                 </span>
+
                 <div
-                  className={`text-[11px] font-semibold leading-4 ${
+                  className={`text-[11px] font-semibold leading-4 transition-colors duration-500 ${
                     current ? "text-[#2B2B2B]" : "text-[#6B6B6B]"
                   }`}
                 >
@@ -7091,8 +7127,22 @@ export default function App() {
         body: { name: n, username: u, password: p },
       });
       await refreshAdminUsers();
+
+      pushToast(
+        language === "es"
+          ? `Usuario de administrador creado: ${u}`
+          : `Admin user created: ${u}`,
+        "success"
+      );
+
       return true;
     } catch {
+      pushToast(
+        language === "es"
+          ? "No se pudo crear el usuario de administrador."
+          : "Could not create admin user.",
+        "danger"
+      );
       return false;
     }
   }
@@ -7121,9 +7171,23 @@ export default function App() {
     if (!id) return false;
     if (!adminToken) return false;
 
+    const label = (() => {
+      const rows = Array.isArray(adminUsers) ? adminUsers : [];
+      const found = rows.find((x) => String(x?.id || "") === id);
+      const v = found?.username || found?.name || id;
+      return String(v || id);
+    })();
+
     try {
       await apiJson(`/admin-users/${id}`, { method: "DELETE", token: adminToken });
       await refreshAdminUsers();
+
+      pushToast(
+        language === "es"
+          ? `Usuario de administrador eliminado: ${label}`
+          : `Admin user deleted: ${label}`,
+        "success"
+      );
 
       // If the current user was deleted, force logout.
       if (String(currentAdminUser?.id || "") === id) {
@@ -7134,6 +7198,12 @@ export default function App() {
 
       return true;
     } catch {
+      pushToast(
+        language === "es"
+          ? "No se pudo eliminar el usuario de administrador."
+          : "Could not delete admin user.",
+        "danger"
+      );
       return false;
     }
   }
@@ -7791,6 +7861,56 @@ export default function App() {
 
   const isAdminRoute = ADMIN_PROTECTED_ROUTES.has(route);
 
+  // Admin autosave toast support: only show save toasts when the admin actually made changes.
+  const adminDirtyRef = useRef({
+    homepage: false,
+    catalog: false,
+    inventory: false,
+    checkout: false,
+    policies: false,
+    orders: false,
+  });
+
+  const setHeroConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.homepage = true;
+    setHeroConfig(next);
+  }, []);
+
+  const setProductsAdmin = useCallback((next) => {
+    adminDirtyRef.current.catalog = true;
+    setProducts(next);
+  }, []);
+
+  const setCategoriesAdmin = useCallback((next) => {
+    adminDirtyRef.current.catalog = true;
+    setCategories(next);
+  }, []);
+
+  const setInventoryAdmin = useCallback((next) => {
+    adminDirtyRef.current.inventory = true;
+    setInventory(next);
+  }, []);
+
+  const setProductCostsAdmin = useCallback((next) => {
+    adminDirtyRef.current.inventory = true;
+    setProductCosts(next);
+  }, []);
+
+  const setCheckoutConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.checkout = true;
+    setCheckoutConfig(next);
+  }, []);
+
+  const setPoliciesConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.policies = true;
+    setPoliciesConfig(next);
+  }, []);
+
+  const setOrdersAdmin = useCallback((next) => {
+    adminDirtyRef.current.orders = true;
+    setOrders(next);
+  }, []);
+
   const applyServerStateObject = useCallback((st) => {
     if (!st || typeof st !== "object") return;
 
@@ -7943,11 +8063,33 @@ export default function App() {
   const pendingAdminPatchRef = useRef({});
   const pendingAdminPatchTimerRef = useRef(null);
 
+  const adminSaveToastCooldownRef = useRef(0);
+  const languageRef = useRef(language);
+  languageRef.current = language;
+
   const scheduleAdminPatch = useCallback(
     (patch) => {
+      const lang = languageRef.current === "es" ? "es" : "en";
+
       if (!isAdminAuthed || !adminToken) return;
-      if (!serverAdminOk) return;
       if (!patch || typeof patch !== "object") return;
+
+      // If the admin backend is offline, don't silently ignore edits.
+      if (!serverAdminOk) {
+        const now = Date.now();
+        const last = Number(adminSaveToastCooldownRef.current) || 0;
+        if (now - last > 2600) {
+          adminSaveToastCooldownRef.current = now;
+          pushToast(
+            lang === "es"
+              ? "No se pudieron guardar los cambios (servidor desconectado)."
+              : "Could not save changes (server offline).",
+            "danger",
+            3400
+          );
+        }
+        return;
+      }
 
       // Merge into a single pending patch
       pendingAdminPatchRef.current = { ...pendingAdminPatchRef.current, ...patch };
@@ -7962,6 +8104,52 @@ export default function App() {
 
         if (!toSend || typeof toSend !== "object" || Object.keys(toSend).length === 0) return;
         if (serverHydratingRef.current) return;
+
+        const labelsEs = [];
+        const labelsEn = [];
+
+        if ("heroConfig" in toSend) {
+          labelsEs.push("Página principal");
+          labelsEn.push("Homepage");
+        }
+        if ("categories" in toSend || "products" in toSend) {
+          labelsEs.push("Productos");
+          labelsEn.push("Products");
+        }
+        if ("inventory" in toSend || "productCosts" in toSend) {
+          labelsEs.push("Inventario");
+          labelsEn.push("Inventory");
+        }
+        if ("checkoutConfig" in toSend) {
+          labelsEs.push("Checkout");
+          labelsEn.push("Checkout");
+        }
+        if ("policiesConfig" in toSend) {
+          labelsEs.push("Políticas");
+          labelsEn.push("Policies");
+        }
+        if ("orders" in toSend) {
+          labelsEs.push("Órdenes");
+          labelsEn.push("Orders");
+        }
+
+        const successMsg =
+          (lang === "es" ? labelsEs : labelsEn).length
+            ? lang === "es"
+              ? `Cambios guardados: ${labelsEs.join(", ")}.`
+              : `Changes saved: ${labelsEn.join(", ")}.`
+            : lang === "es"
+            ? "Cambios guardados."
+            : "Changes saved.";
+
+        const errorMsg =
+          (lang === "es" ? labelsEs : labelsEn).length
+            ? lang === "es"
+              ? `No se pudieron guardar los cambios: ${labelsEs.join(", ")}.`
+              : `Could not save changes: ${labelsEn.join(", ")}.`
+            : lang === "es"
+            ? "No se pudieron guardar los cambios."
+            : "Could not save changes.";
 
         try {
           const res = await apiJson("/state/admin", {
@@ -7979,11 +8167,22 @@ export default function App() {
             const nextRev = Number(res?.revision);
             if (Number.isFinite(nextRev)) setServerRevision(nextRev);
           }
+
+          // Mark relevant sections as clean.
+          if ("heroConfig" in toSend) adminDirtyRef.current.homepage = false;
+          if ("categories" in toSend || "products" in toSend) adminDirtyRef.current.catalog = false;
+          if ("inventory" in toSend || "productCosts" in toSend) adminDirtyRef.current.inventory = false;
+          if ("checkoutConfig" in toSend) adminDirtyRef.current.checkout = false;
+          if ("policiesConfig" in toSend) adminDirtyRef.current.policies = false;
+          if ("orders" in toSend) adminDirtyRef.current.orders = false;
+
+          pushToast(successMsg, "success");
         } catch (err) {
           // Conflict or offline; polling will reconcile.
           if (err && typeof err === "object" && err.status === 409) {
             setServerAdminOk(true);
           }
+          pushToast(errorMsg, "danger", 3400);
         }
       }, 700);
     },
@@ -7994,36 +8193,42 @@ export default function App() {
   useEffect(() => {
     if (!isAdminAuthed) return;
     if (route !== "admin_homepage" && route !== "admin") return;
+    if (!adminDirtyRef.current.homepage) return;
     scheduleAdminPatch({ heroConfig });
   }, [heroConfig, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
     if (route !== "admin_products" && route !== "admin") return;
+    if (!adminDirtyRef.current.catalog) return;
     scheduleAdminPatch({ categories, products });
   }, [categories, products, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
     if (route !== "admin_inventory") return;
+    if (!adminDirtyRef.current.inventory) return;
     scheduleAdminPatch({ inventory, productCosts });
   }, [inventory, productCosts, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
     if (route !== "admin_checkout") return;
+    if (!adminDirtyRef.current.checkout) return;
     scheduleAdminPatch({ checkoutConfig });
   }, [checkoutConfig, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
     if (route !== "admin_policies") return;
+    if (!adminDirtyRef.current.policies) return;
     scheduleAdminPatch({ policiesConfig });
   }, [policiesConfig, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
     if (route !== "admin_orders") return;
+    if (!adminDirtyRef.current.orders) return;
     scheduleAdminPatch({ orders });
   }, [orders, isAdminAuthed, route, scheduleAdminPatch]);
 
@@ -8674,17 +8879,17 @@ export default function App() {
             <AdminPanel
               page="dashboard"
               products={products}
-              setProducts={setProducts}
+              setProducts={setProductsAdmin}
               categories={categories}
-              setCategories={setCategories}
+              setCategories={setCategoriesAdmin}
               heroConfig={heroConfig}
               inventory={inventory}
-              setInventory={setInventory}
+              setInventory={setInventoryAdmin}
               productCosts={productCosts}
-              setProductCosts={setProductCosts}
+              setProductCosts={setProductCostsAdmin}
               orders={orders}
               checkoutConfig={checkoutConfig}
-              setCheckoutConfig={setCheckoutConfig}
+              setCheckoutConfig={setCheckoutConfigAdmin}
               notify={pushToast}
               onPreviewProduct={(p) => {
                 runViewTransition(() => {
@@ -8725,17 +8930,17 @@ export default function App() {
             <AdminPanel
               page="products"
               products={products}
-              setProducts={setProducts}
+              setProducts={setProductsAdmin}
               categories={categories}
-              setCategories={setCategories}
+              setCategories={setCategoriesAdmin}
               heroConfig={heroConfig}
               inventory={inventory}
-              setInventory={setInventory}
+              setInventory={setInventoryAdmin}
               productCosts={productCosts}
-              setProductCosts={setProductCosts}
+              setProductCosts={setProductCostsAdmin}
               orders={orders}
               checkoutConfig={checkoutConfig}
-              setCheckoutConfig={setCheckoutConfig}
+              setCheckoutConfig={setCheckoutConfigAdmin}
               notify={pushToast}
               onPreviewProduct={(p) => {
                 runViewTransition(() => {
@@ -8776,9 +8981,9 @@ export default function App() {
             <AdminInventory
               products={products}
               inventory={inventory}
-              setInventory={setInventory}
+              setInventory={setInventoryAdmin}
               productCosts={productCosts}
-              setProductCosts={setProductCosts}
+              setProductCosts={setProductCostsAdmin}
               t={t}
               language={language}
               onBack={() => navigate("admin")}
@@ -8799,7 +9004,7 @@ export default function App() {
           !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
             <AdminCheckoutSettings
               checkoutConfig={checkoutConfig}
-              setCheckoutConfig={setCheckoutConfig}
+              setCheckoutConfig={setCheckoutConfigAdmin}
               t={t}
               language={language}
               onBack={() => navigate("admin")}
@@ -8820,7 +9025,7 @@ export default function App() {
           !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
             <AdminPolicies
               policiesConfig={policiesConfig}
-              setPoliciesConfig={setPoliciesConfig}
+              setPoliciesConfig={setPoliciesConfigAdmin}
               t={t}
               language={language}
               onBack={() => navigate("admin")}
@@ -8841,7 +9046,7 @@ export default function App() {
           !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
             <AdminHomepage
               heroConfig={heroConfig}
-              setHeroConfig={setHeroConfig}
+              setHeroConfig={setHeroConfigAdmin}
               t={t}
               language={language}
               onBack={() => navigate("admin")}
@@ -8862,7 +9067,7 @@ export default function App() {
           !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
             <AdminOrders
               orders={orders}
-              setOrders={setOrders}
+              setOrders={setOrdersAdmin}
               t={t}
               language={language}
               onBack={() => navigate("admin")}
