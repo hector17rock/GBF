@@ -21,10 +21,37 @@ export default function Footer({ t }) {
             <div className="mt-1 text-xs text-[#6B6B6B]">{footerNote}</div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Pill>IG</Pill>
-            <Pill>TikTok</Pill>
+            <Pill>
+              <img
+                src="/Instagram_icon.png"
+                alt="Instagram"
+                className="h-4 w-4 object-contain"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+            </Pill>
+            <Pill>
+              <img
+                src="/tiktok-icon.png"
+                alt="TikTok"
+                className="h-4 w-4 object-contain"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+            </Pill>
             <Pill>Blog</Pill>
-            <Pill>{t.footerWhatsAppCheckout}</Pill>
+            <Pill>
+              <img
+                src="/paypallogo.png"
+                alt="PayPal"
+                className="h-4 w-auto object-contain"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+            </Pill>
           </div>
         </div>
       </div>
