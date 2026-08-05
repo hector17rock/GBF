@@ -14,21 +14,41 @@ production domain) is allowed to call this API from the browser
 resource lives there, not here, so this stays small and readable)
 """
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import Base, engine
 import app.models  # noqa: F401 (register models for create_all)
 
-from app.routers import auth, admin_users, state, checkout, public, paypal
+from app.routers import auth, admin_users, state, checkout, public, paypal, uploads
 
 app = FastAPI(title=settings.app_name)
 
-# --- DB bootstrap ---
+# --- DB + filesystem bootstrap ---
 @app.on_event("startup")
 def _startup_create_tables():
-    Base.metadata.create_all(bind=engine)
+    # In production we rely on Alembic migrations (run during deploy/startup).
+    # For local development, keep create_all so the API runs out-of-the-box.
+    if str(settings.environment or "").lower() != "production":
+        Base.metadata.create_all(bind=engine)
+
+    # Ensure uploads directory exists so StaticFiles can serve it.
+    try:
+        Path(str(settings.uploads_dir or "uploads")).mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
+
+# Public static files for uploaded assets (mounted volume in production).
+app.mount(
+    "/uploads",
+    StaticFiles(directory=str(settings.uploads_dir or "uploads"), check_dir=False),
+    name="uploads",
+)
 
 
 # --- CORS ---
@@ -61,6 +81,7 @@ app.include_router(state.router)
 app.include_router(checkout.router)
 app.include_router(public.router)
 app.include_router(paypal.router)
+app.include_router(uploads.router)
 
 @app.get("/health")
 def health_check():

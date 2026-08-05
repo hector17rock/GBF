@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gbf
+      POSTGRES_USER: gbf
+      POSTGRES_PASSWORD: gbf_dev_password
+    volumes:
+      - gbf_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gbf -d gbf"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./Backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg2://gbf:gbf_dev_password@db:5432/gbf
+      # Set this to your frontend domain(s) in production, e.g. "https://tu-dominio.com,https://www.tu-dominio.com"
+      CORS_ORIGINS: http://localhost:5173
+      # Required to create the first admin via POST /auth/bootstrap
+      ADMIN_BOOTSTRAP_TOKEN: change-me
+      # Disk storage for uploaded images (mount a volume here in production)
+      UPLOADS_DIR: /data/uploads
+    volumes:
+      - gbf_uploads:/data/uploads
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+
+volumes:
+  gbf_postgres_data:
+  gbf_uploads:

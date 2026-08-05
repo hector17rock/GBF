@@ -663,7 +663,7 @@ export const translations = {
     uploadErrorReadFailed: "No se pudo leer el archivo.",
     uploadErrorGeneric: "No se pudo subir la imagen.",
     uploadErrorHttpStatus: (status) => `Error del servidor (HTTP ${status}).`,
-    uploadDevOnlyHint: "Solo funciona en desarrollo (npm run dev).",
+    uploadDevOnlyHint: "Se guarda en el servidor y queda disponible por URL.",
 
     heroAdminTypeLabel: "Tipo",
     heroAdminTypeContent: "Solo actualizar contenido",
@@ -1368,7 +1368,7 @@ export const translations = {
     uploadErrorReadFailed: "Could not read file.",
     uploadErrorGeneric: "Could not upload image.",
     uploadErrorHttpStatus: (status) => `Server error (HTTP ${status}).`,
-    uploadDevOnlyHint: "Only works in development (npm run dev).",
+    uploadDevOnlyHint: "Saved on the server and available via URL.",
 
     heroAdminTypeLabel: "Type",
     heroAdminTypeContent: "Content update only",

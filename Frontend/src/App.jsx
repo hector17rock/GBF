@@ -705,8 +705,48 @@ function uploadErrorDetail(err, t) {
   return code || t.uploadErrorGeneric;
 }
 
-// Helper: uploadImageToPublicImages (dev-server endpoint)
-async function uploadImageToPublicImages({ file, filename }) {
+// Helper: uploadImageToPublicImages
+// Production: POST to backend /uploads/images (multipart/form-data) and return an absolute URL.
+// Dev fallback: Vite dev-server endpoint /__gbf_upload_image.
+async function uploadImageToPublicImages({ file, filename, apiBaseUrl, token } = {}) {
+  const base = String(apiBaseUrl || "").replace(/\/+$/, "");
+
+  // Prefer the backend upload endpoint when an API base URL is available.
+  if (base) {
+    const url = `${base}/uploads/images`;
+
+    const form = new FormData();
+    form.append("file", file);
+    if (filename) form.append("filename", filename);
+
+    const headers = { Accept: "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: form,
+    });
+
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      throw new Error(`upload_failed_${res.status}`);
+    }
+
+    if (!json?.ok || typeof json?.url !== "string") {
+      throw new Error("upload_failed");
+    }
+
+    // Convert the API-provided path to an absolute URL so it works across domains.
+    try {
+      return new URL(String(json.url), `${base}/`).toString();
+    } catch {
+      return String(json.url);
+    }
+  }
+
+  // Dev fallback: write into Frontend/public/images via Vite middleware.
   const dataUrl = await fileToDataUrl(file);
 
   const res = await fetch("/__gbf_upload_image", {
@@ -3939,6 +3979,8 @@ function AdminPanel({
   onGoHomepage,
   currentAdminUser,
   page = "dashboard",
+  apiBaseUrl,
+  adminToken,
   t,
   language,
 }) {
@@ -4019,7 +4061,12 @@ function AdminPanel({
 
     try {
       const filename = buildUploadFilename(filenamePrefix, file);
-      const url = await uploadImageToPublicImages({ file, filename });
+      const url = await uploadImageToPublicImages({
+        file,
+        filename,
+        apiBaseUrl,
+        token: adminToken,
+      });
       onSuccess(url);
     } catch (err) {
       setUploadErrors((prev) => ({
@@ -5119,7 +5166,7 @@ function AdminPanel({
 }
 
 // Page: AdminHomepage
-function AdminHomepage({ heroConfig, setHeroConfig, t, language, onBack }) {
+function AdminHomepage({ heroConfig, setHeroConfig, apiBaseUrl, adminToken, t, language, onBack }) {
   const [uploading, setUploading] = useState({});
   const [uploadErrors, setUploadErrors] = useState({});
 
@@ -5184,7 +5231,12 @@ function AdminHomepage({ heroConfig, setHeroConfig, t, language, onBack }) {
 
     try {
       const filename = buildUploadFilename(filenamePrefix, file);
-      const url = await uploadImageToPublicImages({ file, filename });
+      const url = await uploadImageToPublicImages({
+        file,
+        filename,
+        apiBaseUrl,
+        token: adminToken,
+      });
       onSuccess(url);
     } catch (err) {
       setUploadErrors((prev) => ({
@@ -8860,6 +8912,8 @@ export default function App() {
               onLogoutAdmin={logoutAdmin}
               onGoHomepage={() => navigate("admin_homepage")}
               currentAdminUser={currentAdminUser}
+              apiBaseUrl={API_BASE_URL}
+              adminToken={adminToken}
               t={t}
               language={language}
             />
@@ -8911,6 +8965,8 @@ export default function App() {
               onLogoutAdmin={logoutAdmin}
               onGoHomepage={() => navigate("admin_homepage")}
               currentAdminUser={currentAdminUser}
+              apiBaseUrl={API_BASE_URL}
+              adminToken={adminToken}
               t={t}
               language={language}
             />
@@ -8997,6 +9053,8 @@ export default function App() {
             <AdminHomepage
               heroConfig={heroConfig}
               setHeroConfig={setHeroConfigAdmin}
+              apiBaseUrl={API_BASE_URL}
+              adminToken={adminToken}
               t={t}
               language={language}
               onBack={() => navigate("admin")}
