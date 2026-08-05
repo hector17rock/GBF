@@ -11,7 +11,7 @@ from app.config import settings
 from app.deps.admin import require_admin
 from app.models.admin_user import AdminUser
 
-router = APIRouter(prefix="/uploads", tags=["uploads"])
+router = APIRouter(prefix="/api/uploads", tags=["uploads"])
 
 
 _ALLOWED_IMAGE_MIME_TO_EXT: dict[str, str] = {

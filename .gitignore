@@ -29,6 +29,9 @@ lerna-debug.log*
 # Local backups (docker compose helpers)
 backups/
 
+# Local admin credentials (generated for bootstrap)
+.admin_credentials
+
 # Editor directories and files
 **/.vscode/*
 !**/.vscode/extensions.json

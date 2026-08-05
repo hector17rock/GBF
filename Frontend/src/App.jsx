@@ -713,7 +713,7 @@ async function uploadImageToPublicImages({ file, filename, apiBaseUrl, token } =
 
   // Prefer the backend upload endpoint when an API base URL is available.
   if (base) {
-    const url = `${base}/uploads/images`;
+    const url = `${base}/api/uploads/images`;
 
     const form = new FormData();
     form.append("file", file);
