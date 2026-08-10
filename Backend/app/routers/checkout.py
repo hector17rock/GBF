@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.app_state import AppState
 from app.schemas.checkout import PlaceOrderRequest, PlaceOrderResponse
+from app.services.ops_events import append_activity_log, log_event
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
 
@@ -35,6 +36,74 @@ def _looks_like_email(value: str) -> bool:
     if not s:
         return False
     return re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", s) is not None
+
+
+def _parse_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return float(default)
+
+
+def _inventory_int(inventory: dict[str, Any], product_id: str) -> int | None:
+    """Return current stock as int when inventory explicitly manages this product.
+
+    If the product key is missing or not an int-ish value, return None (meaning: not managed).
+    """
+
+    if product_id not in inventory:
+        return None
+
+    try:
+        return int(inventory.get(product_id))
+    except Exception:
+        return None
+
+
+def _compute_totals_from_state(*, state: dict[str, Any], items: list[dict[str, Any]]) -> dict[str, float]:
+    products = state.get("products")
+    products = products if isinstance(products, list) else []
+
+    checkout_cfg = state.get("checkoutConfig")
+    checkout_cfg = checkout_cfg if isinstance(checkout_cfg, dict) else {}
+
+    tax_state_rate = max(0.0, _parse_float(checkout_cfg.get("prTaxStateRatePct"), 0.0))
+    tax_municipal_rate = max(0.0, _parse_float(checkout_cfg.get("prTaxMunicipalRatePct"), 0.0))
+    shipping_fee = max(0.0, _parse_float(checkout_cfg.get("defaultShippingFee"), 0.0))
+
+    # Prices come from server state products to avoid client tampering.
+    subtotal = 0.0
+    for it in items:
+        pid = str(it.get("productId") or "").strip()
+        qty = int(it.get("qty") or 0)
+        if not pid or qty <= 0:
+            continue
+
+        p = next((x for x in products if str(x.get("id") or "") == pid), None)
+        if not p:
+            raise HTTPException(status_code=400, detail=f"unknown_product:{pid}")
+
+        unit_price = _parse_float(p.get("price"), 0.0)
+        if unit_price < 0:
+            raise HTTPException(status_code=400, detail="invalid_price")
+
+        subtotal += qty * unit_price
+
+    subtotal = round(subtotal, 2)
+
+    tax_state_amount = round(subtotal * (tax_state_rate / 100.0), 2)
+    tax_municipal_amount = round(subtotal * (tax_municipal_rate / 100.0), 2)
+    tax_amount = round(tax_state_amount + tax_municipal_amount, 2)
+    total = round(subtotal + tax_amount + shipping_fee, 2)
+
+    return {
+        "subtotal": subtotal,
+        "taxStateRatePct": tax_state_rate,
+        "taxMunicipalRatePct": tax_municipal_rate,
+        "taxAmount": tax_amount,
+        "shippingFee": shipping_fee,
+        "total": total,
+    }
 
 
 def _get_row(db: Session) -> AppState:
@@ -70,6 +139,9 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
     newsletter_emails = state.get("newsletterEmails")
     newsletter_emails = newsletter_emails if isinstance(newsletter_emails, list) else []
 
+    products = state.get("products")
+    products = products if isinstance(products, list) else []
+
     # --- Create order ---
     created_at = int(datetime.utcnow().timestamp() * 1000)
     order_id = _safe_uuid("order")
@@ -85,17 +157,50 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
     if payment_method == "paypal":
         raise HTTPException(status_code=400, detail="paypal_requires_capture")
 
+    # Normalize request items
+    req_items: list[dict[str, Any]] = []
+    for it in req.items:
+        pid = str(it.productId or "").strip()
+        qty = int(it.qty)
+        if not pid or qty <= 0:
+            continue
+        req_items.append({"productId": pid, "qty": qty, "personalization": it.personalization})
+
+    if not req_items:
+        raise HTTPException(status_code=400, detail="empty_items")
+
+    # Strict stock check (only for products with an explicit numeric inventory entry).
+    for it in req_items:
+        pid = str(it.get("productId") or "")
+        qty = int(it.get("qty") or 0)
+        if not pid or qty <= 0:
+            continue
+
+        stock_int = _inventory_int(inventory, pid)
+        if stock_int is None:
+            continue
+        if stock_int < qty:
+            raise HTTPException(status_code=409, detail=f"out_of_stock:{pid}")
+
+    totals = _compute_totals_from_state(state=state, items=req_items)
+
+    # Order items use server prices + names.
     items = []
     subtotal = 0.0
 
-    for it in req.items:
-        qty = int(it.qty)
-        if qty <= 0:
-            raise HTTPException(status_code=400, detail="invalid_qty")
+    for it in req_items:
+        pid = str(it.get("productId") or "")
+        qty = int(it.get("qty") or 0)
+        if not pid or qty <= 0:
+            continue
 
-        unit_price = float(it.unitPrice)
+        p = next((x for x in products if str(x.get("id") or "") == pid), None)
+        if not p:
+            raise HTTPException(status_code=400, detail=f"unknown_product:{pid}")
+
+        unit_price = round(_parse_float(p.get("price"), 0.0), 2)
         if unit_price < 0:
-            raise HTTPException(status_code=400, detail="invalid_unit_price")
+            raise HTTPException(status_code=400, detail="invalid_price")
 
         line_total = qty * unit_price
         subtotal += line_total
@@ -103,43 +208,27 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
         items.append(
             {
                 "id": _safe_uuid("order_item"),
-                "productId": str(it.productId),
+                "productId": pid,
                 "qty": qty,
                 "unitPrice": unit_price,
-                "name": it.name,
-                "category": it.category,
-                "personalization": it.personalization,
+                "name": p.get("name"),
+                "category": p.get("category"),
+                "personalization": it.get("personalization"),
             }
         )
 
-    tax_state_rate = float(req.taxStateRatePct) if req.taxStateRatePct is not None else None
-    tax_municipal_rate = float(req.taxMunicipalRatePct) if req.taxMunicipalRatePct is not None else None
+    subtotal = round(subtotal, 2)
 
-    # If only total tax is provided, just store it (client already computes amounts in UI).
-    tax_rate_pct = None
-    if req.taxRatePct is not None:
-        try:
-            tax_rate_pct = float(req.taxRatePct)
-        except Exception:
-            tax_rate_pct = None
+    tax_state_rate = float(totals["taxStateRatePct"])
+    tax_municipal_rate = float(totals["taxMunicipalRatePct"])
+    tax_rate_pct = round(tax_state_rate + tax_municipal_rate, 2)
 
-    shipping_fee = 0.0
-    if req.shippingFee is not None:
-        try:
-            shipping_fee = max(0.0, float(req.shippingFee))
-        except Exception:
-            shipping_fee = 0.0
-
-    # Compute tax amounts if split rates were provided; otherwise leave at 0.
-    tax_state_amount = 0.0
-    tax_municipal_amount = 0.0
-    if tax_state_rate is not None:
-        tax_state_amount = round(subtotal * (tax_state_rate / 100.0), 2)
-    if tax_municipal_rate is not None:
-        tax_municipal_amount = round(subtotal * (tax_municipal_rate / 100.0), 2)
-
+    tax_state_amount = round(subtotal * (tax_state_rate / 100.0), 2)
+    tax_municipal_amount = round(subtotal * (tax_municipal_rate / 100.0), 2)
     tax_amount = round(tax_state_amount + tax_municipal_amount, 2)
-    total = round(subtotal + tax_amount + shipping_fee, 2)
+
+    shipping_fee = float(totals["shippingFee"])
+    total = round(float(totals["total"]), 2)
 
     order = {
         "id": order_id,
@@ -181,13 +270,9 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
         if not pid or qty <= 0:
             continue
 
-        current_stock = 0
-        try:
-            current_stock = int(inventory.get(pid) or 0)
-        except Exception:
-            current_stock = 0
-
-        inventory[pid] = current_stock - qty
+        stock_int = _inventory_int(inventory, pid)
+        if stock_int is not None:
+            inventory[pid] = stock_int - qty
 
         unit_cost = 0.0
         try:
@@ -222,6 +307,25 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
         if email not in newsletter_emails:
             newsletter_emails = [email, *newsletter_emails]
             newsletter_emails = newsletter_emails[:2000]
+
+    # --- Operational notifications (log-only + activity log) ---
+    contact = email or str((req.customer or {}).get("phone") or "").strip() or None
+    log_event(
+        "order_placed",
+        orderNumber=order_number,
+        paymentMethod=payment_method,
+        total=total,
+        currency="USD",
+        contact=contact,
+    )
+
+    state = append_activity_log(
+        state,
+        kind="order",
+        message_es=f"Nueva orden: {order_number} — Total ${total:.2f} ({payment_method}).",
+        message_en=f"New order: {order_number} — Total ${total:.2f} ({payment_method}).",
+        ts_ms=created_at,
+    )
 
     # --- Save back to state ---
     state["inventory"] = inventory

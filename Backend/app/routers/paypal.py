@@ -18,6 +18,7 @@ from app.schemas.paypal import (
     PayPalCreateOrderResponse,
 )
 from app.services.paypal import PayPalServiceError, capture_order, create_order
+from app.services.ops_events import append_activity_log, log_event
 
 router = APIRouter(prefix="/paypal", tags=["paypal"])
 
@@ -466,13 +467,15 @@ def paypal_capture_and_place_order(req: PayPalCaptureOrderRequest, db: Session =
         if not pid or qty <= 0:
             continue
 
-        current_stock = 0
-        try:
-            current_stock = int(inventory.get(pid) or 0)
-        except Exception:
-            current_stock = 0
+        # Only decrement when inventory explicitly manages this product.
+        if pid in inventory:
+            try:
+                current_stock = int(inventory.get(pid))
+            except Exception:
+                current_stock = None
 
-        inventory[pid] = current_stock - qty
+            if current_stock is not None:
+                inventory[pid] = max(0, current_stock - qty)
 
         unit_cost = 0.0
         try:
@@ -507,6 +510,27 @@ def paypal_capture_and_place_order(req: PayPalCaptureOrderRequest, db: Session =
         if email not in newsletter_emails:
             newsletter_emails = [email, *newsletter_emails]
             newsletter_emails = newsletter_emails[:2000]
+
+    # --- Operational notifications (log-only + activity log) ---
+    contact = payer_email or str((req.customer or {}).get("email") or "").strip().lower() or None
+
+    log_event(
+        "order_paid_paypal",
+        orderNumber=order_number,
+        paypalOrderId=paypal_order_id,
+        paypalCaptureId=paypal_capture_id or None,
+        total=order.get("total"),
+        currency=currency,
+        contact=contact,
+    )
+
+    state = append_activity_log(
+        state,
+        kind="order",
+        message_es=f"Pago PayPal confirmado: {order_number} — Total ${float(order.get('total') or 0):.2f}.",
+        message_en=f"PayPal payment captured: {order_number} — Total ${float(order.get('total') or 0):.2f}.",
+        ts_ms=created_at,
+    )
 
     # --- Save back to state ---
     state["inventory"] = inventory

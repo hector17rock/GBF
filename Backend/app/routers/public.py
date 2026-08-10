@@ -15,6 +15,7 @@ from app.schemas.public import (
     OrderStatusLookupResponse,
     OrderCancelRequest,
 )
+from app.services.ops_events import append_activity_log, log_event
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -182,6 +183,20 @@ def order_cancel_request(req: OrderCancelRequest, db: Session = Depends(get_db))
         raise HTTPException(status_code=404, detail="not_found")
 
     state["orders"] = next_orders
+
+    # --- Operational notifications (log-only + activity log) ---
+    log_event(
+        "order_cancel_requested",
+        orderNumber=q,
+    )
+
+    state = append_activity_log(
+        state,
+        kind="order",
+        message_es=f"Solicitud de cancelación: {q} — Razón: {reason}",
+        message_en=f"Cancellation request: {q} — Reason: {reason}",
+        ts_ms=now_ms,
+    )
 
     row.state = state
     row.revision = int(row.revision or 0) + 1
