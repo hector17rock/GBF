@@ -7,7 +7,14 @@ Monorepo:
 ```bash
 cd Frontend
 npm install
+cp .env.example .env
 npm run dev
+```
+
+The Vite frontend reads `VITE_API_URL` from `Frontend/.env` so it knows where the backend API lives. For local development, use:
+
+```bash
+VITE_API_URL=http://localhost:8000
 ```
 
 ## Backend quickstart (local)
