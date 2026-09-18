@@ -2,7 +2,7 @@ import { useState } from "react";
 import Footer from "../components/Footer";
 import SectionTitle from "../components/SectionTitle";
 
-export default function Faq({ t }) {
+export default function Faq({ t, socialConfig }) {
   const items = Array.isArray(t?.faqItems) ? t.faqItems : [];
 
   const [openIdx, setOpenIdx] = useState(0);
@@ -35,7 +35,7 @@ export default function Faq({ t }) {
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }

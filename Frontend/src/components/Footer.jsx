@@ -1,8 +1,10 @@
 import Pill from "./Pill";
+import { normalizeSocialConfig } from "../utils/socials";
 
-export default function Footer({ t }) {
+export default function Footer({ t, socialConfig }) {
   const year = new Date().getFullYear();
   const footerNote = typeof t?.footerNote === "function" ? t.footerNote(year) : t?.footerNote;
+  const socials = normalizeSocialConfig(socialConfig).socials.filter((item) => item.enabled);
 
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
@@ -21,26 +23,38 @@ export default function Footer({ t }) {
             <div className="mt-1 text-xs text-[#6B6B6B]">{footerNote}</div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Pill>
-              <img
-                src="/Instagram_icon.png"
-                alt="Instagram"
-                className="h-4 w-4 object-contain"
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-              />
-            </Pill>
-            <Pill>
-              <img
-                src="/tiktok-icon.png"
-                alt="TikTok"
-                className="h-4 w-4 object-contain"
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-              />
-            </Pill>
+            {socials.map((item) => {
+              const inner = item.iconSrc ? (
+                <img
+                  src={item.iconSrc}
+                  alt={item.label}
+                  className="h-4 w-4 object-contain"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
+              ) : (
+                <span className="text-xs font-semibold">{item.label}</span>
+              );
+
+              return item.url ? (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={item.label}
+                  title={item.label}
+                  className="inline-flex"
+                >
+                  <Pill>{inner}</Pill>
+                </a>
+              ) : (
+                <span key={item.id} title={item.label} className="inline-flex">
+                  <Pill>{inner}</Pill>
+                </span>
+              );
+            })}
             <Pill>{t.navBlog}</Pill>
             <Pill>
               <img

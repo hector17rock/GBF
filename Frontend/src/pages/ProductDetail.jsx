@@ -22,6 +22,7 @@ export default function ProductDetail({
   onGoCheckout,
   t,
   language,
+  socialConfig,
 }) {
   const [text, setText] = useState("");
   const [verse, setVerse] = useState(VERSES[1]);
@@ -597,7 +598,7 @@ export default function ProductDetail({
         ) : null}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
