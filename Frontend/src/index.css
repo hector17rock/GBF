@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "White Star";
+  src: url("/fonts/white-star-personal-use-only.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --gbf-forest-green: #355e3b;
   --gbf-sage-green: #a8b99a;
@@ -9,6 +17,7 @@
   --gbf-warm-gray: #6b6b6b;
   --gbf-stone: #ddd6ca;
   --gbf-moss-green: #4b734e;
+  --gbf-brand-font: "White Star", "Allura", cursive;
 }
 
 html,

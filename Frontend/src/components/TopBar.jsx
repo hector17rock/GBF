@@ -32,13 +32,13 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
     <div className="sticky top-0 z-40 border-b border-zinc-200/60 bg-white/55 backdrop-blur-xl shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center">
-            <img src="/gbficon.png" alt="Grow by Faith®" className="h-10 w-10 object-contain" />
+          <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center md:h-[88px] md:w-[88px]">
+            <img src="/gbficon.png" alt="Grow by Faith®" className="h-[72px] w-[72px] object-contain md:h-[88px] md:w-[88px]" />
           </div>
           <div className="leading-tight">
             <div
-              className="text-[28px] font-normal leading-none text-[#7a6f69] md:text-[32px]"
-              style={{ fontFamily: '"Allura", cursive' }}
+              className="text-[22px] font-normal leading-none text-[#7a6f69] md:text-[26px]"
+              style={{ fontFamily: "var(--gbf-brand-font)" }}
             >
               Grow by Faith
               <span
