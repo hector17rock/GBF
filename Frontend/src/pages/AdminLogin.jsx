@@ -97,7 +97,11 @@ export default function AdminLogin({
               </div>
 
 
-              {message ? <div className="text-xs font-semibold text-amber-700">{message}</div> : null}
+{message ? (
+  <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+    {message}
+  </div>
+) : null}
 
               <Button variant="primary" className="w-full" disabled={!canSubmit || busy || hasAdmins === false}>
                 {t.adminLoginButton}
