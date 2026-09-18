@@ -6,8 +6,8 @@ export const TESTIMONIALS = [
       en: "This journal helped me rebuild my time with God.",
     },
     author: {
-      es: "Cliente (anónimo)",
-      en: "Anonymous customer",
+      es: "Cliente verificado",
+      en: "Verified customer",
     },
   },
   {
@@ -17,8 +17,8 @@ export const TESTIMONIALS = [
       en: "The quality feels premium, and the personalization detail is beautiful.",
     },
     author: {
-      es: "Cliente (anónimo)",
-      en: "Anonymous customer",
+      es: "Cliente verificado",
+      en: "Verified customer",
     },
   },
   {
@@ -28,8 +28,8 @@ export const TESTIMONIALS = [
       en: "Perfect for gifting. The packaging looks beautiful and arrives ready to impress.",
     },
     author: {
-      es: "Cliente (anónimo)",
-      en: "Anonymous customer",
+      es: "Cliente verificado",
+      en: "Verified customer",
     },
   },
 ];

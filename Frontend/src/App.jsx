@@ -4180,9 +4180,7 @@ function AdminPanel({
     const confirmText =
       typeof t.confirmDeleteProduct === "function"
         ? t.confirmDeleteProduct(displayName)
-        : language === "es"
-          ? `¿Eliminar "${displayName}"? Esta acción no se puede deshacer.`
-          : `Delete "${displayName}"? This can't be undone.`;
+        : "";
 
     if (typeof window !== "undefined") {
       const ok = window.confirm(confirmText);
@@ -4194,8 +4192,6 @@ function AdminPanel({
     if (typeof notify === "function") {
       if (typeof t.toastProductDeleted === "function") {
         notify(t.toastProductDeleted(displayName), "success");
-      } else {
-        notify(language === "es" ? "Producto eliminado" : "Product deleted", "success");
       }
     }
 
@@ -4246,8 +4242,6 @@ function AdminPanel({
     if (typeof notify === "function") {
       if (typeof t.toastCategoryCreated === "function") {
         notify(t.toastCategoryCreated(candidate), "success");
-      } else {
-        notify(language === "es" ? "Categoría creada" : "Category created", "success");
       }
     }
 
@@ -4336,9 +4330,7 @@ function AdminPanel({
     if (typeof notify === "function") {
       const displayName = String(newProduct.name || "").trim() || l10n(productToAdd.name, language) || "";
       if (typeof t.toastProductCreated === "function") {
-        notify(t.toastProductCreated(displayName || "Producto"), "success");
-      } else {
-        notify(language === "es" ? "Producto creado" : "Product created", "success");
+        notify(t.toastProductCreated(displayName || t.productFallbackName), "success");
       }
     }
 
@@ -5739,7 +5731,7 @@ function AdminInventory({ products = [], inventory, setInventory, productCosts, 
 }
 
 // Page: AdminCheckoutSettings
-function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, language, onBack }) {
+function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, onBack }) {
   const normalizedCheckoutConfig = normalizeCheckoutConfig(checkoutConfig);
 
   // setCheckoutConfigField
@@ -5809,7 +5801,7 @@ function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, language,
                 min="0"
                 step="0.01"
                 inputMode="decimal"
-                placeholder={language === "es" ? "0.00" : "0.00"}
+                placeholder="0.00"
                 value={String(normalizedCheckoutConfig.defaultShippingFee)}
                 onChange={(e) => setCheckoutConfigField("defaultShippingFee", e.target.value)}
                 className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
@@ -5833,7 +5825,7 @@ function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, language,
 }
 
 // Page: AdminPolicies
-function AdminPolicies({ policiesConfig, setPoliciesConfig, t, language, onBack }) {
+function AdminPolicies({ policiesConfig, setPoliciesConfig, t, onBack }) {
   const normalized = normalizePoliciesConfig(policiesConfig);
   const categories = Array.isArray(normalized.categories) ? normalized.categories : [];
 
@@ -5884,9 +5876,7 @@ function AdminPolicies({ policiesConfig, setPoliciesConfig, t, language, onBack 
     const confirmText =
       typeof t.policiesConfirmDeleteCategory === "function"
         ? t.policiesConfirmDeleteCategory(displayName)
-        : language === "es"
-          ? `¿Eliminar la categoría "${displayName}"?`
-          : `Delete category "${displayName}"?`;
+        : "";
 
     if (typeof window !== "undefined") {
       const ok = window.confirm(confirmText);
@@ -7130,21 +7120,11 @@ export default function App() {
       });
       await refreshAdminUsers();
 
-      pushToast(
-        language === "es"
-          ? `Usuario de administrador creado: ${u}`
-          : `Admin user created: ${u}`,
-        "success"
-      );
+      pushToast(t.adminUserCreatedToast(u), "success");
 
       return true;
     } catch {
-      pushToast(
-        language === "es"
-          ? "No se pudo crear el usuario de administrador."
-          : "Could not create admin user.",
-        "danger"
-      );
+      pushToast(t.adminUserCreateFailedToast, "danger");
       return false;
     }
   }
@@ -7184,12 +7164,7 @@ export default function App() {
       await apiJson(`/admin-users/${id}`, { method: "DELETE", token: adminToken });
       await refreshAdminUsers();
 
-      pushToast(
-        language === "es"
-          ? `Usuario de administrador eliminado: ${label}`
-          : `Admin user deleted: ${label}`,
-        "success"
-      );
+      pushToast(t.adminUserDeletedToast(label), "success");
 
       // If the current user was deleted, force logout.
       if (String(currentAdminUser?.id || "") === id) {
@@ -7200,12 +7175,7 @@ export default function App() {
 
       return true;
     } catch {
-      pushToast(
-        language === "es"
-          ? "No se pudo eliminar el usuario de administrador."
-          : "Could not delete admin user.",
-        "danger"
-      );
+      pushToast(t.adminUserDeleteFailedToast, "danger");
       return false;
     }
   }
@@ -7571,7 +7541,7 @@ export default function App() {
 
   function clearActivityLog() {
     setActivityLog([]);
-    pushToast(language === "es" ? "Log limpiado" : "Log cleared", "info");
+    pushToast(t.activityLogClearedToast, "info");
   }
 
   function toggleFavorite(productId) {
@@ -8072,6 +8042,7 @@ export default function App() {
   const scheduleAdminPatch = useCallback(
     (patch) => {
       const lang = languageRef.current === "es" ? "es" : "en";
+      const saveT = translations[lang] || translations.en;
 
       if (!isAdminAuthed || !adminToken) return;
       if (!patch || typeof patch !== "object") return;
@@ -8082,13 +8053,7 @@ export default function App() {
         const last = Number(adminSaveToastCooldownRef.current) || 0;
         if (now - last > 2600) {
           adminSaveToastCooldownRef.current = now;
-          pushToast(
-            lang === "es"
-              ? "No se pudieron guardar los cambios (servidor desconectado)."
-              : "Could not save changes (server offline).",
-            "danger",
-            3400
-          );
+          pushToast(saveT.adminSaveOfflineToast, "danger", 3400);
         }
         return;
       }
@@ -8107,51 +8072,29 @@ export default function App() {
         if (!toSend || typeof toSend !== "object" || Object.keys(toSend).length === 0) return;
         if (serverHydratingRef.current) return;
 
-        const labelsEs = [];
-        const labelsEn = [];
+        const labels = [];
 
         if ("heroConfig" in toSend) {
-          labelsEs.push("Página principal");
-          labelsEn.push("Homepage");
+          labels.push(saveT.adminSaveSectionHomepage);
         }
         if ("categories" in toSend || "products" in toSend) {
-          labelsEs.push("Productos");
-          labelsEn.push("Products");
+          labels.push(saveT.adminSaveSectionProducts);
         }
         if ("inventory" in toSend || "productCosts" in toSend) {
-          labelsEs.push("Inventario");
-          labelsEn.push("Inventory");
+          labels.push(saveT.adminSaveSectionInventory);
         }
         if ("checkoutConfig" in toSend) {
-          labelsEs.push("Checkout");
-          labelsEn.push("Checkout");
+          labels.push(saveT.adminSaveSectionCheckout);
         }
         if ("policiesConfig" in toSend) {
-          labelsEs.push("Políticas");
-          labelsEn.push("Policies");
+          labels.push(saveT.adminSaveSectionPolicies);
         }
         if ("orders" in toSend) {
-          labelsEs.push("Órdenes");
-          labelsEn.push("Orders");
+          labels.push(saveT.adminSaveSectionOrders);
         }
 
-        const successMsg =
-          (lang === "es" ? labelsEs : labelsEn).length
-            ? lang === "es"
-              ? `Cambios guardados: ${labelsEs.join(", ")}.`
-              : `Changes saved: ${labelsEn.join(", ")}.`
-            : lang === "es"
-            ? "Cambios guardados."
-            : "Changes saved.";
-
-        const errorMsg =
-          (lang === "es" ? labelsEs : labelsEn).length
-            ? lang === "es"
-              ? `No se pudieron guardar los cambios: ${labelsEs.join(", ")}.`
-              : `Could not save changes: ${labelsEn.join(", ")}.`
-            : lang === "es"
-            ? "No se pudieron guardar los cambios."
-            : "Could not save changes.";
+        const successMsg = saveT.adminSaveSuccessToast(labels);
+        const errorMsg = saveT.adminSaveErrorToast(labels);
 
         try {
           const res = await apiJson("/state/admin", {
@@ -8269,7 +8212,7 @@ export default function App() {
 
     const name = l10n(product?.name, language) || "";
     if (typeof t.toastProductAdded === "function") {
-      pushToast(t.toastProductAdded(name || (language === "es" ? "Producto" : "Product")), "success");
+      pushToast(t.toastProductAdded(name || t.productFallbackName), "success");
     } else {
       pushToast(t.toastProductAdded(l10n(product.name, language)), "success");
     }
@@ -9012,7 +8955,6 @@ export default function App() {
               checkoutConfig={checkoutConfig}
               setCheckoutConfig={setCheckoutConfigAdmin}
               t={t}
-              language={language}
               onBack={() => navigate("admin")}
             />
           ) : (
@@ -9033,7 +8975,6 @@ export default function App() {
               policiesConfig={policiesConfig}
               setPoliciesConfig={setPoliciesConfigAdmin}
               t={t}
-              language={language}
               onBack={() => navigate("admin")}
             />
           ) : (

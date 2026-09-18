@@ -52,9 +52,7 @@ export default function ProductCard({
           <div className="absolute left-3 top-3 inline-flex items-center rounded-full border border-[#DDD6CA] bg-[#F8F6F2]/90 px-3 py-1 text-[11px] font-extrabold text-[#2B2B2B] shadow-sm">
             {typeof t?.lowStockLeft === "function"
               ? t.lowStockLeft(stockN)
-              : language === "es"
-              ? `Quedan ${stockN}`
-              : `Only ${stockN} left`}
+              : ""}
           </div>
         ) : null}
 
@@ -117,7 +115,7 @@ function StarRow({ value, t }) {
   const filled = Math.round(safe);
 
   const aria =
-    t && typeof t.ratingAriaLabel === "function" ? t.ratingAriaLabel(safe.toFixed(1)) : `Rating ${safe.toFixed(1)} out of 5`;
+    t && typeof t.ratingAriaLabel === "function" ? t.ratingAriaLabel(safe.toFixed(1)) : "";
 
   return (
     <span className="inline-flex items-center gap-0.5" aria-label={aria}>

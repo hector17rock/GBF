@@ -77,8 +77,8 @@ export const translations = {
     featuredTitle: "Productos destacados",
     featuredSubtitle: "Arranca con dos líneas claras: Yeti y Journals.",
 
-    testimonialsTitle: "Testimonios",
-    testimonialsSubtitle: "Lo que nos comparten clientes de la comunidad.",
+    testimonialsTitle: "Reseñas",
+    testimonialsSubtitle: "Lo que clientes verificados comparten con la comunidad.",
 
     dailyVerseTitle: "Versículo del día",
     dailyVerseSubtitle: "Una palabra para hoy.",
@@ -125,6 +125,7 @@ export const translations = {
     activityLogSubtitle: "Historial de cambios recientes (solo local).",
     activityLogEmpty: "Aún no hay actividad registrada.",
     activityLogClear: "Limpiar",
+    activityLogClearedToast: "Registro limpiado",
 
     stepsTitle: "Personaliza en 3 pasos",
     stepsSubtitle: "Un flujo simple que se siente como app.",
@@ -176,6 +177,7 @@ export const translations = {
     toastCategoryCreated: (name) => `Categoría creada: ${name}`,
     toastProductCreated: (name) => `Producto creado: ${name}`,
     toastProductDeleted: (name) => `Producto eliminado: ${name}`,
+    productFallbackName: "Producto",
     toastChangesSaved: "Cambios guardados",
     mvpNote:
       "Este MVP es solo frontend: luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
@@ -460,12 +462,31 @@ export const translations = {
     adminUsersCreateButton: "Crear usuario",
     adminUsersCreateError: "Ese usuario ya existe o hubo un error.",
     adminUsersDeleteError: "No se pudo eliminar.",
+    adminUserCreatedToast: (username) => `Usuario de administrador creado: ${username}`,
+    adminUserCreateFailedToast: "No se pudo crear el usuario de administrador.",
+    adminUserDeletedToast: (username) => `Usuario de administrador eliminado: ${username}`,
+    adminUserDeleteFailedToast: "No se pudo eliminar el usuario de administrador.",
     adminUsersNameRequired: "Completa el nombre.",
     adminUsersUpdateError: "No se pudo actualizar.",
     adminUsersListTitle: "Usuarios admin",
     adminUsersEmpty: "Aún no hay usuarios admin.",
     adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
     adminUsersCredentialHint: "Acceso central (servidor).",
+    adminSaveOfflineToast: "No se pudieron guardar los cambios (servidor desconectado).",
+    adminSaveSectionHomepage: "Página principal",
+    adminSaveSectionProducts: "Productos",
+    adminSaveSectionInventory: "Inventario",
+    adminSaveSectionCheckout: "Checkout",
+    adminSaveSectionPolicies: "Políticas",
+    adminSaveSectionOrders: "Órdenes",
+    adminSaveSuccessToast: (labels) =>
+      Array.isArray(labels) && labels.length
+        ? `Cambios guardados: ${labels.join(", ")}.`
+        : "Cambios guardados.",
+    adminSaveErrorToast: (labels) =>
+      Array.isArray(labels) && labels.length
+        ? `No se pudieron guardar los cambios: ${labels.join(", ")}.`
+        : "No se pudieron guardar los cambios.",
 
     adminStatManagement: "Gestión",
     adminStatManagementBody: "Próximo: añadir, editar y eliminar productos.",
@@ -786,8 +807,8 @@ export const translations = {
     featuredTitle: "Featured products",
     featuredSubtitle: "Start with two clear lines: Yeti and Journals.",
 
-    testimonialsTitle: "Testimonials",
-    testimonialsSubtitle: "What customers are sharing with our community.",
+    testimonialsTitle: "Reviews",
+    testimonialsSubtitle: "What verified customers are sharing with our community.",
 
     dailyVerseTitle: "Daily Verse",
     dailyVerseSubtitle: "A word for today.",
@@ -834,6 +855,7 @@ export const translations = {
     activityLogSubtitle: "Recent changes (local-only).",
     activityLogEmpty: "No activity yet.",
     activityLogClear: "Clear",
+    activityLogClearedToast: "Log cleared",
 
     stepsTitle: "Customize in 3 steps",
     stepsSubtitle: "A simple flow that feels like an app.",
@@ -885,6 +907,7 @@ export const translations = {
     toastCategoryCreated: (name) => `Category created: ${name}`,
     toastProductCreated: (name) => `Product created: ${name}`,
     toastProductDeleted: (name) => `Product deleted: ${name}`,
+    productFallbackName: "Product",
     toastChangesSaved: "Changes saved",
     mvpNote:
       "This MVP is frontend-only: later we'll integrate card payments (Stripe) and real orders.",
@@ -1165,12 +1188,31 @@ export const translations = {
     adminUsersCreateButton: "Create user",
     adminUsersCreateError: "That user already exists or there was an error.",
     adminUsersDeleteError: "Could not delete.",
+    adminUserCreatedToast: (username) => `Admin user created: ${username}`,
+    adminUserCreateFailedToast: "Could not create admin user.",
+    adminUserDeletedToast: (username) => `Admin user deleted: ${username}`,
+    adminUserDeleteFailedToast: "Could not delete admin user.",
     adminUsersNameRequired: "Enter a name.",
     adminUsersUpdateError: "Could not update.",
     adminUsersListTitle: "Admin users",
     adminUsersEmpty: "No admin users yet.",
     adminUsersCannotDeleteLast: "You cannot delete the last admin.",
     adminUsersCredentialHint: "Central access (server).",
+    adminSaveOfflineToast: "Could not save changes (server offline).",
+    adminSaveSectionHomepage: "Homepage",
+    adminSaveSectionProducts: "Products",
+    adminSaveSectionInventory: "Inventory",
+    adminSaveSectionCheckout: "Checkout",
+    adminSaveSectionPolicies: "Policies",
+    adminSaveSectionOrders: "Orders",
+    adminSaveSuccessToast: (labels) =>
+      Array.isArray(labels) && labels.length
+        ? `Changes saved: ${labels.join(", ")}.`
+        : "Changes saved.",
+    adminSaveErrorToast: (labels) =>
+      Array.isArray(labels) && labels.length
+        ? `Could not save changes: ${labels.join(", ")}.`
+        : "Could not save changes.",
 
     adminStatManagement: "Management",
     adminStatManagementBody: "Next: add, edit, and delete products.",

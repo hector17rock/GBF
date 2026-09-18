@@ -320,9 +320,7 @@ export default function ProductDetail({
                     <div className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-extrabold text-amber-800">
                       {typeof t.lowStockLeft === "function"
                         ? t.lowStockLeft(stockN)
-                        : language === "es"
-                          ? `Quedan ${stockN}`
-                          : `Only ${stockN} left`}
+                        : ""}
                     </div>
                   ) : null}
                 </div>

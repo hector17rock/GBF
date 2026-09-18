@@ -1,8 +1,7 @@
 import { l10n } from "../utils/format";
 
-function StarRow({ t, language }) {
-  const label =
-    t?.rating5StarsLabel || (language === "es" ? "5 estrellas" : "5 stars");
+function StarRow({ t }) {
+  const label = t?.rating5StarsLabel || "";
 
   return (
     <div className="flex items-center gap-1 text-[#355E3B]" aria-label={label}>
@@ -27,7 +26,7 @@ export default function TestimonialCard({ testimonial, language, t }) {
 
   return (
     <div className="rounded-[24px] border border-[#DDD6CA] bg-white p-5 shadow-sm">
-      <StarRow t={t} language={language} />
+      <StarRow t={t} />
       <div className="mt-3 text-sm font-semibold leading-6 text-[#2B2B2B]">“{quote}”</div>
       <div className="mt-3 text-xs font-semibold text-[#6B6B6B]">— {author}</div>
     </div>
