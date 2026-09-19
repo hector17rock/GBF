@@ -313,6 +313,27 @@ export const translations = {
     blogTitle: "Blog",
     blogSubtitle:
       "Contenido de lectura corta para enganchar y nutrir a la audiencia.",
+    blogPublicEmpty: "Aún no hay blogs publicados.",
+    blogReadLess: "Leer menos",
+    adminBlogTitle: "Blog",
+    adminBlogSubtitle: "Añade, edita o elimina blogs publicados en la página.",
+    blogListTitle: "Blogs",
+    blogListSubtitle: "Administra cada post de blog.",
+    blogEmpty: "No hay blogs configurados todavía.",
+    blogUntitled: "Sin título",
+    blogAdd: "Añadir blog",
+    blogSelectHint: "Selecciona un blog para editarlo.",
+    blogEnabledLabel: "Mostrar en Blog público",
+    blogPostTitleLabel: "Título",
+    blogPostTitlePlaceholder: "Ej: Cómo empezar un journal de oración",
+    blogExcerptLabel: "Extracto",
+    blogExcerptPlaceholder: "Resumen corto que aparece en la tarjeta.",
+    blogContentLabel: "Contenido",
+    blogContentPlaceholder: "Escribe aquí el contenido completo del blog.",
+    blogAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
+    blogConfirmDelete: (name) => `¿Eliminar el blog "${name}"?`,
+    blogEs: "Español",
+    blogEn: "Inglés",
     read: "Leer",
     blogPosts: [
       {
@@ -498,6 +519,7 @@ export const translations = {
     adminSaveSectionPolicies: "Políticas",
     adminSaveSectionSocials: "Redes sociales",
     adminSaveSectionFaq: "FAQ",
+    adminSaveSectionBlog: "Blog",
     adminSaveSectionOrders: "Órdenes",
     adminSaveSuccessToast: (labels) =>
       Array.isArray(labels) && labels.length
@@ -1094,6 +1116,27 @@ export const translations = {
 
     blogTitle: "Blog",
     blogSubtitle: "Short reads to attract and nurture your audience.",
+    blogPublicEmpty: "No blog posts have been published yet.",
+    blogReadLess: "Read less",
+    adminBlogTitle: "Blog",
+    adminBlogSubtitle: "Add, edit, or remove blog posts published on the site.",
+    blogListTitle: "Blog posts",
+    blogListSubtitle: "Manage each blog post.",
+    blogEmpty: "No blog posts have been configured yet.",
+    blogUntitled: "Untitled",
+    blogAdd: "Add blog",
+    blogSelectHint: "Select a blog post to edit it.",
+    blogEnabledLabel: "Show on public Blog",
+    blogPostTitleLabel: "Title",
+    blogPostTitlePlaceholder: "e.g. How to start a prayer journal",
+    blogExcerptLabel: "Excerpt",
+    blogExcerptPlaceholder: "Short summary shown on the card.",
+    blogContentLabel: "Content",
+    blogContentPlaceholder: "Write the full blog content here.",
+    blogAutosaveHint: "Autosaved in this browser (localStorage).",
+    blogConfirmDelete: (name) => `Delete blog post "${name}"?`,
+    blogEs: "Spanish",
+    blogEn: "English",
     read: "Read",
     blogPosts: [
       {
@@ -1277,6 +1320,7 @@ export const translations = {
     adminSaveSectionPolicies: "Policies",
     adminSaveSectionSocials: "Social media",
     adminSaveSectionFaq: "FAQ",
+    adminSaveSectionBlog: "Blog",
     adminSaveSectionOrders: "Orders",
     adminSaveSuccessToast: (labels) =>
       Array.isArray(labels) && labels.length

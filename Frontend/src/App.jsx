@@ -38,6 +38,7 @@ import {
   normalizeCheckoutDraft,
 } from "./utils/checkout";
 import { buildDefaultPoliciesConfig, normalizePoliciesConfig } from "./utils/policies";
+import { buildDefaultBlogConfig, normalizeBlogConfig } from "./utils/blogs";
 import { buildDefaultFaqConfig, normalizeFaqConfig } from "./utils/faqs";
 import {
   buildDefaultSocialConfig,
@@ -103,6 +104,7 @@ const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
 const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 const SOCIALS_STORAGE_KEY = "gbf.socials.v1";
 const FAQ_STORAGE_KEY = "gbf.faq.v1";
+const BLOG_STORAGE_KEY = "gbf.blog.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -3649,28 +3651,64 @@ function OrderStatus({
 }
 
 // Page: Blog
-function Blog({ t, socialConfig }) {
-  const posts = Array.isArray(t?.blogPosts) ? t.blogPosts : [];
+function Blog({ blogConfig, t, language, socialConfig }) {
+  const posts = normalizeBlogConfig(blogConfig).posts
+    .map((post) => ({
+      id: post.id,
+      title: l10n(post.title, language),
+      excerpt: l10n(post.excerpt, language),
+      content: l10n(post.content, language),
+      enabled: post.enabled,
+    }))
+    .filter((post) => post.enabled && post.title && (post.excerpt || post.content));
+
+  const [openPostId, setOpenPostId] = useState("");
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.blogTitle} subtitle={t.blogSubtitle} />
-        <div className="grid gap-3 md:grid-cols-3">
-          {posts.map((p, idx) => (
-            <div
-              key={`${String(p?.title || "post")}-${idx}`}
-              className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
-            >
-              <div className="text-sm font-bold text-zinc-900">{p?.title}</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-600">{p?.excerpt}</div>
-              <div className="mt-4">
-                <Pill>{t.read}</Pill>
+
+        {posts.length === 0 ? (
+          <div className="mt-6 rounded-[22px] border border-zinc-200/60 bg-white/55 p-5 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+            {t.blogPublicEmpty}
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-3">
+            {posts.map((p) => {
+              const open = p.id === openPostId;
+
+              return (
+                <div
+                  key={p.id}
+                  className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
+                >
+                  <div className="text-sm font-bold text-zinc-900">{p.title}</div>
+                  {p.excerpt ? (
+                    <div className="mt-2 text-sm leading-6 text-zinc-600">{p.excerpt}</div>
+                  ) : null}
+
+                  {open && p.content ? (
+                    <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-zinc-700">
+                      {p.content}
+                    </div>
+                  ) : null}
+
+                  {p.content ? (
+                    <button
+                      type="button"
+                      onClick={() => setOpenPostId(open ? "" : p.id)}
+                      className="mt-4"
+                    >
+                      <Pill>{open ? t.blogReadLess : t.read}</Pill>
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        )}
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       <Footer t={t} socialConfig={socialConfig} />
     </div>
@@ -3998,6 +4036,7 @@ function AdminPanel({
   onGoPolicies,
   onGoSocials,
   onGoFaq,
+  onGoBlog,
   onGoProducts,
   onGoProfit,
   onGoAdminUsers,
@@ -4501,6 +4540,17 @@ function AdminPanel({
         </svg>
       );
     }
+
+    if (kind === "blog") {
+      return (
+        <svg {...common}>
+          <path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+          <path d="M15 3v5h5" />
+          <path d="M8 13h8" />
+          <path d="M8 17h6" />
+        </svg>
+      );
+    }
     return null;
   }
 
@@ -4778,6 +4828,25 @@ function AdminPanel({
                       <div className={iconAreaCls}>
                         <span className={iconBoxCls}>
                           <DashboardIcon kind="faq" className="h-7 w-7" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Blog */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoBlog === "function" ? onGoBlog() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.blogTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="blog" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -6109,6 +6178,267 @@ function AdminPolicies({ policiesConfig, setPoliciesConfig, t, socialConfig, onB
 }
 
 
+
+// Page: AdminBlog
+function AdminBlog({ blogConfig, setBlogConfig, t, language, socialConfig, onBack }) {
+  const normalized = normalizeBlogConfig(blogConfig);
+  const posts = Array.isArray(normalized.posts) ? normalized.posts : [];
+
+  const [activePostId, setActivePostId] = useState(() => posts[0]?.id || "");
+
+  const selectedId = posts.some((post) => post.id === activePostId)
+    ? activePostId
+    : posts[0]?.id || "";
+
+  const activePost = posts.find((post) => post.id === selectedId) || null;
+
+  function addPost() {
+    const id = safeUUID("blog");
+
+    setBlogConfig((prev) => {
+      const base = normalizeBlogConfig(prev);
+      const list = Array.isArray(base.posts) ? base.posts : [];
+      return {
+        ...base,
+        posts: [
+          ...list,
+          {
+            id,
+            enabled: true,
+            title: { es: "", en: "" },
+            excerpt: { es: "", en: "" },
+            content: { es: "", en: "" },
+          },
+        ],
+      };
+    });
+
+    setActivePostId(id);
+  }
+
+  function deletePost(postId) {
+    const id = String(postId || "").trim();
+    if (!id) return;
+
+    const post = posts.find((x) => x.id === id);
+    const displayName = l10n(post?.title, language) || id;
+    const confirmText =
+      typeof t.blogConfirmDelete === "function" ? t.blogConfirmDelete(displayName) : "";
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setBlogConfig((prev) => {
+      const base = normalizeBlogConfig(prev);
+      const list = Array.isArray(base.posts) ? base.posts : [];
+      return { ...base, posts: list.filter((x) => x.id !== id) };
+    });
+
+    if (selectedId === id) {
+      const next = posts.filter((x) => x.id !== id);
+      setActivePostId(next[0]?.id || "");
+    }
+  }
+
+  function updateActivePost(patch) {
+    if (!activePost) return;
+
+    setBlogConfig((prev) => {
+      const base = normalizeBlogConfig(prev);
+      const list = Array.isArray(base.posts) ? base.posts : [];
+      return {
+        ...base,
+        posts: list.map((post) => (post.id === activePost.id ? { ...post, ...patch } : post)),
+      };
+    });
+  }
+
+  function updateLocalizedField(field, lang, value) {
+    if (!activePost) return;
+    const key = field === "content" ? "content" : field === "excerpt" ? "excerpt" : "title";
+    const langKey = lang === "en" ? "en" : "es";
+
+    updateActivePost({
+      [key]: {
+        ...(activePost?.[key] || {}),
+        [langKey]: value,
+      },
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminBlogTitle} subtitle={t.adminBlogSubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-extrabold text-zinc-900">{t.blogListTitle}</div>
+            <div className="mt-1 text-sm text-zinc-600">{t.blogListSubtitle}</div>
+
+            <div className="mt-4 grid gap-2">
+              {posts.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                  {t.blogEmpty}
+                </div>
+              ) : (
+                posts.map((post) => {
+                  const active = post.id === selectedId;
+                  const label = l10n(post.title, language) || t.blogUntitled;
+                  return (
+                    <div key={post.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActivePostId(post.id)}
+                        className={`flex-1 rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition ${
+                          active
+                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
+                        }`}
+                        title={label}
+                      >
+                        <span className="line-clamp-2">{label}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deletePost(post.id)}
+                        className="rounded-2xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="mt-4">
+              <Button variant="secondary" className="w-full" onClick={addPost}>
+                {t.blogAdd}
+              </Button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            {!activePost ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                {t.blogSelectHint}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(activePost.enabled)}
+                    onChange={(e) => updateActivePost({ enabled: e.target.checked })}
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  {t.blogEnabledLabel}
+                </label>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogPostTitleLabel} — {t.blogEs}
+                    </label>
+                    <input
+                      value={activePost?.title?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("title", "es", e.target.value)}
+                      placeholder={t.blogPostTitlePlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogPostTitleLabel} — {t.blogEn}
+                    </label>
+                    <input
+                      value={activePost?.title?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("title", "en", e.target.value)}
+                      placeholder={t.blogPostTitlePlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogExcerptLabel} — {t.blogEs}
+                    </label>
+                    <textarea
+                      value={activePost?.excerpt?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("excerpt", "es", e.target.value)}
+                      placeholder={t.blogExcerptPlaceholder}
+                      rows={4}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogExcerptLabel} — {t.blogEn}
+                    </label>
+                    <textarea
+                      value={activePost?.excerpt?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("excerpt", "en", e.target.value)}
+                      placeholder={t.blogExcerptPlaceholder}
+                      rows={4}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogContentLabel} — {t.blogEs}
+                    </label>
+                    <textarea
+                      value={activePost?.content?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("content", "es", e.target.value)}
+                      placeholder={t.blogContentPlaceholder}
+                      rows={10}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogContentLabel} — {t.blogEn}
+                    </label>
+                    <textarea
+                      value={activePost?.content?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("content", "en", e.target.value)}
+                      placeholder={t.blogContentPlaceholder}
+                      rows={10}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-zinc-500">{t.blogAutosaveHint}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} socialConfig={socialConfig} />
+    </div>
+  );
+}
 
 // Page: AdminFaq
 function AdminFaq({ faqConfig, setFaqConfig, t, language, socialConfig, onBack }) {
@@ -7619,6 +7949,7 @@ export default function App() {
     "admin_policies",
     "admin_socials",
     "admin_faq",
+    "admin_blog",
     "admin_users",
   ]);
 
@@ -7817,6 +8148,7 @@ export default function App() {
             policiesConfig,
             socialConfig,
             faqConfig,
+            blogConfig,
             newsletterEmails,
             reviewsByProduct,
             activityLog,
@@ -8285,6 +8617,29 @@ export default function App() {
     }
   }, [faqConfig]);
 
+  const [blogConfig, setBlogConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultBlogConfig();
+    try {
+      const raw = window.localStorage.getItem(BLOG_STORAGE_KEY);
+      if (!raw) return buildDefaultBlogConfig();
+      return normalizeBlogConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultBlogConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        BLOG_STORAGE_KEY,
+        JSON.stringify(normalizeBlogConfig(blogConfig))
+      );
+    } catch {
+      // ignore
+    }
+  }, [blogConfig]);
+
   const [checkoutDraft, setCheckoutDraft] = useState(() => buildDefaultCheckoutDraft());
 
   const [inventory, setInventory] = useState(() => {
@@ -8460,6 +8815,7 @@ export default function App() {
     policies: false,
     socials: false,
     faq: false,
+    blog: false,
     orders: false,
   });
 
@@ -8508,6 +8864,11 @@ export default function App() {
     setFaqConfig(next);
   }, []);
 
+  const setBlogConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.blog = true;
+    setBlogConfig(next);
+  }, []);
+
   const setOrdersAdmin = useCallback((next) => {
     adminDirtyRef.current.orders = true;
     setOrders(next);
@@ -8539,6 +8900,9 @@ export default function App() {
     }
     if ("faqConfig" in st && st.faqConfig && typeof st.faqConfig === "object") {
       setFaqConfig(normalizeFaqConfig(st.faqConfig));
+    }
+    if ("blogConfig" in st && st.blogConfig && typeof st.blogConfig === "object") {
+      setBlogConfig(normalizeBlogConfig(st.blogConfig));
     }
     if ("reviewsByProduct" in st && st.reviewsByProduct && typeof st.reviewsByProduct === "object") {
       setReviewsByProduct(st.reviewsByProduct);
@@ -8731,6 +9095,9 @@ export default function App() {
         if ("faqConfig" in toSend) {
           labels.push(saveT.adminSaveSectionFaq);
         }
+        if ("blogConfig" in toSend) {
+          labels.push(saveT.adminSaveSectionBlog);
+        }
         if ("orders" in toSend) {
           labels.push(saveT.adminSaveSectionOrders);
         }
@@ -8763,6 +9130,7 @@ export default function App() {
           if ("policiesConfig" in toSend) adminDirtyRef.current.policies = false;
           if ("socialConfig" in toSend) adminDirtyRef.current.socials = false;
           if ("faqConfig" in toSend) adminDirtyRef.current.faq = false;
+          if ("blogConfig" in toSend) adminDirtyRef.current.blog = false;
           if ("orders" in toSend) adminDirtyRef.current.orders = false;
 
           pushToast(successMsg, "success");
@@ -8827,6 +9195,13 @@ export default function App() {
     if (!adminDirtyRef.current.faq) return;
     scheduleAdminPatch({ faqConfig });
   }, [faqConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_blog") return;
+    if (!adminDirtyRef.current.blog) return;
+    scheduleAdminPatch({ blogConfig });
+  }, [blogConfig, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
@@ -9437,7 +9812,9 @@ export default function App() {
         ) : null}
 
         {/* Route: blog */}
-        {r === "blog" ? <Blog t={t} language={language} socialConfig={socialConfig} /> : null}
+        {r === "blog" ? (
+          <Blog blogConfig={blogConfig} t={t} language={language} socialConfig={socialConfig} />
+        ) : null}
 
         {/* Route: about */}
         {r === "about" ? <About t={t} language={language} socialConfig={socialConfig} /> : null}
@@ -9518,6 +9895,7 @@ export default function App() {
               onGoPolicies={() => navigate("admin_policies")}
               onGoSocials={() => navigate("admin_socials")}
               onGoFaq={() => navigate("admin_faq")}
+              onGoBlog={() => navigate("admin_blog")}
               onGoProducts={() => navigate("admin_products")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
@@ -9574,6 +9952,7 @@ export default function App() {
               onGoPolicies={() => navigate("admin_policies")}
               onGoSocials={() => navigate("admin_socials")}
               onGoFaq={() => navigate("admin_faq")}
+              onGoBlog={() => navigate("admin_blog")}
               onGoProducts={() => navigate("admin")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
@@ -9671,6 +10050,28 @@ export default function App() {
               socialConfig={socialConfig}
               setSocialConfig={setSocialConfigAdmin}
               t={t}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin Blog */}
+        {r === "admin_blog" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminBlog
+              blogConfig={blogConfig}
+              setBlogConfig={setBlogConfigAdmin}
+              t={t}
+              language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (

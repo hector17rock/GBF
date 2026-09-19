@@ -29,6 +29,7 @@ PUBLIC_KEYS = {
     "policiesConfig",
     "socialConfig",
     "faqConfig",
+    "blogConfig",
     "reviewsByProduct",
 }
 

@@ -20,6 +20,7 @@ class StatePublicResponse(BaseModel):
     policiesConfig: Optional[dict[str, Any]] = None
     socialConfig: Optional[dict[str, Any]] = None
     faqConfig: Optional[dict[str, Any]] = None
+    blogConfig: Optional[dict[str, Any]] = None
     reviewsByProduct: Optional[dict[str, Any]] = None
 
 
