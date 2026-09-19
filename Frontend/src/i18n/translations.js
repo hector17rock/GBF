@@ -364,6 +364,24 @@ export const translations = {
 
     faqTitle: "FAQ",
     faqSubtitle: "Envío, personalización, tiempos y pagos.",
+    faqPublicEmpty: "Aún no hay preguntas frecuentes publicadas.",
+    adminFaqTitle: "FAQ",
+    adminFaqSubtitle: "Añade, edita o elimina preguntas frecuentes.",
+    faqListTitle: "Preguntas",
+    faqListSubtitle: "Administra cada pregunta y respuesta.",
+    faqEmpty: "No hay preguntas frecuentes configuradas todavía.",
+    faqUntitled: "Sin título",
+    faqAdd: "Añadir FAQ",
+    faqSelectHint: "Selecciona una pregunta para editarla.",
+    faqEnabledLabel: "Mostrar en FAQ público",
+    faqQuestionLabel: "Pregunta",
+    faqQuestionPlaceholder: "Ej: ¿Cuánto tarda el envío?",
+    faqAnswerLabel: "Respuesta",
+    faqAnswerPlaceholder: "Escribe la respuesta para el cliente.",
+    faqAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
+    faqConfirmDelete: (name) => `¿Eliminar el FAQ "${name}"?`,
+    faqEs: "Español",
+    faqEn: "Inglés",
     faqItems: [
       {
         q: "¿Cuánto tarda el envío?",
@@ -479,6 +497,7 @@ export const translations = {
     adminSaveSectionCheckout: "Checkout",
     adminSaveSectionPolicies: "Políticas",
     adminSaveSectionSocials: "Redes sociales",
+    adminSaveSectionFaq: "FAQ",
     adminSaveSectionOrders: "Órdenes",
     adminSaveSuccessToast: (labels) =>
       Array.isArray(labels) && labels.length
@@ -1126,6 +1145,24 @@ export const translations = {
 
     faqTitle: "FAQ",
     faqSubtitle: "Shipping, customization, timing, and payments.",
+    faqPublicEmpty: "No FAQ items have been published yet.",
+    adminFaqTitle: "FAQ",
+    adminFaqSubtitle: "Add, edit, or remove frequently asked questions.",
+    faqListTitle: "Questions",
+    faqListSubtitle: "Manage each question and answer.",
+    faqEmpty: "No FAQ items have been configured yet.",
+    faqUntitled: "Untitled",
+    faqAdd: "Add FAQ",
+    faqSelectHint: "Select a question to edit it.",
+    faqEnabledLabel: "Show on public FAQ",
+    faqQuestionLabel: "Question",
+    faqQuestionPlaceholder: "e.g. How long does shipping take?",
+    faqAnswerLabel: "Answer",
+    faqAnswerPlaceholder: "Write the answer for the customer.",
+    faqAutosaveHint: "Autosaved in this browser (localStorage).",
+    faqConfirmDelete: (name) => `Delete FAQ "${name}"?`,
+    faqEs: "Spanish",
+    faqEn: "English",
     faqItems: [
       {
         q: "How long does shipping take?",
@@ -1239,6 +1276,7 @@ export const translations = {
     adminSaveSectionCheckout: "Checkout",
     adminSaveSectionPolicies: "Policies",
     adminSaveSectionSocials: "Social media",
+    adminSaveSectionFaq: "FAQ",
     adminSaveSectionOrders: "Orders",
     adminSaveSuccessToast: (labels) =>
       Array.isArray(labels) && labels.length

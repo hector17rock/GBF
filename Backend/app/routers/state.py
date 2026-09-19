@@ -28,6 +28,7 @@ PUBLIC_KEYS = {
     "checkoutConfig",
     "policiesConfig",
     "socialConfig",
+    "faqConfig",
     "reviewsByProduct",
 }
 

@@ -38,6 +38,7 @@ import {
   normalizeCheckoutDraft,
 } from "./utils/checkout";
 import { buildDefaultPoliciesConfig, normalizePoliciesConfig } from "./utils/policies";
+import { buildDefaultFaqConfig, normalizeFaqConfig } from "./utils/faqs";
 import {
   buildDefaultSocialConfig,
   getSocialPlatformIcon,
@@ -101,6 +102,7 @@ const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
 const POLICIES_STORAGE_KEY = "gbf.policies.v1";
 const SOCIALS_STORAGE_KEY = "gbf.socials.v1";
+const FAQ_STORAGE_KEY = "gbf.faq.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -3749,6 +3751,16 @@ function About({ t, socialConfig }) {
       );
     }
 
+    if (kind === "faq") {
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.7 2.7 0 0 1 5 1.4c0 1.9-2.5 2.2-2.5 4" />
+          <path d="M12 18h.01" />
+        </svg>
+      );
+    }
+
     return null;
   }
 
@@ -3985,6 +3997,7 @@ function AdminPanel({
   onGoCheckout,
   onGoPolicies,
   onGoSocials,
+  onGoFaq,
   onGoProducts,
   onGoProfit,
   onGoAdminUsers,
@@ -4478,6 +4491,16 @@ function AdminPanel({
         </svg>
       );
     }
+
+    if (kind === "faq") {
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.7 2.7 0 0 1 5 1.4c0 1.9-2.5 2.2-2.5 4" />
+          <path d="M12 18h.01" />
+        </svg>
+      );
+    }
     return null;
   }
 
@@ -4736,6 +4759,25 @@ function AdminPanel({
                       <div className={iconAreaCls}>
                         <span className={iconBoxCls}>
                           <DashboardIcon kind="socials" className="h-7 w-7" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: FAQ */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoFaq === "function" ? onGoFaq() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.faqTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="faq" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -6067,6 +6109,238 @@ function AdminPolicies({ policiesConfig, setPoliciesConfig, t, socialConfig, onB
 }
 
 
+
+// Page: AdminFaq
+function AdminFaq({ faqConfig, setFaqConfig, t, language, socialConfig, onBack }) {
+  const normalized = normalizeFaqConfig(faqConfig);
+  const items = Array.isArray(normalized.items) ? normalized.items : [];
+
+  const [activeFaqId, setActiveFaqId] = useState(() => items[0]?.id || "");
+
+  const selectedId = items.some((item) => item.id === activeFaqId)
+    ? activeFaqId
+    : items[0]?.id || "";
+
+  const activeFaq = items.find((item) => item.id === selectedId) || null;
+
+  function addFaq() {
+    const id = safeUUID("faq");
+
+    setFaqConfig((prev) => {
+      const base = normalizeFaqConfig(prev);
+      const list = Array.isArray(base.items) ? base.items : [];
+      return {
+        ...base,
+        items: [
+          ...list,
+          {
+            id,
+            enabled: true,
+            question: { es: "", en: "" },
+            answer: { es: "", en: "" },
+          },
+        ],
+      };
+    });
+
+    setActiveFaqId(id);
+  }
+
+  function deleteFaq(faqId) {
+    const id = String(faqId || "").trim();
+    if (!id) return;
+
+    const item = items.find((x) => x.id === id);
+    const displayName = l10n(item?.question, language) || id;
+    const confirmText =
+      typeof t.faqConfirmDelete === "function" ? t.faqConfirmDelete(displayName) : "";
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setFaqConfig((prev) => {
+      const base = normalizeFaqConfig(prev);
+      const list = Array.isArray(base.items) ? base.items : [];
+      return { ...base, items: list.filter((x) => x.id !== id) };
+    });
+
+    if (selectedId === id) {
+      const next = items.filter((x) => x.id !== id);
+      setActiveFaqId(next[0]?.id || "");
+    }
+  }
+
+  function updateActiveFaq(patch) {
+    if (!activeFaq) return;
+
+    setFaqConfig((prev) => {
+      const base = normalizeFaqConfig(prev);
+      const list = Array.isArray(base.items) ? base.items : [];
+      return {
+        ...base,
+        items: list.map((item) => (item.id === activeFaq.id ? { ...item, ...patch } : item)),
+      };
+    });
+  }
+
+  function updateLocalizedField(field, lang, value) {
+    if (!activeFaq) return;
+    const key = field === "answer" ? "answer" : "question";
+    const langKey = lang === "en" ? "en" : "es";
+
+    updateActiveFaq({
+      [key]: {
+        ...(activeFaq?.[key] || {}),
+        [langKey]: value,
+      },
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminFaqTitle} subtitle={t.adminFaqSubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-extrabold text-zinc-900">{t.faqListTitle}</div>
+            <div className="mt-1 text-sm text-zinc-600">{t.faqListSubtitle}</div>
+
+            <div className="mt-4 grid gap-2">
+              {items.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                  {t.faqEmpty}
+                </div>
+              ) : (
+                items.map((item) => {
+                  const active = item.id === selectedId;
+                  const label = l10n(item.question, language) || t.faqUntitled;
+                  return (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveFaqId(item.id)}
+                        className={`flex-1 rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition ${
+                          active
+                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
+                        }`}
+                        title={label}
+                      >
+                        <span className="line-clamp-2">{label}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteFaq(item.id)}
+                        className="rounded-2xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="mt-4">
+              <Button variant="secondary" className="w-full" onClick={addFaq}>
+                {t.faqAdd}
+              </Button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            {!activeFaq ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                {t.faqSelectHint}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(activeFaq.enabled)}
+                    onChange={(e) => updateActiveFaq({ enabled: e.target.checked })}
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  {t.faqEnabledLabel}
+                </label>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqQuestionLabel} — {t.faqEs}
+                    </label>
+                    <input
+                      value={activeFaq?.question?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("question", "es", e.target.value)}
+                      placeholder={t.faqQuestionPlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqQuestionLabel} — {t.faqEn}
+                    </label>
+                    <input
+                      value={activeFaq?.question?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("question", "en", e.target.value)}
+                      placeholder={t.faqQuestionPlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqAnswerLabel} — {t.faqEs}
+                    </label>
+                    <textarea
+                      value={activeFaq?.answer?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("answer", "es", e.target.value)}
+                      placeholder={t.faqAnswerPlaceholder}
+                      rows={8}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqAnswerLabel} — {t.faqEn}
+                    </label>
+                    <textarea
+                      value={activeFaq?.answer?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("answer", "en", e.target.value)}
+                      placeholder={t.faqAnswerPlaceholder}
+                      rows={8}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-zinc-500">{t.faqAutosaveHint}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} socialConfig={socialConfig} />
+    </div>
+  );
+}
 // Page: AdminSocials
 function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
   const normalized = normalizeSocialConfig(socialConfig);
@@ -7344,6 +7618,7 @@ export default function App() {
     "admin_product_preview",
     "admin_policies",
     "admin_socials",
+    "admin_faq",
     "admin_users",
   ]);
 
@@ -7541,6 +7816,7 @@ export default function App() {
             checkoutConfig,
             policiesConfig,
             socialConfig,
+            faqConfig,
             newsletterEmails,
             reviewsByProduct,
             activityLog,
@@ -7986,6 +8262,29 @@ export default function App() {
     }
   }, [socialConfig]);
 
+  const [faqConfig, setFaqConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultFaqConfig();
+    try {
+      const raw = window.localStorage.getItem(FAQ_STORAGE_KEY);
+      if (!raw) return buildDefaultFaqConfig();
+      return normalizeFaqConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultFaqConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        FAQ_STORAGE_KEY,
+        JSON.stringify(normalizeFaqConfig(faqConfig))
+      );
+    } catch {
+      // ignore
+    }
+  }, [faqConfig]);
+
   const [checkoutDraft, setCheckoutDraft] = useState(() => buildDefaultCheckoutDraft());
 
   const [inventory, setInventory] = useState(() => {
@@ -8160,6 +8459,7 @@ export default function App() {
     checkout: false,
     policies: false,
     socials: false,
+    faq: false,
     orders: false,
   });
 
@@ -8203,6 +8503,11 @@ export default function App() {
     setSocialConfig(next);
   }, []);
 
+  const setFaqConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.faq = true;
+    setFaqConfig(next);
+  }, []);
+
   const setOrdersAdmin = useCallback((next) => {
     adminDirtyRef.current.orders = true;
     setOrders(next);
@@ -8231,6 +8536,9 @@ export default function App() {
     }
     if ("socialConfig" in st && st.socialConfig && typeof st.socialConfig === "object") {
       setSocialConfig(normalizeSocialConfig(st.socialConfig));
+    }
+    if ("faqConfig" in st && st.faqConfig && typeof st.faqConfig === "object") {
+      setFaqConfig(normalizeFaqConfig(st.faqConfig));
     }
     if ("reviewsByProduct" in st && st.reviewsByProduct && typeof st.reviewsByProduct === "object") {
       setReviewsByProduct(st.reviewsByProduct);
@@ -8420,6 +8728,9 @@ export default function App() {
         if ("socialConfig" in toSend) {
           labels.push(saveT.adminSaveSectionSocials);
         }
+        if ("faqConfig" in toSend) {
+          labels.push(saveT.adminSaveSectionFaq);
+        }
         if ("orders" in toSend) {
           labels.push(saveT.adminSaveSectionOrders);
         }
@@ -8451,6 +8762,7 @@ export default function App() {
           if ("checkoutConfig" in toSend) adminDirtyRef.current.checkout = false;
           if ("policiesConfig" in toSend) adminDirtyRef.current.policies = false;
           if ("socialConfig" in toSend) adminDirtyRef.current.socials = false;
+          if ("faqConfig" in toSend) adminDirtyRef.current.faq = false;
           if ("orders" in toSend) adminDirtyRef.current.orders = false;
 
           pushToast(successMsg, "success");
@@ -8508,6 +8820,13 @@ export default function App() {
     if (!adminDirtyRef.current.socials) return;
     scheduleAdminPatch({ socialConfig });
   }, [socialConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_faq") return;
+    if (!adminDirtyRef.current.faq) return;
+    scheduleAdminPatch({ faqConfig });
+  }, [faqConfig, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
@@ -9124,7 +9443,7 @@ export default function App() {
         {r === "about" ? <About t={t} language={language} socialConfig={socialConfig} /> : null}
 
         {/* Route: faq */}
-        {r === "faq" ? <Faq t={t} language={language} socialConfig={socialConfig} /> : null}
+        {r === "faq" ? <Faq faqConfig={faqConfig} t={t} language={language} socialConfig={socialConfig} /> : null}
 
         {/* Route: policies */}
         {r === "policies" ? (
@@ -9198,6 +9517,7 @@ export default function App() {
               onGoCheckout={() => navigate("admin_checkout")}
               onGoPolicies={() => navigate("admin_policies")}
               onGoSocials={() => navigate("admin_socials")}
+              onGoFaq={() => navigate("admin_faq")}
               onGoProducts={() => navigate("admin_products")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
@@ -9253,6 +9573,7 @@ export default function App() {
               onGoCheckout={() => navigate("admin_checkout")}
               onGoPolicies={() => navigate("admin_policies")}
               onGoSocials={() => navigate("admin_socials")}
+              onGoFaq={() => navigate("admin_faq")}
               onGoProducts={() => navigate("admin")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
@@ -9350,6 +9671,28 @@ export default function App() {
               socialConfig={socialConfig}
               setSocialConfig={setSocialConfigAdmin}
               t={t}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin FAQ */}
+        {r === "admin_faq" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminFaq
+              faqConfig={faqConfig}
+              setFaqConfig={setFaqConfigAdmin}
+              t={t}
+              language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (
