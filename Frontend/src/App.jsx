@@ -6684,10 +6684,23 @@ function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
 
   const activeSocial = socials.find((item) => item.id === selectedId) || null;
 
+  function getLocalizedSocialPlatformLabel(platform) {
+    const key = String(platform || "").trim().toLowerCase();
+    return t.socialsPlatformLabels?.[key] || getSocialPlatformLabel(key);
+  }
+
+  function getDisplaySocialLabel(item) {
+    const stored = String(item?.label || "").trim();
+    const fallback = getSocialPlatformLabel(item?.platform);
+    const localizedFallback = getLocalizedSocialPlatformLabel(item?.platform);
+    if (!stored || stored === fallback) return localizedFallback || t.socialsUntitled;
+    return stored;
+  }
+
   function addSocial() {
     const id = safeUUID("social");
     const platform = "instagram";
-    const label = getSocialPlatformLabel(platform);
+    const label = getLocalizedSocialPlatformLabel(platform);
 
     setSocialConfig((prev) => {
       const base = normalizeSocialConfig(prev);
@@ -6716,7 +6729,7 @@ function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
     if (!id) return;
 
     const item = socials.find((x) => x.id === id);
-    const displayName = String(item?.label || "").trim() || id;
+    const displayName = item ? getDisplaySocialLabel(item) : id;
     const confirmText =
       typeof t.socialsConfirmDelete === "function" ? t.socialsConfirmDelete(displayName) : "";
 
@@ -6752,8 +6765,17 @@ function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
           if ("platform" in (patch || {})) {
             const platform = String(patch.platform || "").trim().toLowerCase();
             const previousPlatformIcon = getSocialPlatformIcon(item.platform);
+            const currentLabel = String(item.label || "").trim();
+            const previousDefaultLabel = getSocialPlatformLabel(item.platform);
+            const previousLocalizedLabel = getLocalizedSocialPlatformLabel(item.platform);
             next.platform = platform;
-            next.label = item.label || getSocialPlatformLabel(platform);
+            if (
+              !currentLabel ||
+              currentLabel === previousDefaultLabel ||
+              currentLabel === previousLocalizedLabel
+            ) {
+              next.label = getLocalizedSocialPlatformLabel(platform);
+            }
             if (!String(item.iconSrc || "").trim() || previousPlatformIcon === item.iconSrc) {
               next.iconSrc = getSocialPlatformIcon(platform);
             }
@@ -6788,6 +6810,7 @@ function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
               ) : (
                 socials.map((item) => {
                   const active = item.id === selectedId;
+                  const displayLabel = getDisplaySocialLabel(item);
                   return (
                     <div key={item.id} className="flex items-center gap-2">
                       <button
@@ -6798,7 +6821,7 @@ function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
                             ? "border-zinc-900 bg-zinc-900 text-white"
                             : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
                         }`}
-                        title={item.label}
+                        title={displayLabel}
                       >
                         <span className="inline-flex items-center gap-2">
                           {item.iconSrc ? (
@@ -6811,7 +6834,7 @@ function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
                               draggable={false}
                             />
                           ) : null}
-                          <span>{item.label || t.socialsUntitled}</span>
+                          <span>{displayLabel}</span>
                         </span>
                       </button>
                       <button

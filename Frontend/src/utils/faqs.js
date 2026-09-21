@@ -31,8 +31,8 @@ const DEFAULT_FAQS = [
       en: "Can I change or cancel an order?",
     },
     answer: {
-      es: "Si la orden aún no está enviada, puedes solicitar cancelación desde “Estatus de Orden”. Si ya está enviada, te ayudamos con el próximo paso.",
-      en: "If the order hasn't shipped yet, you can request cancellation from “Order Status”. If it has shipped, we’ll help with next steps.",
+      es: "Si la orden aún no está enviada, puedes solicitar la cancelación desde “Estado de la orden”. Si ya está enviada, te ayudamos con el próximo paso.",
+      en: "If the order hasn't shipped yet, you can request a cancellation from “Order Status”. If it has shipped, we’ll help with the next steps.",
     },
   },
   {
@@ -55,7 +55,7 @@ const DEFAULT_FAQS = [
       en: "What if an item is out of stock?",
     },
     answer: {
-      es: "Si quedan pocas unidades, verás un badge de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
+      es: "Si quedan pocas unidades, verás una etiqueta de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
       en: "If stock is low, you’ll see a low-stock badge. If it runs out, we’ll suggest similar alternatives.",
     },
   },

@@ -12,7 +12,7 @@ export const translations = {
     navValues: "Valores",
     navFaq: "FAQ",
     navPolicies: "Políticas",
-    navOrderStatus: "Estatus de Orden",
+    navOrderStatus: "Estado de la orden",
     navWishlist: "Favoritos",
     navAdmin: "Admin",
 
@@ -86,7 +86,7 @@ export const translations = {
     toastCopied: "Copiado",
 
     newsletterTitle: "Devocional semanal",
-    newsletterSubtitle: "Recibe un devocional semanal en tu email.",
+    newsletterSubtitle: "Recibe un devocional semanal en tu correo electrónico.",
     newsletterPlaceholder: "tuemail@ejemplo.com",
     newsletterCta: "Suscribirme",
     newsletterInvalid: "Escribe un email válido.",
@@ -104,7 +104,7 @@ export const translations = {
     lowStockLeft: (n) => `Quedan ${n} disponibles`,
 
     recentlyViewedTitle: "Vistos recientemente",
-    recentlyViewedSubtitle: "Vuelve rápido a lo que estabas mirando.",
+    recentlyViewedSubtitle: "Vuelve rápido a los productos que estabas viendo.",
 
     relatedTitle: "También te puede gustar",
     relatedSubtitle: "Productos similares en la misma categoría.",
@@ -180,7 +180,7 @@ export const translations = {
     productFallbackName: "Producto",
     toastChangesSaved: "Cambios guardados",
     mvpNote:
-      "Este MVP es solo frontend: luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
+      "Este MVP funciona solo en el frontend; luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
 
     cartTitle: "Carrito",
     cartSubtitle: "Revisa tu pedido antes del checkout.",
@@ -313,31 +313,31 @@ export const translations = {
     blogTitle: "Blog",
     blogSubtitle:
       "Contenido de lectura corta para enganchar y nutrir a la audiencia.",
-    blogPublicEmpty: "Aún no hay blogs publicados.",
+    blogPublicEmpty: "Aún no hay entradas publicadas en el blog.",
     blogReadLess: "Leer menos",
     adminBlogTitle: "Blog",
-    adminBlogSubtitle: "Añade, edita o elimina blogs publicados en la página.",
-    blogListTitle: "Blogs",
-    blogListSubtitle: "Administra cada post de blog.",
-    blogEmpty: "No hay blogs configurados todavía.",
+    adminBlogSubtitle: "Añade, edita o elimina entradas del blog publicadas en la página.",
+    blogListTitle: "Entradas del blog",
+    blogListSubtitle: "Administra cada entrada del blog.",
+    blogEmpty: "Aún no hay entradas del blog configuradas.",
     blogUntitled: "Sin título",
-    blogAdd: "Añadir blog",
-    blogSelectHint: "Selecciona un blog para editarlo.",
-    blogEnabledLabel: "Mostrar en Blog público",
+    blogAdd: "Añadir entrada",
+    blogSelectHint: "Selecciona una entrada del blog para editarla.",
+    blogEnabledLabel: "Mostrar en el blog público",
     blogPostTitleLabel: "Título",
-    blogPostTitlePlaceholder: "Ej: Cómo empezar un journal de oración",
+    blogPostTitlePlaceholder: "Ej: Cómo empezar un diario de oración",
     blogExcerptLabel: "Extracto",
     blogExcerptPlaceholder: "Resumen corto que aparece en la tarjeta.",
     blogContentLabel: "Contenido",
     blogContentPlaceholder: "Escribe aquí el contenido completo del blog.",
     blogAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
-    blogConfirmDelete: (name) => `¿Eliminar el blog "${name}"?`,
+    blogConfirmDelete: (name) => `¿Eliminar la entrada del blog "${name}"?`,
     blogEs: "Español",
     blogEn: "Inglés",
     read: "Leer",
     blogPosts: [
       {
-        title: "Cómo empezar un journal de oración",
+        title: "Cómo empezar un diario de oración",
         excerpt: "Una estructura simple de 10 minutos al día para crecer en fe y constancia.",
       },
       {
@@ -414,7 +414,7 @@ export const translations = {
       },
       {
         q: "¿Puedo cambiar o cancelar una orden?",
-        a: "Si la orden aún no está enviada, puedes solicitar cancelación desde “Estatus de Orden”. Si ya está enviada, te ayudamos con el próximo paso.",
+        a: "Si la orden aún no está enviada, puedes solicitar la cancelación desde “Estado de la orden”. Si ya está enviada, te ayudamos con el próximo paso.",
       },
       {
         q: "¿Qué métodos de pago aceptan?",
@@ -422,7 +422,7 @@ export const translations = {
       },
       {
         q: "¿Qué pasa si un producto no tiene stock?",
-        a: "Si quedan pocas unidades, verás un badge de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
+        a: "Si quedan pocas unidades, verás una etiqueta de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
       },
     ],
 
@@ -434,14 +434,14 @@ export const translations = {
     adminTimeLabel: "Hora:",
     adminStatProducts: "Productos",
     adminStatProductsBody: "Artículos activos en catálogo.",
-    adminStatMode: "Usuario de Administrador",
+    adminStatMode: "Administradores",
     adminStatModeBody:
       "Crea o elimina usuarios y contraseñas de administrador (requiere iniciar sesión).",
 
-    adminManageAccess: "Acceso admin",
-    adminLoginTitle: "Acceso Admin",
+    adminManageAccess: "Acceso de administrador",
+    adminLoginTitle: "Acceso de administrador",
     adminLoginSubtitle: "Inicia sesión para entrar al panel de administración.",
-    adminSetupTitle: "Configurar Admin",
+    adminSetupTitle: "Configurar administrador",
     adminSetupSubtitle:
       "Crea el primer usuario administrador para proteger el panel.",
 
@@ -455,7 +455,7 @@ export const translations = {
     adminAuthConfirmPasswordPlaceholder: "Repite la contraseña",
 
     adminLoginButton: "Entrar",
-    adminSetupCreateButton: "Crear admin",
+    adminSetupCreateButton: "Crear administrador",
     adminLogout: "Cerrar sesión",
     adminAuthBackHome: "Volver al inicio",
 
@@ -464,52 +464,52 @@ export const translations = {
     adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
     adminAuthInvalid: "Usuario o contraseña incorrectos.",
     adminAuthNotConfigured:
-      "No hay admins configurados en el servidor. Contacta al administrador.",
+      "No hay administradores configurados en el servidor. Contacta al administrador.",
     adminAuthServerOffline:
       "No se pudo conectar con el servidor. Verifica que el Backend esté encendido.",
     adminAuthDisclaimer:
-      "Acceso admin verificado por el servidor.",
+      "Acceso de administrador verificado por el servidor.",
 
-    adminTransferTitle: "Sincronizar admins",
+    adminTransferTitle: "Sincronizar administradores",
     adminTransferSubtitle:
-      "Genera un código en tu computadora y pégalo en el celular para usar los mismos admins.",
+      "Genera un código en tu computadora y pégalo en el celular para usar los mismos administradores.",
     adminTransferGenerate: "Generar código",
     adminTransferCopy: "Copiar",
-    adminTransferEmpty: "No hay admins para exportar.",
+    adminTransferEmpty: "No hay administradores para exportar.",
     adminTransferCopied: "Código copiado.",
     adminTransferCopyHint: "Copia el código manualmente (selecciona y copia).",
 
-    adminTransferImportTitle: "Importar acceso admin",
+    adminTransferImportTitle: "Importar acceso de administrador",
     adminTransferImportSubtitle:
-      "Pega el código desde tu otra computadora/celular para sincronizar admins en este dispositivo.",
+      "Pega el código desde tu otra computadora/celular para sincronizar administradores en este dispositivo.",
     adminTransferImportPlaceholder: "Pega el código aquí…",
     adminTransferImportButton: "Importar",
     adminTransferImportEmpty: "Pega el código para importar.",
-    adminTransferImportSuccess: "Admins importados. Ahora puedes iniciar sesión.",
-    adminTransferImportError: "Código inválido o sin admins.",
+    adminTransferImportSuccess: "Administradores importados. Ahora puedes iniciar sesión.",
+    adminTransferImportError: "Código inválido o sin administradores.",
 
-    adminAuthTipsTitle: "Tips",
+    adminAuthTipsTitle: "Consejos",
     adminAuthTip1: "Usa una contraseña única (no la reutilices).",
     adminAuthTip2:
-      "Si borras el storage del navegador, tendrás que configurar el admin de nuevo.",
-    adminAuthTip3: "Esto es frontend-only; luego conectaremos un backend real.",
+      "Si borras el almacenamiento del navegador, tendrás que configurar el administrador de nuevo.",
+    adminAuthTip3: "Por ahora, esto funciona solo en el frontend; luego conectaremos un backend real.",
 
     adminUsersTitle: "Administradores",
     adminUsersSubtitle:
       "Crea o elimina usuarios con acceso al panel de administración.",
-    adminUsersCreateTitle: "Crear nuevo admin",
-    adminUsersCreateButton: "Crear usuario",
+    adminUsersCreateTitle: "Crear nuevo administrador",
+    adminUsersCreateButton: "Crear administrador",
     adminUsersCreateError: "Ese usuario ya existe o hubo un error.",
     adminUsersDeleteError: "No se pudo eliminar.",
-    adminUserCreatedToast: (username) => `Usuario de administrador creado: ${username}`,
-    adminUserCreateFailedToast: "No se pudo crear el usuario de administrador.",
-    adminUserDeletedToast: (username) => `Usuario de administrador eliminado: ${username}`,
-    adminUserDeleteFailedToast: "No se pudo eliminar el usuario de administrador.",
+    adminUserCreatedToast: (username) => `Administrador creado: ${username}`,
+    adminUserCreateFailedToast: "No se pudo crear el administrador.",
+    adminUserDeletedToast: (username) => `Administrador eliminado: ${username}`,
+    adminUserDeleteFailedToast: "No se pudo eliminar el administrador.",
     adminUsersNameRequired: "Completa el nombre.",
     adminUsersUpdateError: "No se pudo actualizar.",
-    adminUsersListTitle: "Usuarios admin",
-    adminUsersEmpty: "Aún no hay usuarios admin.",
-    adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
+    adminUsersListTitle: "Usuarios administradores",
+    adminUsersEmpty: "Aún no hay administradores.",
+    adminUsersCannotDeleteLast: "No puedes eliminar al último administrador.",
     adminUsersCredentialHint: "Acceso central (servidor).",
     adminSaveOfflineToast: "No se pudieron guardar los cambios (servidor desconectado).",
     adminSaveSectionHomepage: "Página principal",
@@ -599,9 +599,9 @@ export const translations = {
     socialsPlatformLabel: "Plataforma",
     socialsLabelLabel: "Nombre visible",
     socialsLabelPlaceholder: "Ej: Instagram",
-    socialsUrlLabel: "Link de la cuenta",
+    socialsUrlLabel: "Enlace de la cuenta",
     socialsUrlPlaceholder: "Ej: https://instagram.com/growbyfaith",
-    socialsUrlHint: "Si escribes el link sin https://, la página lo completa automáticamente.",
+    socialsUrlHint: "Si escribes el enlace sin https://, la página lo completa automáticamente.",
     socialsIconUrlLabel: "Logo / icono",
     socialsIconUrlPlaceholder: "Ej: /Instagram_icon.png o https://...",
     socialsIconUrlHint:
@@ -614,12 +614,12 @@ export const translations = {
       youtube: "YouTube",
       x: "X / Twitter",
       whatsapp: "WhatsApp",
-      website: "Website",
+      website: "Sitio web",
       custom: "Personalizada",
     },
 
     profitNoSales: "No hay ventas registradas en este período.",
-    profitTopProducts: "Productos top",
+    profitTopProducts: "Productos destacados",
 
     profitReportPdfButton: "Reporte (PDF)",
     profitReportPeriodValueDay: "Día",
@@ -666,10 +666,10 @@ export const translations = {
     ordersPaymentPayPal: "PayPal",
     ordersPaymentWhatsApp: "PayPal",
 
-    ordersTrackingNumberLabel: "Tracking #",
+    ordersTrackingNumberLabel: "Número de seguimiento",
     ordersTrackingNumberPlaceholder: "Ej: 9400 1000 0000 0000 0000 00",
     ordersEtaLabel: "Tiempo estimado",
-    ordersEtaPlaceholder: "Ej: 3-5 días",
+    ordersEtaPlaceholder: "Ej: 3–5 días",
 
     orderConfirmationTitle: "Confirmación de orden",
     orderConfirmationSubtitle:
@@ -684,18 +684,18 @@ export const translations = {
     orderConfirmationThanksTitle: "¡Gracias por tu orden!",
     orderConfirmationNextStepsTitle: "Próximos pasos",
     orderConfirmationNextStep1: "Guarda tu número de orden por si necesitas ayuda.",
-    orderConfirmationNextStep2: "Prepararemos tu pedido y te enviaremos el tracking cuando esté listo.",
+    orderConfirmationNextStep2: "Prepararemos tu pedido y te enviaremos el número de seguimiento cuando esté listo.",
     orderConfirmationNextStep3: "Si deseas hacer cambios, escríbenos con tu número de orden.",
 
-    orderStatusTitle: "Estatus de Orden",
-    orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estatus en tiempo real.",
+    orderStatusTitle: "Estado de la orden",
+    orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estado en tiempo real.",
     orderStatusOrderNumberLabel: "Número de confirmación",
     orderStatusOrderNumberPlaceholder: "Ej: GBF-000123",
     orderStatusLookup: "Buscar",
     orderStatusNotFound: "No encontramos una orden con ese número.",
-    orderStatusCurrentStatus: "Estatus actual",
+    orderStatusCurrentStatus: "Estado actual",
     orderStatusUpdatedAt: "Actualizado",
-    orderStatusTracking: "Tracking",
+    orderStatusTracking: "Número de seguimiento",
     orderStatusEta: "Tiempo estimado",
 
     orderTrackingTitle: "Seguimiento",
@@ -711,30 +711,30 @@ export const translations = {
     orderStatusCancelModalClose: "Cerrar",
     orderStatusCancelRequestSent: "Solicitud enviada.",
 
-    ordersStatusPreparing: "Preparar orden",
-    ordersStatusPaused: "Pausar orden",
+    ordersStatusPreparing: "Preparando orden",
+    ordersStatusPaused: "Orden en pausa",
     ordersStatusShipped: "Orden enviada",
     ordersStatusDelivered: "Orden entregada",
     ordersCancelReasonLabel: "Causa de cancelación",
-    ordersCancelReasonPlaceholder: "Ej: Cliente solicitó cancelación / producto sin stock",
-    ordersUpdateStatusLabel: "Actualizar estatus",
+    ordersCancelReasonPlaceholder: "Ej: El cliente solicitó cancelación / producto sin inventario",
+    ordersUpdateStatusLabel: "Actualizar estado",
     ordersApplyStatus: "Aplicar",
-    ordersStatusTrackingRequired: "Para marcar como 'Orden enviada' debes escribir el tracking.",
+    ordersStatusTrackingRequired: "Para marcar como 'Orden enviada' debes escribir el número de seguimiento.",
     ordersStatusCancelReasonRequired: "Para cancelar la orden debes escribir la causa de cancelación.",
 
-    heroAdminTitle: "Promoción del Home",
+    heroAdminTitle: "Promoción de la página principal",
     heroAdminSubtitle:
-      "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin programador.",
+      "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin necesidad de un programador.",
 
-    adminHomepageTitle: "Página Principal",
+    adminHomepageTitle: "Página principal",
     adminHomepageSubtitle:
-      "Personaliza el cuadro principal del Home y los iconos con sus textos.",
+      "Personaliza el recuadro principal del inicio y los iconos con sus textos.",
 
-    heroAdminEnabled: "Activar cuadro del Home",
+    heroAdminEnabled: "Activar recuadro principal",
     heroAdminReset: "Restablecer",
     heroAdminEs: "Español (ES)",
     heroAdminEn: "Inglés (EN)",
-    heroAdminPill: "Etiqueta (pill)",
+    heroAdminPill: "Etiqueta",
     heroAdminTitleOne: "Título línea 1",
     heroAdminTitleTwo: "Título línea 2",
     heroAdminText: "Texto",
@@ -788,7 +788,7 @@ export const translations = {
     productCategoryLabel: "Categoría",
     productPriceLabel: "Precio",
     productPricePlaceholderExample: "Ej: 35",
-    productImageLabel: "Imagen",
+    productImageLabel: "URL de la imagen",
     productImagePlaceholder: "https://...",
     productShortLabel: "Descripción corta",
     productShortPlaceholder: "Ej: Vaso premium con mensaje de fe.",
@@ -891,7 +891,7 @@ export const translations = {
     toastCopied: "Copied",
 
     newsletterTitle: "Weekly devotional",
-    newsletterSubtitle: "Get a weekly devotional in your email.",
+    newsletterSubtitle: "Get a weekly devotional in your inbox.",
     newsletterPlaceholder: "you@example.com",
     newsletterCta: "Sign up",
     newsletterInvalid: "Please enter a valid email.",
@@ -909,7 +909,7 @@ export const translations = {
     lowStockLeft: (n) => `Only ${n} left`,
 
     recentlyViewedTitle: "Recently viewed",
-    recentlyViewedSubtitle: "Quickly get back to products you checked out.",
+    recentlyViewedSubtitle: "Quickly get back to products you were viewing.",
 
     relatedTitle: "You may also like",
     relatedSubtitle: "Similar products in the same category.",
@@ -985,7 +985,7 @@ export const translations = {
     productFallbackName: "Product",
     toastChangesSaved: "Changes saved",
     mvpNote:
-      "This MVP is frontend-only: later we'll integrate card payments (Stripe) and real orders.",
+      "This MVP currently runs only on the frontend; later we'll integrate card payments (Stripe) and real orders.",
 
     cartTitle: "Cart",
     cartSubtitle: "Review your order before checkout.",
@@ -1020,7 +1020,7 @@ export const translations = {
     notesPlaceholder: "Notes (e.g. gift, date, etc.)",
     giftNoteLabel: "Gift note (optional)",
     giftNotePlaceholder: "Write a short message for the card or packaging...",
-    giftNoteHint: "Tip: 1–2 lines reads best.",
+    giftNoteHint: "Tip: 1–2 lines read best.",
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
@@ -1126,7 +1126,7 @@ export const translations = {
     blogUntitled: "Untitled",
     blogAdd: "Add blog",
     blogSelectHint: "Select a blog post to edit it.",
-    blogEnabledLabel: "Show on public Blog",
+    blogEnabledLabel: "Show in the public blog",
     blogPostTitleLabel: "Title",
     blogPostTitlePlaceholder: "e.g. How to start a prayer journal",
     blogExcerptLabel: "Excerpt",
@@ -1134,7 +1134,7 @@ export const translations = {
     blogContentLabel: "Content",
     blogContentPlaceholder: "Write the full blog content here.",
     blogAutosaveHint: "Autosaved in this browser (localStorage).",
-    blogConfirmDelete: (name) => `Delete blog post "${name}"?`,
+    blogConfirmDelete: (name) => `Delete the blog post "${name}"?`,
     blogEs: "Spanish",
     blogEn: "English",
     read: "Read",
@@ -1197,13 +1197,13 @@ export const translations = {
     faqUntitled: "Untitled",
     faqAdd: "Add FAQ",
     faqSelectHint: "Select a question to edit it.",
-    faqEnabledLabel: "Show on public FAQ",
+    faqEnabledLabel: "Show in the public FAQ",
     faqQuestionLabel: "Question",
     faqQuestionPlaceholder: "e.g. How long does shipping take?",
     faqAnswerLabel: "Answer",
     faqAnswerPlaceholder: "Write the answer for the customer.",
     faqAutosaveHint: "Autosaved in this browser (localStorage).",
-    faqConfirmDelete: (name) => `Delete FAQ "${name}"?`,
+    faqConfirmDelete: (name) => `Delete the FAQ item "${name}"?`,
     faqEs: "Spanish",
     faqEn: "English",
     faqItems: [
@@ -1217,7 +1217,7 @@ export const translations = {
       },
       {
         q: "Can I change or cancel an order?",
-        a: "If the order hasn't shipped yet, you can request cancellation from “Order Status”. If it has shipped, we’ll help with next steps.",
+        a: "If the order hasn't shipped yet, you can request a cancellation from “Order Status”. If it has shipped, we’ll help with the next steps.",
       },
       {
         q: "What payment methods do you accept?",
@@ -1237,7 +1237,7 @@ export const translations = {
     adminTimeLabel: "Time:",
     adminStatProducts: "Products",
     adminStatProductsBody: "Active items in the catalog.",
-    adminStatMode: "Admin user",
+    adminStatMode: "Admin users",
     adminStatModeBody:
       "Create or remove admin usernames and passwords (login required).",
 
@@ -1293,8 +1293,8 @@ export const translations = {
     adminAuthTipsTitle: "Tips",
     adminAuthTip1: "Use a unique password (do not reuse it).",
     adminAuthTip2:
-      "If you clear browser storage, you'll need to set up admin again.",
-    adminAuthTip3: "This is frontend-only; we'll connect a real backend later.",
+      "If you clear browser storage, you'll need to set up the admin account again.",
+    adminAuthTip3: "This currently works only on the frontend; we'll connect a real backend later.",
 
     adminUsersTitle: "Administrators",
     adminUsersSubtitle: "Create or remove users with access to the admin panel.",
@@ -1402,7 +1402,7 @@ export const translations = {
     socialsLabelPlaceholder: "e.g. Instagram",
     socialsUrlLabel: "Account link",
     socialsUrlPlaceholder: "e.g. https://instagram.com/growbyfaith",
-    socialsUrlHint: "If you enter the link without https://, the site completes it automatically.",
+    socialsUrlHint: "If you enter the link without https://, the page adds it automatically.",
     socialsIconUrlLabel: "Logo / icon",
     socialsIconUrlPlaceholder: "e.g. /Instagram_icon.png or https://...",
     socialsIconUrlHint:
@@ -1488,7 +1488,7 @@ export const translations = {
     orderConfirmationNextStep2: "We'll prepare your order and share tracking once it's ready.",
     orderConfirmationNextStep3: "If you need changes, message us with your order number.",
 
-    orderStatusTitle: "Order status",
+    orderStatusTitle: "Order Status",
     orderStatusSubtitle: "Enter your confirmation number to see real-time status.",
     orderStatusOrderNumberLabel: "Confirmation number",
     orderStatusOrderNumberPlaceholder: "e.g. GBF-000123",
@@ -1513,7 +1513,7 @@ export const translations = {
     orderStatusCancelRequestSent: "Request sent.",
 
     ordersStatusPreparing: "Preparing order",
-    ordersStatusPaused: "Order paused",
+    ordersStatusPaused: "Order on hold",
     ordersStatusShipped: "Order shipped",
     ordersStatusDelivered: "Order delivered",
     ordersCancelReasonLabel: "Cancellation reason",
@@ -1529,13 +1529,13 @@ export const translations = {
 
     adminHomepageTitle: "Homepage",
     adminHomepageSubtitle:
-      "Customize the main Home hero and the icons with their text.",
+      "Customize the main homepage hero and each icon with its text.",
 
     heroAdminEnabled: "Enable homepage hero",
     heroAdminReset: "Reset",
     heroAdminEs: "Spanish (ES)",
     heroAdminEn: "English (EN)",
-    heroAdminPill: "Badge (pill)",
+    heroAdminPill: "Badge",
     heroAdminTitleOne: "Title line 1",
     heroAdminTitleTwo: "Title line 2",
     heroAdminText: "Text",

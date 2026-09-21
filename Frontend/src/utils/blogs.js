@@ -3,7 +3,7 @@ const DEFAULT_BLOG_POSTS = [
     id: "prayer-journal",
     enabled: true,
     title: {
-      es: "Cómo empezar un journal de oración",
+      es: "Cómo empezar un diario de oración",
       en: "How to start a prayer journal",
     },
     excerpt: {

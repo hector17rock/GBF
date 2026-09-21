@@ -1,5 +1,5 @@
 import Pill from "./Pill";
-import { normalizeSocialConfig } from "../utils/socials";
+import { getSocialPlatformLabel, normalizeSocialConfig } from "../utils/socials";
 
 export default function Footer({ t, socialConfig }) {
   const year = new Date().getFullYear();
@@ -24,17 +24,25 @@ export default function Footer({ t, socialConfig }) {
           </div>
           <div className="flex flex-wrap gap-2">
             {socials.map((item) => {
+              const storedLabel = String(item.label || "").trim();
+              const fallbackLabel = getSocialPlatformLabel(item.platform);
+              const localizedFallback =
+                t?.socialsPlatformLabels?.[String(item.platform || "").trim().toLowerCase()];
+              const displayLabel =
+                !storedLabel || storedLabel === fallbackLabel
+                  ? localizedFallback || fallbackLabel || t?.socialsUntitled
+                  : storedLabel;
               const inner = item.iconSrc ? (
                 <img
                   src={item.iconSrc}
-                  alt={item.label}
+                  alt={displayLabel}
                   className="h-4 w-4 object-contain"
                   loading="lazy"
                   decoding="async"
                   draggable={false}
                 />
               ) : (
-                <span className="text-xs font-semibold">{item.label}</span>
+                <span className="text-xs font-semibold">{displayLabel}</span>
               );
 
               return item.url ? (
@@ -43,14 +51,14 @@ export default function Footer({ t, socialConfig }) {
                   href={item.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  aria-label={item.label}
-                  title={item.label}
+                  aria-label={displayLabel}
+                  title={displayLabel}
                   className="inline-flex"
                 >
                   <Pill>{inner}</Pill>
                 </a>
               ) : (
-                <span key={item.id} title={item.label} className="inline-flex">
+                <span key={item.id} title={displayLabel} className="inline-flex">
                   <Pill>{inner}</Pill>
                 </span>
               );

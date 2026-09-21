@@ -57,6 +57,33 @@ def _state_is_empty(state: dict[str, Any]) -> bool:
     return not (has_products or has_categories or has_orders or has_hero)
 
 
+def _order_status_label(status: str, lang: str) -> str:
+    key = str(status or "").strip().lower()
+    if not key:
+        return "—"
+
+    labels = {
+        "es": {
+            "pending": "pendiente",
+            "preparing": "preparando",
+            "paused": "en pausa",
+            "shipped": "enviada",
+            "delivered": "entregada",
+            "cancelled": "cancelada",
+        },
+        "en": {
+            "pending": "pending",
+            "preparing": "preparing",
+            "paused": "on hold",
+            "shipped": "shipped",
+            "delivered": "delivered",
+            "cancelled": "cancelled",
+        },
+    }
+
+    return labels.get(lang, labels["en"]).get(key, key)
+
+
 def get_state_row(db: Session) -> AppState | None:
     return db.get(AppState, 1)
 
@@ -207,12 +234,16 @@ def put_admin_state(
 
             if old_status != new_status and new_status:
                 changed = True
+                old_status_es = _order_status_label(old_status, "es")
+                new_status_es = _order_status_label(new_status, "es")
+                old_status_en = _order_status_label(old_status, "en")
+                new_status_en = _order_status_label(new_status, "en")
                 log_event("order_status_updated", orderNumber=k, fromStatus=old_status or None, toStatus=new_status)
                 next_state = append_activity_log(
                     next_state,
                     kind="order",
-                    message_es=f"Orden {k}: estatus {old_status or '—'} → {new_status}",
-                    message_en=f"Order {k}: status {old_status or '—'} → {new_status}",
+                    message_es=f"Orden {k}: estado {old_status_es} → {new_status_es}",
+                    message_en=f"Order {k}: status {old_status_en} → {new_status_en}",
                     ts_ms=now_ms(),
                 )
 
@@ -222,7 +253,7 @@ def put_admin_state(
                 next_state = append_activity_log(
                     next_state,
                     kind="order",
-                    message_es=f"Orden {k}: tracking actualizado → {new_tracking}",
+                    message_es=f"Orden {k}: número de seguimiento actualizado → {new_tracking}",
                     message_en=f"Order {k}: tracking updated → {new_tracking}",
                     ts_ms=now_ms(),
                 )
