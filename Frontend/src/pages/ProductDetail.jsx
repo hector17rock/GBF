@@ -404,7 +404,7 @@ export default function ProductDetail({
                           ensurePreviewActive();
                           setFont(f.id);
                         }}
-                        className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
+                        className={`${f.className} rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
                           selected
                             ? "border-zinc-900 bg-zinc-900 text-white"
                             : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
