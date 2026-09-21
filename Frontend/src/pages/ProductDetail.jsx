@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { COLORS, FONTS, VERSES } from "../data/catalog";
+import { COLORS, FONTS } from "../data/catalog";
+import {
+  BIBLE_BOOKS,
+  DEFAULT_BIBLE_SELECTION,
+  formatBibleReference,
+  getBibleChapterOptions,
+  getBibleVerseOptions,
+} from "../data/bible";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
@@ -25,7 +32,9 @@ export default function ProductDetail({
   socialConfig,
 }) {
   const [text, setText] = useState("");
-  const [verse, setVerse] = useState(VERSES[1]);
+  const [selectedBookId, setSelectedBookId] = useState(DEFAULT_BIBLE_SELECTION.bookId);
+  const [selectedChapter, setSelectedChapter] = useState(DEFAULT_BIBLE_SELECTION.chapter);
+  const [selectedVerse, setSelectedVerse] = useState(DEFAULT_BIBLE_SELECTION.verse);
   const [font, setFont] = useState(FONTS[0].id);
   const [color, setColor] = useState(COLORS[0].id);
 
@@ -81,6 +90,26 @@ export default function ProductDetail({
   }
 
   const fontClass = FONTS.find((f) => f.id === font)?.className ?? "font-sans";
+  const chapterOptions = useMemo(
+    () => getBibleChapterOptions(selectedBookId),
+    [selectedBookId]
+  );
+  const verseOptions = useMemo(
+    () => getBibleVerseOptions(selectedBookId, selectedChapter),
+    [selectedBookId, selectedChapter]
+  );
+  const verseReference = useMemo(
+    () =>
+      formatBibleReference(
+        {
+          bookId: selectedBookId,
+          chapter: selectedChapter,
+          verse: selectedVerse,
+        },
+        language
+      ),
+    [selectedBookId, selectedChapter, selectedVerse, language]
+  );
 
   const colorClass =
     color === "gold"
@@ -95,7 +124,7 @@ export default function ProductDetail({
 
   const personalization = {
     text: text.trim(),
-    verse,
+    verse: verseReference,
     font,
     color,
   };
@@ -364,7 +393,7 @@ export default function ProductDetail({
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-zinc-700">{t.labelFont}</label>
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
                   {FONTS.map((f) => {
                     const selected = font === f.id;
                     return (
@@ -417,20 +446,69 @@ export default function ProductDetail({
 
               <div>
                 <label className="text-xs font-semibold text-zinc-700">{t.labelVerse}</label>
-                <select
-                  value={verse}
-                  onChange={(e) => {
-                    ensurePreviewActive();
-                    setVerse(e.target.value);
-                  }}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                >
-                  {VERSES.map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1 text-xs text-zinc-500">{t.verseSelectionHint}</div>
+                <div className="mt-2 grid gap-2 md:grid-cols-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-600">{t.labelVerseBook}</label>
+                    <select
+                      value={selectedBookId}
+                      onChange={(e) => {
+                        ensurePreviewActive();
+                        setSelectedBookId(e.target.value);
+                        setSelectedChapter(1);
+                        setSelectedVerse(1);
+                      }}
+                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {BIBLE_BOOKS.map((book) => (
+                        <option key={book.id} value={book.id}>
+                          {l10n(book.name, language)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-600">
+                      {t.labelVerseChapter}
+                    </label>
+                    <select
+                      value={selectedChapter}
+                      onChange={(e) => {
+                        ensurePreviewActive();
+                        setSelectedChapter(Number(e.target.value) || 1);
+                        setSelectedVerse(1);
+                      }}
+                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {chapterOptions.map((chapterNumber) => (
+                        <option key={chapterNumber} value={chapterNumber}>
+                          {chapterNumber}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-600">
+                      {t.labelVerseNumber}
+                    </label>
+                    <select
+                      value={selectedVerse}
+                      onChange={(e) => {
+                        ensurePreviewActive();
+                        setSelectedVerse(Number(e.target.value) || 1);
+                      }}
+                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {verseOptions.map((verseNumber) => (
+                        <option key={verseNumber} value={verseNumber}>
+                          {verseNumber}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="grid gap-2">
@@ -566,7 +644,9 @@ export default function ProductDetail({
                 </details>
               </div>
 
-              <div className="text-xs leading-5 text-zinc-500">{t.mvpNote}</div>
+              {t.mvpNote ? (
+                <div className="text-xs leading-5 text-zinc-500">{t.mvpNote}</div>
+              ) : null}
             </div>
           </div>
         </div>

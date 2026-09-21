@@ -43,8 +43,8 @@ const DEFAULT_FAQS = [
       en: "What payment methods do you accept?",
     },
     answer: {
-      es: "Aceptamos tarjeta y PayPal (en este MVP es una demo visual; luego se integra pago real).",
-      en: "We accept card and PayPal (this MVP is a visual demo; real payments will be integrated later).",
+      es: "Actualmente puedes completar tu pedido con PayPal. La opción con tarjeta no está disponible por el momento.",
+      en: "You can currently complete your order with PayPal. Card payments are not available right now.",
     },
   },
   {

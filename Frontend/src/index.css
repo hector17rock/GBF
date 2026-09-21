@@ -26,6 +26,12 @@ body {
   color: var(--gbf-charcoal);
 }
 
+.gbf-font-script {
+  font-family: var(--gbf-brand-font);
+  font-style: normal;
+  font-weight: 400;
+}
+
 /* ============================
    Page-to-page transitions
    ============================ */

@@ -9732,7 +9732,7 @@ export default function App() {
             reviews={reviewsByProduct?.[String(selected.id)]}
             onAddReview={addProductReview}
             notify={pushToast}
-            onBack={() => navigate(r === "admin_product_preview" ? "admin" : "catalog")}
+            onBack={() => navigate(r === "admin_product_preview" ? "admin_products" : "catalog")}
             onAddToCart={addToCart}
             onGoCheckout={r === "admin_product_preview" ? undefined : () => navigate("checkout")}
             t={t}

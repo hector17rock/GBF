@@ -32,7 +32,7 @@ export const translations = {
     productDetailGoCheckoutShort: "Pagar",
     productDetailDeliveryReturnsTitle: "Entrega y devoluciones",
     productDetailDeliveryReturnsBody:
-      "Envíos y devoluciones (demo). Luego puedes conectar un proveedor real y políticas oficiales.",
+      "Consulta la información de envío, devoluciones y políticas antes de completar tu compra.",
 
     explore: "Explorar",
     cart: "Carrito",
@@ -155,13 +155,17 @@ export const translations = {
 
     personalizationTitle: "Personalización",
     personalizationSubtitle:
-      "Ajusta texto, tipografía y color. Esto es el corazón del MVP.",
+      "Ajusta texto, tipografía y color para personalizar tu producto.",
 
     labelText: "Texto",
     textPlaceholder: "Ej: Hogar de la familia Rodríguez",
     textRecommendation: "Recomendación: 20–35 caracteres.",
 
     labelVerse: "Versículo",
+    verseSelectionHint: "Escoge libro, capítulo y versículo.",
+    labelVerseBook: "Libro",
+    labelVerseChapter: "Capítulo",
+    labelVerseNumber: "Versículo",
     labelFont: "Tipografía",
     labelColor: "Color",
 
@@ -179,8 +183,7 @@ export const translations = {
     toastProductDeleted: (name) => `Producto eliminado: ${name}`,
     productFallbackName: "Producto",
     toastChangesSaved: "Cambios guardados",
-    mvpNote:
-      "Este MVP funciona solo en el frontend; luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
+    mvpNote: "",
 
     cartTitle: "Carrito",
     cartSubtitle: "Revisa tu pedido antes del checkout.",
@@ -189,7 +192,7 @@ export const translations = {
     remove: "Eliminar",
     qty: "Cant.",
     total: "Total",
-    estimatedTotal: "Este total es estimado para el MVP.",
+    estimatedTotal: "Este total es estimado.",
     goToCheckout: "Ir a checkout",
 
     taxPrState: "IVU estatal (PR)",
@@ -207,7 +210,7 @@ export const translations = {
       "El IVU y el envío se calculan automáticamente.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pago con PayPal (funcional). Tarjeta (Stripe) próximamente.",
+    checkoutSubtitle: "Pago con PayPal disponible. La opción con tarjeta no está disponible por el momento.",
     yourDetails: "Tus datos",
     namePlaceholder: "Nombre",
     phonePlaceholder: "Teléfono",
@@ -219,7 +222,7 @@ export const translations = {
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
-      "PayPal disponible. Tarjeta (Stripe) próximamente.",
+      "PayPal disponible. La opción con tarjeta no está disponible por el momento.",
     paymentMethod: "Método de pago",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
@@ -246,7 +249,7 @@ export const translations = {
     cardTypeAmex: "American Express",
     cardTypeDiscover: "Discover",
 
-    cardDisclaimer: "Demo frontend — no se procesa el pago todavía.",
+    cardDisclaimer: "La opción con tarjeta no está disponible por el momento.",
     cardNameLabel: "Nombre en la tarjeta",
     cardNamePlaceholder: "Nombre y apellido",
     cardNumberLabel: "Número de tarjeta",
@@ -273,7 +276,7 @@ export const translations = {
     checkoutOrderSubmittedToast: "Orden sometida",
     cardRequired: "Completa todos los campos de tarjeta.",
     cardNotReady:
-      "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
+      "La opción con tarjeta no está disponible por el momento.",
     checkoutCompleteHint:
       "Para completar tu orden, revisa los detalles y presiona “Someter orden”.",
 
@@ -297,7 +300,7 @@ export const translations = {
     sendWhatsApp: "Continuar con PayPal",
     backToCart: "Volver al carrito",
     nextStep:
-      "Siguiente paso (luego): integrar pagos y órdenes reales.",
+      "Revisa los detalles antes de continuar.",
     finish: "Finalizar",
 
     waGreeting: "Hola, quiero hacer un pedido:",
@@ -418,7 +421,7 @@ export const translations = {
       },
       {
         q: "¿Qué métodos de pago aceptan?",
-        a: "Aceptamos tarjeta y PayPal (en este MVP es una demo visual; luego se integra pago real).",
+        a: "Actualmente puedes completar tu pedido con PayPal. La opción con tarjeta no está disponible por el momento.",
       },
       {
         q: "¿Qué pasa si un producto no tiene stock?",
@@ -492,7 +495,7 @@ export const translations = {
     adminAuthTip1: "Usa una contraseña única (no la reutilices).",
     adminAuthTip2:
       "Si borras el almacenamiento del navegador, tendrás que configurar el administrador de nuevo.",
-    adminAuthTip3: "Por ahora, esto funciona solo en el frontend; luego conectaremos un backend real.",
+    adminAuthTip3: "Guarda tus credenciales en un lugar seguro y verifica que el servidor esté encendido.",
 
     adminUsersTitle: "Administradores",
     adminUsersSubtitle:
@@ -543,7 +546,7 @@ export const translations = {
 
     profitTitle: "Ganancias / Pérdidas",
     profitSubtitle:
-      "Análisis por día, semana o mes basado en ventas registradas (demo frontend).",
+      "Análisis por día, semana o mes basado en ventas registradas.",
     profitPeriodLabel: "Periodo",
     profitDay: "Día",
     profitWeek: "Semana",
@@ -837,7 +840,7 @@ export const translations = {
     productDetailGoCheckoutShort: "Checkout",
     productDetailDeliveryReturnsTitle: "Delivery & returns",
     productDetailDeliveryReturnsBody:
-      "Shipping and returns (demo). You can later connect real carriers and official policies.",
+      "Review shipping, returns, and store policies before completing your purchase.",
 
     explore: "Explore",
     cart: "Cart",
@@ -960,13 +963,17 @@ export const translations = {
 
     personalizationTitle: "Customization",
     personalizationSubtitle:
-      "Adjust text, typography, and color. This is the heart of the MVP.",
+      "Adjust text, typography, and color to personalize your product.",
 
     labelText: "Text",
     textPlaceholder: "e.g. The Rodriguez family home",
     textRecommendation: "Recommendation: 20–35 characters.",
 
     labelVerse: "Verse",
+    verseSelectionHint: "Choose the book, chapter, and verse.",
+    labelVerseBook: "Book",
+    labelVerseChapter: "Chapter",
+    labelVerseNumber: "Verse",
     labelFont: "Typography",
     labelColor: "Color",
 
@@ -984,8 +991,7 @@ export const translations = {
     toastProductDeleted: (name) => `Product deleted: ${name}`,
     productFallbackName: "Product",
     toastChangesSaved: "Changes saved",
-    mvpNote:
-      "This MVP currently runs only on the frontend; later we'll integrate card payments (Stripe) and real orders.",
+    mvpNote: "",
 
     cartTitle: "Cart",
     cartSubtitle: "Review your order before checkout.",
@@ -994,7 +1000,7 @@ export const translations = {
     remove: "Remove",
     qty: "Qty",
     total: "Total",
-    estimatedTotal: "This total is estimated for the MVP.",
+    estimatedTotal: "This total is estimated.",
     goToCheckout: "Go to checkout",
 
     taxPrState: "PR state tax",
@@ -1012,7 +1018,7 @@ export const translations = {
       "Tax and shipping are calculated automatically.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pay with PayPal. Card (Stripe) coming soon.",
+    checkoutSubtitle: "PayPal is available. Card payments are not available right now.",
     yourDetails: "Your details",
     namePlaceholder: "Name",
     phonePlaceholder: "Phone",
@@ -1024,7 +1030,7 @@ export const translations = {
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
-      "PayPal is available. Card (Stripe) coming soon.",
+      "PayPal is available. Card payments are not available right now.",
     paymentMethod: "Payment method",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
@@ -1051,7 +1057,7 @@ export const translations = {
     cardTypeAmex: "American Express",
     cardTypeDiscover: "Discover",
 
-    cardDisclaimer: "Frontend demo — no payment is processed yet.",
+    cardDisclaimer: "Card payments are not available right now.",
     cardNameLabel: "Name on card",
     cardNamePlaceholder: "Full name",
     cardNumberLabel: "Card number",
@@ -1078,7 +1084,7 @@ export const translations = {
     checkoutOrderSubmittedToast: "Order submitted",
     cardRequired: "Complete all card fields.",
     cardNotReady:
-      "Card payments will be available once the backend is connected to Stripe.",
+      "Card payments are not available right now.",
     checkoutCompleteHint:
       "To complete your order, review the details and press “Submit order”.",
 
@@ -1101,7 +1107,7 @@ export const translations = {
 
     sendWhatsApp: "Continue with PayPal",
     backToCart: "Back to cart",
-    nextStep: "Next step (later): integrate payments and real orders.",
+    nextStep: "Review the details before continuing.",
     finish: "Finish",
 
     waGreeting: "Hi, I'd like to place an order:",
@@ -1221,7 +1227,7 @@ export const translations = {
       },
       {
         q: "What payment methods do you accept?",
-        a: "We accept card and PayPal (this MVP is a visual demo; real payments will be integrated later).",
+        a: "You can currently complete your order with PayPal. Card payments are not available right now.",
       },
       {
         q: "What if an item is out of stock?",
@@ -1294,7 +1300,7 @@ export const translations = {
     adminAuthTip1: "Use a unique password (do not reuse it).",
     adminAuthTip2:
       "If you clear browser storage, you'll need to set up the admin account again.",
-    adminAuthTip3: "This currently works only on the frontend; we'll connect a real backend later.",
+    adminAuthTip3: "Keep your credentials in a safe place and make sure the server is running.",
 
     adminUsersTitle: "Administrators",
     adminUsersSubtitle: "Create or remove users with access to the admin panel.",
@@ -1344,7 +1350,7 @@ export const translations = {
 
     profitTitle: "Profit / Loss",
     profitSubtitle:
-      "Analyze by day, week, or month based on recorded sales (frontend demo).",
+      "Analyze by day, week, or month based on recorded sales.",
     profitPeriodLabel: "Period",
     profitDay: "Day",
     profitWeek: "Week",
