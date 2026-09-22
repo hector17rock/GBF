@@ -121,6 +121,24 @@ export default function ProductDetail({
       : color === "rose"
       ? "text-rose-600"
       : "text-zinc-900";
+  const isInkPreview = color === "ink";
+  const previewTextPlateClass = isInkPreview
+    ? "border-white/35 bg-white/16"
+    : "border-black/10 bg-black/28";
+  const previewTextStyle = {
+    letterSpacing: "0.02em",
+    textShadow:
+      isInkPreview
+        ? "0 0 1px rgba(255,255,255,0.92), 0 0 10px rgba(255,255,255,0.72), 0 8px 20px rgba(0,0,0,0.55)"
+        : "0 2px 5px rgba(0,0,0,0.72), 0 0 1px rgba(0,0,0,0.88), 0 10px 24px rgba(0,0,0,0.42)",
+  };
+  const previewVerseStyle = {
+    letterSpacing: "0.01em",
+    textShadow:
+      isInkPreview
+        ? "0 0 1px rgba(255,255,255,0.85), 0 0 8px rgba(255,255,255,0.65), 0 5px 14px rgba(0,0,0,0.5)"
+        : "0 1px 4px rgba(0,0,0,0.72), 0 0 1px rgba(0,0,0,0.82), 0 4px 14px rgba(0,0,0,0.35)",
+  };
 
   const personalization = {
     text: text.trim(),
@@ -279,7 +297,7 @@ export default function ProductDetail({
                   <div className="h-[420px] w-full bg-zinc-100 md:h-[520px]" />
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-black/6 to-transparent" />
 
                 {/* Preview overlay */}
                 {active?.kind === "preview" ? (
@@ -290,22 +308,21 @@ export default function ProductDetail({
                       </div>
 
                       <div
-                        className={`mx-auto mt-4 max-w-[520px] text-balance font-extrabold ${previewTextSizeClass} ${previewTextLeadingClass} ${fontClass} ${colorClass} opacity-90`}
-                        style={{
-                          mixBlendMode: "multiply",
-                          textShadow:
-                            "0 1px 0 rgba(255,255,255,0.55), 0 -1px 0 rgba(0,0,0,0.22), 0 10px 22px rgba(0,0,0,0.25)",
-                          letterSpacing: "0.02em",
-                        }}
+                        className={`mx-auto mt-4 inline-flex max-w-[560px] flex-col items-center rounded-[32px] border px-5 py-4 shadow-[0_18px_40px_rgba(0,0,0,0.34)] backdrop-blur-[3px] ${previewTextPlateClass}`}
                       >
-                        {previewText}
-                      </div>
+                        <div
+                          className={`max-w-[520px] text-balance font-extrabold ${previewTextSizeClass} ${previewTextLeadingClass} ${fontClass} ${colorClass}`}
+                          style={previewTextStyle}
+                        >
+                          {previewText}
+                        </div>
 
-                      <div
-                        className={`mx-auto mt-2 max-w-[520px] text-pretty text-sm font-semibold ${fontClass} ${colorClass} opacity-60`}
-                        style={{ mixBlendMode: "multiply", textShadow: "0 1px 10px rgba(0,0,0,0.25)" }}
-                      >
-                        {personalization.verse}
+                        <div
+                          className={`mt-2 max-w-[520px] text-pretty text-sm font-semibold ${fontClass} ${colorClass} opacity-95`}
+                          style={previewVerseStyle}
+                        >
+                          {personalization.verse}
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -3374,6 +3374,13 @@ function OrderStatus({
       ? new Date(updatedAtMs).toLocaleString(language === "es" ? "es-US" : "en-US")
       : "";
 
+  const trackingNumber = String(order?.trackingNumber || "").trim();
+  const uspsTrackingUrl = trackingNumber
+    ? `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${encodeURIComponent(
+        trackingNumber.replace(/\s+/g, "")
+      )}`
+    : "";
+
   const cancelRequested =
     Boolean(order?.customerCancelRequestedAt) && Boolean(order?.customerCancelRequestReason);
 
@@ -3559,9 +3566,17 @@ function OrderStatus({
                 </div>
               ) : null}
 
-              {(status === "shipped" || status === "delivered") && order?.trackingNumber ? (
+              {(status === "shipped" || status === "delivered") && trackingNumber ? (
                 <div className="mt-3 text-sm text-zinc-700">
-                  <span className="font-semibold">{t.orderStatusTracking}:</span> {order.trackingNumber}
+                  <span className="font-semibold">{t.orderStatusTracking}:</span>{" "}
+                  <a
+                    href={uspsTrackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-zinc-900 underline underline-offset-2 transition hover:text-zinc-600"
+                  >
+                    {trackingNumber}
+                  </a>
                 </div>
               ) : null}
 
