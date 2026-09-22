@@ -8492,7 +8492,7 @@ export default function App() {
     logActivity({
       kind: "favorite",
       messageEs: has
-        ? `Favorito removido: ${displayName}`
+        ? `Favorito eliminado: ${displayName}`
         : `Favorito añadido: ${displayName}`,
       messageEn: has
         ? `Favorite removed: ${displayName}`
@@ -8513,8 +8513,8 @@ export default function App() {
     pushToast(t.toastSubscribed, "success");
     logActivity({
       kind: "newsletter",
-      messageEs: `Newsletter signup: ${value}`,
-      messageEn: `Newsletter signup: ${value}`,
+      messageEs: `Suscripción al boletín: ${value}`,
+      messageEn: `Newsletter sign-up: ${value}`,
     });
 
     // Persist to backend for cross-device sync.
@@ -9512,8 +9512,8 @@ export default function App() {
 
         logActivity({
           kind: "newsletter",
-          messageEs: `Email guardado desde checkout: ${email}`,
-          messageEn: `Email saved from checkout: ${email}`,
+          messageEs: `Correo guardado durante la compra: ${email}`,
+          messageEn: `Email saved during checkout: ${email}`,
         });
       }
     }

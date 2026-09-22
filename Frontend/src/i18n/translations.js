@@ -40,7 +40,7 @@ export const translations = {
     orderFlowProgress: (current, total) => `Paso ${current} de ${total}`,
     orderFlowStepCart: "Carrito",
     orderFlowStepCheckout: "Checkout",
-    orderFlowStepReview: "Revisar y someter",
+    orderFlowStepReview: "Revisar y confirmar",
 
     adminProfitCardBody: "Ver reportes de ganancias y pérdidas.",
 
@@ -134,7 +134,7 @@ export const translations = {
     step2Title: "Personaliza",
     step2Desc: "Nombre, frase, tipografía, color y versículo.",
     step3Title: "Envía tu pedido",
-    step3Desc: "Carrito + checkout con tarjeta.",
+    step3Desc: "Carrito + proceso de compra.",
     homeAdLabel: "Publicidad",
     homeAdTitle: "Espacio publicitario",
     homeAdBody: "Este espacio quedó reservado para Google Ads o campañas patrocinadas.",
@@ -902,7 +902,7 @@ export const translations = {
     newsletterPlaceholder: "you@example.com",
     newsletterCta: "Sign up",
     newsletterInvalid: "Please enter a valid email.",
-    toastSubscribed: "Signup saved",
+    toastSubscribed: "Subscription saved",
 
     wishlistTitle: "Wishlist",
     wishlistSubtitle: "Save products to buy later.",
@@ -946,7 +946,7 @@ export const translations = {
     step2Title: "Customize",
     step2Desc: "Name, phrase, typography, color, and verse.",
     step3Title: "Place your order",
-    step3Desc: "Cart + card checkout.",
+    step3Desc: "Cart + checkout flow.",
     homeAdLabel: "Advertising",
     homeAdTitle: "Ad space",
     homeAdBody: "This area is reserved for Google Ads or sponsored campaigns.",
@@ -1138,7 +1138,7 @@ export const translations = {
     blogListSubtitle: "Manage each blog post.",
     blogEmpty: "No blog posts have been configured yet.",
     blogUntitled: "Untitled",
-    blogAdd: "Add blog",
+    blogAdd: "Add post",
     blogSelectHint: "Select a blog post to edit it.",
     blogEnabledLabel: "Show in the public blog",
     blogPostTitleLabel: "Title",
@@ -1163,7 +1163,7 @@ export const translations = {
       },
       {
         title: "Identity: when you feel unstable",
-        excerpt: "A short read to remember who you are and how to return to calm.",
+        excerpt: "A short read to remember who you are and how to find calm again.",
       },
     ],
 
@@ -1258,7 +1258,7 @@ export const translations = {
     adminManageAccess: "Admin access",
     adminLoginTitle: "Admin login",
     adminLoginSubtitle: "Sign in to access the admin panel.",
-    adminSetupTitle: "Set up Admin",
+    adminSetupTitle: "Set up admin",
     adminSetupSubtitle: "Create the first admin account to protect the panel.",
 
     adminAuthNameLabel: "Name",
@@ -1313,7 +1313,7 @@ export const translations = {
     adminUsersTitle: "Administrators",
     adminUsersSubtitle: "Create or remove users with access to the admin panel.",
     adminUsersCreateTitle: "Create new admin",
-    adminUsersCreateButton: "Create user",
+    adminUsersCreateButton: "Create admin",
     adminUsersCreateError: "That user already exists or there was an error.",
     adminUsersDeleteError: "Could not delete.",
     adminUserCreatedToast: (username) => `Admin user created: ${username}`,

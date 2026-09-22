@@ -40,7 +40,7 @@ const DEFAULT_BLOG_POSTS = [
     },
     excerpt: {
       es: "Una lectura corta para recordar quién eres y cómo volver a la calma.",
-      en: "A short read to remember who you are and how to return to calm.",
+      en: "A short read to remember who you are and how to find calm again.",
     },
     content: {
       es: "Cuando las emociones cambian, la verdad de Dios permanece. Toma un momento para respirar, orar y recordar que tu identidad no depende de un día difícil.",
