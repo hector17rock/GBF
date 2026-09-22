@@ -19,6 +19,7 @@ from app.schemas.paypal import (
 )
 from app.services.paypal import PayPalServiceError, capture_order, create_order
 from app.services.ops_events import append_activity_log, log_event
+from app.services.email import send_order_notification
 
 router = APIRouter(prefix="/paypal", tags=["paypal"])
 
@@ -531,6 +532,7 @@ def paypal_capture_and_place_order(req: PayPalCaptureOrderRequest, db: Session =
         message_en=f"PayPal payment captured: {order_number} — Total ${float(order.get('total') or 0):.2f}.",
         ts_ms=created_at,
     )
+    send_order_notification(order)
 
     # --- Save back to state ---
     state["inventory"] = inventory

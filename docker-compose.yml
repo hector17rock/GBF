@@ -35,6 +35,9 @@ services:
       PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET}
       PAYPAL_ENVIRONMENT: sandbox
       PAYPAL_CURRENCY: USD
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      ORDER_NOTIFY_EMAIL: ${ORDER_NOTIFY_EMAIL}
+      EMAIL_FROM: "GBF Store <onboarding@resend.dev>"
       # Disk storage for uploaded images (mount a volume here in production)
       UPLOADS_DIR: /data/uploads
     volumes:

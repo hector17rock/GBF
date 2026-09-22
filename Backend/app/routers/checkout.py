@@ -11,6 +11,7 @@ from app.database import get_db
 from app.models.app_state import AppState
 from app.schemas.checkout import PlaceOrderRequest, PlaceOrderResponse
 from app.services.ops_events import append_activity_log, log_event
+from app.services.email import send_order_notification
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
 
@@ -326,6 +327,7 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
         message_en=f"New order: {order_number} — Total ${total:.2f} ({payment_method}).",
         ts_ms=created_at,
     )
+    send_order_notification(order)
 
     # --- Save back to state ---
     state["inventory"] = inventory

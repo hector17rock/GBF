@@ -230,7 +230,7 @@ export default function AdminUsers({
                 />
               </div>
 
-              {message ? <div className="text-xs font-semibold text-amber-700">{message}</div> : null}
+              {message ? <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{message}</div> : null}
 
               <Button variant="primary" className="w-full" disabled={!canCreate || busy}>
                 {t.adminUsersCreateButton}
@@ -258,7 +258,7 @@ export default function AdminUsers({
                 </div>
 
                 {transferMsg ? (
-                  <div className="mt-2 text-xs font-semibold text-amber-700">{transferMsg}</div>
+                  <div className="mt-2 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{transferMsg}</div>
                 ) : null}
 
                 {transferCode ? (

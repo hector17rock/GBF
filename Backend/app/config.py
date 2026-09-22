@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     paypal_environment: str = "sandbox"  # "sandbox" | "live"
     paypal_currency: str = "USD"
 
+    # --- Email notifications (Resend) ---
+    resend_api_key: str = ""
+    order_notify_email: str = ""
+    email_from: str = "GBF Store <onboarding@resend.dev>"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

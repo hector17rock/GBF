@@ -2201,7 +2201,7 @@ function Checkout({
                 </div>
 
                 {paymentMessage ? (
-                  <div className="mt-2 text-xs font-semibold text-amber-700">
+                  <div className="mt-2 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
                     {paymentMessage}
                   </div>
                 ) : null}
@@ -2293,7 +2293,7 @@ function Checkout({
                 <div className="text-xs leading-5 text-zinc-500">{t.cardDisclaimer}</div>
 
                 {cardMessage ? (
-                  <div className="text-xs font-semibold text-amber-700">
+                  <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
                     {cardMessage}
                   </div>
                 ) : null}
@@ -2850,7 +2850,7 @@ function CheckoutReview({
               </div>
 
               {message ? (
-                <div className="mt-4 text-xs font-semibold text-amber-700">{message}</div>
+                <div className="mt-4 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{message}</div>
               ) : null}
 
               <div className="mt-6 grid gap-2 md:grid-cols-2">
@@ -2888,7 +2888,7 @@ function CheckoutReview({
                     </div>
 
                     {paypalMessage ? (
-                      <div className="mt-2 text-xs font-semibold text-amber-700">{paypalMessage}</div>
+                      <div className="mt-2 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{paypalMessage}</div>
                     ) : null}
                   </div>
                 )}
