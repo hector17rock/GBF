@@ -1,8 +1,9 @@
 <p align="center">
   <img src="Frontend/public/gbficon.png" alt="Grow by Faith logo" width="120" />
 </p>
-
-<h1 align="center">Grow by Faith</h1>
+<p align="center">
+  <img src="Frontend/public/gbf-wordmark.svg" alt="Grow by Faith" width="420" />
+</p>
 
 <p align="center">
   Full-stack Christian e-commerce monorepo for personalized faith-based products.

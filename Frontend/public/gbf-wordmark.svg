@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" role="img" aria-labelledby="title desc">
+  <title id="title">Grow by Faith</title>
+  <desc id="desc">Grow by Faith wordmark using the same brand font style as the website.</desc>
+  <style>
+    @font-face {
+      font-family: "White Star";
+      src: url("fonts/white-star-personal-use-only.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    .wordmark {
+      font-family: "White Star", "Allura", cursive;
+      font-size: 170px;
+      fill: #7a6f69;
+    }
+
+    .mark {
+      font-family: Arial, sans-serif;
+      font-size: 40px;
+      font-weight: 700;
+      fill: #6b6b6b;
+    }
+  </style>
+
+  <rect width="1200" height="260" fill="transparent" />
+  <text x="50%" y="170" text-anchor="middle" class="wordmark">
+    Grow by Faith<tspan class="mark" dx="6" dy="-55">®</tspan>
+  </text>
+</svg>
