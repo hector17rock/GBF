@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import Button from "../components/Button";
+import PageAdSlots from "../components/PageAdSlots";
 import SectionTitle from "../components/SectionTitle";
 
 export default function AdminUsers({
@@ -344,6 +345,8 @@ export default function AdminUsers({
           </div>
         </div>
       </div>
+
+      <PageAdSlots t={t} className="mt-10" />
     </div>
   );
 }

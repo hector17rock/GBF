@@ -1,4 +1,5 @@
 import Pill from "./Pill";
+import PageAdSlots from "./PageAdSlots";
 import { getSocialPlatformLabel, normalizeSocialConfig } from "../utils/socials";
 
 export default function Footer({ t, socialConfig }) {
@@ -8,6 +9,7 @@ export default function Footer({ t, socialConfig }) {
 
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
+      <PageAdSlots t={t} className="mb-4" />
       <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA]/55 p-6 shadow-sm backdrop-blur-xl">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>

@@ -1812,17 +1812,6 @@ function Home({
         </div>
       </div>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-2">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-sm font-bold text-zinc-900">{t.mottoTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.mottoQuote}</p>
-        </div>
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-sm font-bold text-zinc-900">{t.quickCtaTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.quickCtaBody}</p>
-        </div>
-      </div>
-
       <Footer t={t} socialConfig={socialConfig} />
     </div>
   );

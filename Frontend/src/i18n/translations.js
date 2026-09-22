@@ -135,6 +135,10 @@ export const translations = {
     step2Desc: "Nombre, frase, tipografía, color y versículo.",
     step3Title: "Envía tu pedido",
     step3Desc: "Carrito + checkout con tarjeta.",
+    homeAdLabel: "Publicidad",
+    homeAdTitle: "Espacio publicitario",
+    homeAdBody: "Este espacio quedó reservado para Google Ads o campañas patrocinadas.",
+    homeAdSetupHint: "Listo para Google Ads",
 
     mottoTitle: "Lema",
     mottoQuote: "\"Productos con propósito, fe que transforma.\"",
@@ -943,6 +947,10 @@ export const translations = {
     step2Desc: "Name, phrase, typography, color, and verse.",
     step3Title: "Place your order",
     step3Desc: "Cart + card checkout.",
+    homeAdLabel: "Advertising",
+    homeAdTitle: "Ad space",
+    homeAdBody: "This area is reserved for Google Ads or sponsored campaigns.",
+    homeAdSetupHint: "Ready for Google Ads",
 
     mottoTitle: "Motto",
     mottoQuote: "\"Products with purpose, faith that transforms.\"",
