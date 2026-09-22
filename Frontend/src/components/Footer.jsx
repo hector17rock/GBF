@@ -1,11 +1,15 @@
 import Pill from "./Pill";
+import PageAdSlots from "./PageAdSlots";
+import { getSocialPlatformLabel, normalizeSocialConfig } from "../utils/socials";
 
-export default function Footer({ t }) {
+export default function Footer({ t, socialConfig }) {
   const year = new Date().getFullYear();
   const footerNote = typeof t?.footerNote === "function" ? t.footerNote(year) : t?.footerNote;
+  const socials = normalizeSocialConfig(socialConfig).socials.filter((item) => item.enabled);
 
   return (
     <div className="mx-auto mt-10 max-w-6xl px-4 pb-10">
+      <PageAdSlots t={t} className="mb-4" />
       <div className="rounded-[28px] border border-[#DDD6CA]/60 bg-[#EFE7DA]/55 p-6 shadow-sm backdrop-blur-xl">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -21,26 +25,46 @@ export default function Footer({ t }) {
             <div className="mt-1 text-xs text-[#6B6B6B]">{footerNote}</div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Pill>
-              <img
-                src="/Instagram_icon.png"
-                alt="Instagram"
-                className="h-4 w-4 object-contain"
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-              />
-            </Pill>
-            <Pill>
-              <img
-                src="/tiktok-icon.png"
-                alt="TikTok"
-                className="h-4 w-4 object-contain"
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-              />
-            </Pill>
+            {socials.map((item) => {
+              const storedLabel = String(item.label || "").trim();
+              const fallbackLabel = getSocialPlatformLabel(item.platform);
+              const localizedFallback =
+                t?.socialsPlatformLabels?.[String(item.platform || "").trim().toLowerCase()];
+              const displayLabel =
+                !storedLabel || storedLabel === fallbackLabel
+                  ? localizedFallback || fallbackLabel || t?.socialsUntitled
+                  : storedLabel;
+              const inner = item.iconSrc ? (
+                <img
+                  src={item.iconSrc}
+                  alt={displayLabel}
+                  className="h-4 w-4 object-contain"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
+              ) : (
+                <span className="text-xs font-semibold">{displayLabel}</span>
+              );
+
+              return item.url ? (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={displayLabel}
+                  title={displayLabel}
+                  className="inline-flex"
+                >
+                  <Pill>{inner}</Pill>
+                </a>
+              ) : (
+                <span key={item.id} title={displayLabel} className="inline-flex">
+                  <Pill>{inner}</Pill>
+                </span>
+              );
+            })}
             <Pill>{t.navBlog}</Pill>
             <Pill>
               <img

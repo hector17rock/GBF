@@ -311,6 +311,8 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
 
     # --- Operational notifications (log-only + activity log) ---
     contact = email or str((req.customer or {}).get("phone") or "").strip() or None
+    payment_method_label_es = "PayPal" if payment_method == "paypal" else "tarjeta"
+    payment_method_label_en = "PayPal" if payment_method == "paypal" else "card"
     log_event(
         "order_placed",
         orderNumber=order_number,
@@ -323,8 +325,8 @@ def place_order(req: PlaceOrderRequest, db: Session = Depends(get_db)):
     state = append_activity_log(
         state,
         kind="order",
-        message_es=f"Nueva orden: {order_number} — Total ${total:.2f} ({payment_method}).",
-        message_en=f"New order: {order_number} — Total ${total:.2f} ({payment_method}).",
+        message_es=f"Nueva orden: {order_number} — Total ${total:.2f} ({payment_method_label_es}).",
+        message_en=f"New order: {order_number} — Total ${total:.2f} ({payment_method_label_en}).",
         ts_ms=created_at,
     )
     send_order_notification(order)

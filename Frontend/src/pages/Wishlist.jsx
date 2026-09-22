@@ -11,6 +11,7 @@ export default function Wishlist({
   onToggleFavorite,
   t,
   language,
+  socialConfig,
 }) {
   const favSet = new Set(Array.isArray(favorites) ? favorites : []);
   const list = Array.isArray(products) ? products.filter((p) => favSet.has(String(p?.id))) : [];
@@ -44,7 +45,7 @@ export default function Wishlist({
         )}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }

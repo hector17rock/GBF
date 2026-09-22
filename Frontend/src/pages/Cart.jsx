@@ -19,6 +19,7 @@ export default function Cart({
   onBack,
   t,
   language,
+  socialConfig,
 }) {
   const subtotal = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
@@ -146,7 +147,7 @@ export default function Cart({
         )}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }

@@ -38,6 +38,15 @@ import {
   normalizeCheckoutDraft,
 } from "./utils/checkout";
 import { buildDefaultPoliciesConfig, normalizePoliciesConfig } from "./utils/policies";
+import { buildDefaultBlogConfig, normalizeBlogConfig } from "./utils/blogs";
+import { buildDefaultFaqConfig, normalizeFaqConfig } from "./utils/faqs";
+import {
+  buildDefaultSocialConfig,
+  getSocialPlatformIcon,
+  getSocialPlatformLabel,
+  normalizeSocialConfig,
+  SOCIAL_PLATFORM_OPTIONS,
+} from "./utils/socials";
 import {
   normalizeOrderStatus,
   isOpenOrderStatus,
@@ -93,6 +102,9 @@ const REVIEWS_STORAGE_KEY = "gbf.reviews.v1";
 const NEWSLETTER_EMAILS_STORAGE_KEY = "gbf.newsletterEmails.v1";
 const ACTIVITY_LOG_STORAGE_KEY = "gbf.activityLog.v1";
 const POLICIES_STORAGE_KEY = "gbf.policies.v1";
+const SOCIALS_STORAGE_KEY = "gbf.socials.v1";
+const FAQ_STORAGE_KEY = "gbf.faq.v1";
+const BLOG_STORAGE_KEY = "gbf.blog.v1";
 
 // -----------------------------
 // Puerto Rico taxes (split)
@@ -1739,6 +1751,7 @@ function Home({
   t,
   language,
   heroConfig,
+  socialConfig,
 }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -1799,18 +1812,7 @@ function Home({
         </div>
       </div>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-2">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-sm font-bold text-zinc-900">{t.mottoTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.mottoQuote}</p>
-        </div>
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-sm font-bold text-zinc-900">{t.quickCtaTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">{t.quickCtaBody}</p>
-        </div>
-      </div>
-
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
@@ -1840,6 +1842,7 @@ function Checkout({
   onGoReview,
   t,
   language,
+  socialConfig,
 }) {
   const subtotal = cart.reduce((acc, it) => acc + it.price * it.qty, 0);
 
@@ -2391,7 +2394,7 @@ function Checkout({
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
@@ -2414,6 +2417,7 @@ function CheckoutReview({
   notify,
   t,
   language,
+  socialConfig,
 }) {
   const cfg = useMemo(() => normalizeCheckoutConfig(checkoutConfig), [checkoutConfig]);
   const draft = useMemo(() => normalizeCheckoutDraft(checkoutDraft), [checkoutDraft]);
@@ -2983,13 +2987,13 @@ function CheckoutReview({
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: OrderConfirmation
-function OrderConfirmation({ order, onGoHome, t, language }) {
+function OrderConfirmation({ order, onGoHome, t, language, socialConfig }) {
 
   const paymentText =
     order?.paymentMethod === "paypal" || order?.paymentMethod === "whatsapp"
@@ -3282,7 +3286,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
         )}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
@@ -3297,6 +3301,7 @@ function OrderStatus({
   serverPublicOk,
   onLookupOrderStatus,
   onSendCancelRequest,
+  socialConfig,
 }) {
   const [orderNumber, setOrderNumber] = useState("");
   const [searchedOrderNumber, setSearchedOrderNumber] = useState("");
@@ -3357,6 +3362,13 @@ function OrderStatus({
     updatedAtMs != null
       ? new Date(updatedAtMs).toLocaleString(language === "es" ? "es-US" : "en-US")
       : "";
+
+  const trackingNumber = String(order?.trackingNumber || "").trim();
+  const uspsTrackingUrl = trackingNumber
+    ? `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${encodeURIComponent(
+        trackingNumber.replace(/\s+/g, "")
+      )}`
+    : "";
 
   const cancelRequested =
     Boolean(order?.customerCancelRequestedAt) && Boolean(order?.customerCancelRequestReason);
@@ -3543,9 +3555,17 @@ function OrderStatus({
                 </div>
               ) : null}
 
-              {(status === "shipped" || status === "delivered") && order?.trackingNumber ? (
+              {(status === "shipped" || status === "delivered") && trackingNumber ? (
                 <div className="mt-3 text-sm text-zinc-700">
-                  <span className="font-semibold">{t.orderStatusTracking}:</span> {order.trackingNumber}
+                  <span className="font-semibold">{t.orderStatusTracking}:</span>{" "}
+                  <a
+                    href={uspsTrackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-zinc-900 underline underline-offset-2 transition hover:text-zinc-600"
+                  >
+                    {trackingNumber}
+                  </a>
                 </div>
               ) : null}
 
@@ -3629,42 +3649,78 @@ function OrderStatus({
         )}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: Blog
-function Blog({ t }) {
-  const posts = Array.isArray(t?.blogPosts) ? t.blogPosts : [];
+function Blog({ blogConfig, t, language, socialConfig }) {
+  const posts = normalizeBlogConfig(blogConfig).posts
+    .map((post) => ({
+      id: post.id,
+      title: l10n(post.title, language),
+      excerpt: l10n(post.excerpt, language),
+      content: l10n(post.content, language),
+      enabled: post.enabled,
+    }))
+    .filter((post) => post.enabled && post.title && (post.excerpt || post.content));
+
+  const [openPostId, setOpenPostId] = useState("");
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
         <SectionTitle title={t.blogTitle} subtitle={t.blogSubtitle} />
-        <div className="grid gap-3 md:grid-cols-3">
-          {posts.map((p, idx) => (
-            <div
-              key={`${String(p?.title || "post")}-${idx}`}
-              className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
-            >
-              <div className="text-sm font-bold text-zinc-900">{p?.title}</div>
-              <div className="mt-2 text-sm leading-6 text-zinc-600">{p?.excerpt}</div>
-              <div className="mt-4">
-                <Pill>{t.read}</Pill>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      <Footer t={t} />
+        {posts.length === 0 ? (
+          <div className="mt-6 rounded-[22px] border border-zinc-200/60 bg-white/55 p-5 text-sm text-zinc-600 shadow-sm backdrop-blur-xl">
+            {t.blogPublicEmpty}
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-3">
+            {posts.map((p) => {
+              const open = p.id === openPostId;
+
+              return (
+                <div
+                  key={p.id}
+                  className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
+                >
+                  <div className="text-sm font-bold text-zinc-900">{p.title}</div>
+                  {p.excerpt ? (
+                    <div className="mt-2 text-sm leading-6 text-zinc-600">{p.excerpt}</div>
+                  ) : null}
+
+                  {open && p.content ? (
+                    <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-zinc-700">
+                      {p.content}
+                    </div>
+                  ) : null}
+
+                  {p.content ? (
+                    <button
+                      type="button"
+                      onClick={() => setOpenPostId(open ? "" : p.id)}
+                      className="mt-4"
+                    >
+                      <Pill>{open ? t.blogReadLess : t.read}</Pill>
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        )}
+              </div>
+
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: About
-function About({ t }) {
+function About({ t, socialConfig }) {
   const values = Array.isArray(t?.valuesItems) ? t.valuesItems : [];
 
   function ValuesIcon({ kind, className = "h-5 w-5" }) {
@@ -3737,6 +3793,16 @@ function About({ t }) {
       );
     }
 
+    if (kind === "faq") {
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.7 2.7 0 0 1 5 1.4c0 1.9-2.5 2.2-2.5 4" />
+          <path d="M12 18h.01" />
+        </svg>
+      );
+    }
+
     return null;
   }
 
@@ -3788,7 +3854,7 @@ function About({ t }) {
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
@@ -3972,12 +4038,16 @@ function AdminPanel({
   onGoInventory,
   onGoCheckout,
   onGoPolicies,
+  onGoSocials,
+  onGoFaq,
+  onGoBlog,
   onGoProducts,
   onGoProfit,
   onGoAdminUsers,
   onLogoutAdmin,
   onGoHomepage,
   currentAdminUser,
+  socialConfig,
   page = "dashboard",
   apiBaseUrl,
   adminToken,
@@ -4452,6 +4522,39 @@ function AdminPanel({
       );
     }
 
+
+    if (kind === "socials") {
+      return (
+        <svg {...common}>
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <path d="M8.6 10.7 15.4 6.3" />
+          <path d="M8.6 13.3 15.4 17.7" />
+        </svg>
+      );
+    }
+
+    if (kind === "faq") {
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.7 2.7 0 0 1 5 1.4c0 1.9-2.5 2.2-2.5 4" />
+          <path d="M12 18h.01" />
+        </svg>
+      );
+    }
+
+    if (kind === "blog") {
+      return (
+        <svg {...common}>
+          <path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+          <path d="M15 3v5h5" />
+          <path d="M8 13h8" />
+          <path d="M8 17h6" />
+        </svg>
+      );
+    }
     return null;
   }
 
@@ -4690,6 +4793,64 @@ function AdminPanel({
                       <div className={iconAreaCls}>
                         <span className={iconBoxCls}>
                           <DashboardIcon kind="policies" className="h-7 w-7" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+
+                  {/* Dashboard card: Social media */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoSocials === "function" ? onGoSocials() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.socialsTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="socials" className="h-7 w-7" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: FAQ */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoFaq === "function" ? onGoFaq() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.faqTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="faq" className="h-7 w-7" />
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-4">{footerSpacer}</div>
+                    </div>
+                  </button>
+
+                  {/* Dashboard card: Blog */}
+                  <button
+                    type="button"
+                    onClick={() => (typeof onGoBlog === "function" ? onGoBlog() : null)}
+                    className={`${tileBase} active:scale-[0.99]`}
+                  >
+                    <div className={tileInner}>
+                      <div className={titleCls}>{t.blogTitle}</div>
+
+                      <div className={iconAreaCls}>
+                        <span className={iconBoxCls}>
+                          <DashboardIcon kind="blog" className="h-7 w-7" />
                         </span>
                       </div>
 
@@ -5152,13 +5313,13 @@ function AdminPanel({
         ) : null}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: AdminHomepage
-function AdminHomepage({ heroConfig, setHeroConfig, apiBaseUrl, adminToken, t, language, onBack }) {
+function AdminHomepage({ heroConfig, setHeroConfig, apiBaseUrl, adminToken, t, language, socialConfig, onBack }) {
   const [uploading, setUploading] = useState({});
   const [uploadErrors, setUploadErrors] = useState({});
 
@@ -5613,13 +5774,13 @@ function AdminHomepage({ heroConfig, setHeroConfig, apiBaseUrl, adminToken, t, l
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: AdminInventory
-function AdminInventory({ products = [], inventory, setInventory, productCosts, setProductCosts, t, language, onBack }) {
+function AdminInventory({ products = [], inventory, setInventory, productCosts, setProductCosts, t, language, socialConfig, onBack }) {
   const items = Array.isArray(products) ? products : [];
 
   // getInventoryCount
@@ -5725,13 +5886,13 @@ function AdminInventory({ products = [], inventory, setInventory, productCosts, 
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: AdminCheckoutSettings
-function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, onBack }) {
+function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, socialConfig, onBack }) {
   const normalizedCheckoutConfig = normalizeCheckoutConfig(checkoutConfig);
 
   // setCheckoutConfigField
@@ -5819,13 +5980,13 @@ function AdminCheckoutSettings({ checkoutConfig, setCheckoutConfig, t, onBack })
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: AdminPolicies
-function AdminPolicies({ policiesConfig, setPoliciesConfig, t, onBack }) {
+function AdminPolicies({ policiesConfig, setPoliciesConfig, t, socialConfig, onBack }) {
   const normalized = normalizePoliciesConfig(policiesConfig);
   const categories = Array.isArray(normalized.categories) ? normalized.categories : [];
 
@@ -6015,13 +6176,777 @@ function AdminPolicies({ policiesConfig, setPoliciesConfig, t, onBack }) {
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
+
+
+// Page: AdminBlog
+function AdminBlog({ blogConfig, setBlogConfig, t, language, socialConfig, onBack }) {
+  const normalized = normalizeBlogConfig(blogConfig);
+  const posts = Array.isArray(normalized.posts) ? normalized.posts : [];
+
+  const [activePostId, setActivePostId] = useState(() => posts[0]?.id || "");
+
+  const selectedId = posts.some((post) => post.id === activePostId)
+    ? activePostId
+    : posts[0]?.id || "";
+
+  const activePost = posts.find((post) => post.id === selectedId) || null;
+
+  function addPost() {
+    const id = safeUUID("blog");
+
+    setBlogConfig((prev) => {
+      const base = normalizeBlogConfig(prev);
+      const list = Array.isArray(base.posts) ? base.posts : [];
+      return {
+        ...base,
+        posts: [
+          ...list,
+          {
+            id,
+            enabled: true,
+            title: { es: "", en: "" },
+            excerpt: { es: "", en: "" },
+            content: { es: "", en: "" },
+          },
+        ],
+      };
+    });
+
+    setActivePostId(id);
+  }
+
+  function deletePost(postId) {
+    const id = String(postId || "").trim();
+    if (!id) return;
+
+    const post = posts.find((x) => x.id === id);
+    const displayName = l10n(post?.title, language) || id;
+    const confirmText =
+      typeof t.blogConfirmDelete === "function" ? t.blogConfirmDelete(displayName) : "";
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setBlogConfig((prev) => {
+      const base = normalizeBlogConfig(prev);
+      const list = Array.isArray(base.posts) ? base.posts : [];
+      return { ...base, posts: list.filter((x) => x.id !== id) };
+    });
+
+    if (selectedId === id) {
+      const next = posts.filter((x) => x.id !== id);
+      setActivePostId(next[0]?.id || "");
+    }
+  }
+
+  function updateActivePost(patch) {
+    if (!activePost) return;
+
+    setBlogConfig((prev) => {
+      const base = normalizeBlogConfig(prev);
+      const list = Array.isArray(base.posts) ? base.posts : [];
+      return {
+        ...base,
+        posts: list.map((post) => (post.id === activePost.id ? { ...post, ...patch } : post)),
+      };
+    });
+  }
+
+  function updateLocalizedField(field, lang, value) {
+    if (!activePost) return;
+    const key = field === "content" ? "content" : field === "excerpt" ? "excerpt" : "title";
+    const langKey = lang === "en" ? "en" : "es";
+
+    updateActivePost({
+      [key]: {
+        ...(activePost?.[key] || {}),
+        [langKey]: value,
+      },
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminBlogTitle} subtitle={t.adminBlogSubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-extrabold text-zinc-900">{t.blogListTitle}</div>
+            <div className="mt-1 text-sm text-zinc-600">{t.blogListSubtitle}</div>
+
+            <div className="mt-4 grid gap-2">
+              {posts.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                  {t.blogEmpty}
+                </div>
+              ) : (
+                posts.map((post) => {
+                  const active = post.id === selectedId;
+                  const label = l10n(post.title, language) || t.blogUntitled;
+                  return (
+                    <div key={post.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActivePostId(post.id)}
+                        className={`flex-1 rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition ${
+                          active
+                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
+                        }`}
+                        title={label}
+                      >
+                        <span className="line-clamp-2">{label}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deletePost(post.id)}
+                        className="rounded-2xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="mt-4">
+              <Button variant="secondary" className="w-full" onClick={addPost}>
+                {t.blogAdd}
+              </Button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            {!activePost ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                {t.blogSelectHint}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(activePost.enabled)}
+                    onChange={(e) => updateActivePost({ enabled: e.target.checked })}
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  {t.blogEnabledLabel}
+                </label>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogPostTitleLabel} — {t.blogEs}
+                    </label>
+                    <input
+                      value={activePost?.title?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("title", "es", e.target.value)}
+                      placeholder={t.blogPostTitlePlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogPostTitleLabel} — {t.blogEn}
+                    </label>
+                    <input
+                      value={activePost?.title?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("title", "en", e.target.value)}
+                      placeholder={t.blogPostTitlePlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogExcerptLabel} — {t.blogEs}
+                    </label>
+                    <textarea
+                      value={activePost?.excerpt?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("excerpt", "es", e.target.value)}
+                      placeholder={t.blogExcerptPlaceholder}
+                      rows={4}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogExcerptLabel} — {t.blogEn}
+                    </label>
+                    <textarea
+                      value={activePost?.excerpt?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("excerpt", "en", e.target.value)}
+                      placeholder={t.blogExcerptPlaceholder}
+                      rows={4}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogContentLabel} — {t.blogEs}
+                    </label>
+                    <textarea
+                      value={activePost?.content?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("content", "es", e.target.value)}
+                      placeholder={t.blogContentPlaceholder}
+                      rows={10}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.blogContentLabel} — {t.blogEn}
+                    </label>
+                    <textarea
+                      value={activePost?.content?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("content", "en", e.target.value)}
+                      placeholder={t.blogContentPlaceholder}
+                      rows={10}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-zinc-500">{t.blogAutosaveHint}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} socialConfig={socialConfig} />
+    </div>
+  );
+}
+
+// Page: AdminFaq
+function AdminFaq({ faqConfig, setFaqConfig, t, language, socialConfig, onBack }) {
+  const normalized = normalizeFaqConfig(faqConfig);
+  const items = Array.isArray(normalized.items) ? normalized.items : [];
+
+  const [activeFaqId, setActiveFaqId] = useState(() => items[0]?.id || "");
+
+  const selectedId = items.some((item) => item.id === activeFaqId)
+    ? activeFaqId
+    : items[0]?.id || "";
+
+  const activeFaq = items.find((item) => item.id === selectedId) || null;
+
+  function addFaq() {
+    const id = safeUUID("faq");
+
+    setFaqConfig((prev) => {
+      const base = normalizeFaqConfig(prev);
+      const list = Array.isArray(base.items) ? base.items : [];
+      return {
+        ...base,
+        items: [
+          ...list,
+          {
+            id,
+            enabled: true,
+            question: { es: "", en: "" },
+            answer: { es: "", en: "" },
+          },
+        ],
+      };
+    });
+
+    setActiveFaqId(id);
+  }
+
+  function deleteFaq(faqId) {
+    const id = String(faqId || "").trim();
+    if (!id) return;
+
+    const item = items.find((x) => x.id === id);
+    const displayName = l10n(item?.question, language) || id;
+    const confirmText =
+      typeof t.faqConfirmDelete === "function" ? t.faqConfirmDelete(displayName) : "";
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setFaqConfig((prev) => {
+      const base = normalizeFaqConfig(prev);
+      const list = Array.isArray(base.items) ? base.items : [];
+      return { ...base, items: list.filter((x) => x.id !== id) };
+    });
+
+    if (selectedId === id) {
+      const next = items.filter((x) => x.id !== id);
+      setActiveFaqId(next[0]?.id || "");
+    }
+  }
+
+  function updateActiveFaq(patch) {
+    if (!activeFaq) return;
+
+    setFaqConfig((prev) => {
+      const base = normalizeFaqConfig(prev);
+      const list = Array.isArray(base.items) ? base.items : [];
+      return {
+        ...base,
+        items: list.map((item) => (item.id === activeFaq.id ? { ...item, ...patch } : item)),
+      };
+    });
+  }
+
+  function updateLocalizedField(field, lang, value) {
+    if (!activeFaq) return;
+    const key = field === "answer" ? "answer" : "question";
+    const langKey = lang === "en" ? "en" : "es";
+
+    updateActiveFaq({
+      [key]: {
+        ...(activeFaq?.[key] || {}),
+        [langKey]: value,
+      },
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminFaqTitle} subtitle={t.adminFaqSubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-extrabold text-zinc-900">{t.faqListTitle}</div>
+            <div className="mt-1 text-sm text-zinc-600">{t.faqListSubtitle}</div>
+
+            <div className="mt-4 grid gap-2">
+              {items.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                  {t.faqEmpty}
+                </div>
+              ) : (
+                items.map((item) => {
+                  const active = item.id === selectedId;
+                  const label = l10n(item.question, language) || t.faqUntitled;
+                  return (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveFaqId(item.id)}
+                        className={`flex-1 rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition ${
+                          active
+                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
+                        }`}
+                        title={label}
+                      >
+                        <span className="line-clamp-2">{label}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteFaq(item.id)}
+                        className="rounded-2xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="mt-4">
+              <Button variant="secondary" className="w-full" onClick={addFaq}>
+                {t.faqAdd}
+              </Button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            {!activeFaq ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                {t.faqSelectHint}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(activeFaq.enabled)}
+                    onChange={(e) => updateActiveFaq({ enabled: e.target.checked })}
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  {t.faqEnabledLabel}
+                </label>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqQuestionLabel} — {t.faqEs}
+                    </label>
+                    <input
+                      value={activeFaq?.question?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("question", "es", e.target.value)}
+                      placeholder={t.faqQuestionPlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqQuestionLabel} — {t.faqEn}
+                    </label>
+                    <input
+                      value={activeFaq?.question?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("question", "en", e.target.value)}
+                      placeholder={t.faqQuestionPlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqAnswerLabel} — {t.faqEs}
+                    </label>
+                    <textarea
+                      value={activeFaq?.answer?.es ?? ""}
+                      onChange={(e) => updateLocalizedField("answer", "es", e.target.value)}
+                      placeholder={t.faqAnswerPlaceholder}
+                      rows={8}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">
+                      {t.faqAnswerLabel} — {t.faqEn}
+                    </label>
+                    <textarea
+                      value={activeFaq?.answer?.en ?? ""}
+                      onChange={(e) => updateLocalizedField("answer", "en", e.target.value)}
+                      placeholder={t.faqAnswerPlaceholder}
+                      rows={8}
+                      className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm leading-6 outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-zinc-500">{t.faqAutosaveHint}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} socialConfig={socialConfig} />
+    </div>
+  );
+}
+// Page: AdminSocials
+function AdminSocials({ socialConfig, setSocialConfig, t, onBack }) {
+  const normalized = normalizeSocialConfig(socialConfig);
+  const socials = Array.isArray(normalized.socials) ? normalized.socials : [];
+
+  const [activeSocialId, setActiveSocialId] = useState(() => socials[0]?.id || "");
+
+  const selectedId = socials.some((item) => item.id === activeSocialId)
+    ? activeSocialId
+    : socials[0]?.id || "";
+
+  const activeSocial = socials.find((item) => item.id === selectedId) || null;
+
+  function getLocalizedSocialPlatformLabel(platform) {
+    const key = String(platform || "").trim().toLowerCase();
+    return t.socialsPlatformLabels?.[key] || getSocialPlatformLabel(key);
+  }
+
+  function getDisplaySocialLabel(item) {
+    const stored = String(item?.label || "").trim();
+    const fallback = getSocialPlatformLabel(item?.platform);
+    const localizedFallback = getLocalizedSocialPlatformLabel(item?.platform);
+    if (!stored || stored === fallback) return localizedFallback || t.socialsUntitled;
+    return stored;
+  }
+
+  function addSocial() {
+    const id = safeUUID("social");
+    const platform = "instagram";
+    const label = getLocalizedSocialPlatformLabel(platform);
+
+    setSocialConfig((prev) => {
+      const base = normalizeSocialConfig(prev);
+      const list = Array.isArray(base.socials) ? base.socials : [];
+      return {
+        ...base,
+        socials: [
+          ...list,
+          {
+            id,
+            label,
+            platform,
+            url: "",
+            iconSrc: getSocialPlatformIcon(platform),
+            enabled: true,
+          },
+        ],
+      };
+    });
+
+    setActiveSocialId(id);
+  }
+
+  function deleteSocial(socialId) {
+    const id = String(socialId || "").trim();
+    if (!id) return;
+
+    const item = socials.find((x) => x.id === id);
+    const displayName = item ? getDisplaySocialLabel(item) : id;
+    const confirmText =
+      typeof t.socialsConfirmDelete === "function" ? t.socialsConfirmDelete(displayName) : "";
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(confirmText);
+      if (!ok) return;
+    }
+
+    setSocialConfig((prev) => {
+      const base = normalizeSocialConfig(prev);
+      const list = Array.isArray(base.socials) ? base.socials : [];
+      return { ...base, socials: list.filter((x) => x.id !== id) };
+    });
+
+    if (selectedId === id) {
+      const next = socials.filter((x) => x.id !== id);
+      setActiveSocialId(next[0]?.id || "");
+    }
+  }
+
+  function updateActiveSocial(patch) {
+    if (!activeSocial) return;
+
+    setSocialConfig((prev) => {
+      const base = normalizeSocialConfig(prev);
+      const list = Array.isArray(base.socials) ? base.socials : [];
+      return {
+        ...base,
+        socials: list.map((item) => {
+          if (item.id !== activeSocial.id) return item;
+
+          const next = { ...item, ...(patch && typeof patch === "object" ? patch : {}) };
+          if ("platform" in (patch || {})) {
+            const platform = String(patch.platform || "").trim().toLowerCase();
+            const previousPlatformIcon = getSocialPlatformIcon(item.platform);
+            const currentLabel = String(item.label || "").trim();
+            const previousDefaultLabel = getSocialPlatformLabel(item.platform);
+            const previousLocalizedLabel = getLocalizedSocialPlatformLabel(item.platform);
+            next.platform = platform;
+            if (
+              !currentLabel ||
+              currentLabel === previousDefaultLabel ||
+              currentLabel === previousLocalizedLabel
+            ) {
+              next.label = getLocalizedSocialPlatformLabel(platform);
+            }
+            if (!String(item.iconSrc || "").trim() || previousPlatformIcon === item.iconSrc) {
+              next.iconSrc = getSocialPlatformIcon(platform);
+            }
+          }
+          return next;
+        }),
+      };
+    });
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="rounded-[28px] border border-zinc-200/60 bg-white/55 p-6 shadow-sm backdrop-blur-xl md:p-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <SectionTitle title={t.adminSocialsTitle} subtitle={t.adminSocialsSubtitle} />
+
+          <Button variant="secondary" onClick={() => (typeof onBack === "function" ? onBack() : null)}>
+            {t.back}
+          </Button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            <div className="text-sm font-extrabold text-zinc-900">{t.socialsListTitle}</div>
+            <div className="mt-1 text-sm text-zinc-600">{t.socialsListSubtitle}</div>
+
+            <div className="mt-4 grid gap-2">
+              {socials.length === 0 ? (
+                <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                  {t.socialsEmpty}
+                </div>
+              ) : (
+                socials.map((item) => {
+                  const active = item.id === selectedId;
+                  const displayLabel = getDisplaySocialLabel(item);
+                  return (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveSocialId(item.id)}
+                        className={`flex-1 rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition ${
+                          active
+                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            : "border-zinc-200 bg-white/70 text-zinc-800 hover:bg-white"
+                        }`}
+                        title={displayLabel}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          {item.iconSrc ? (
+                            <img
+                              src={item.iconSrc}
+                              alt=""
+                              className="h-4 w-4 object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              draggable={false}
+                            />
+                          ) : null}
+                          <span>{displayLabel}</span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteSocial(item.id)}
+                        className="rounded-2xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                        aria-label={t.delete}
+                        title={t.delete}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="mt-4">
+              <Button variant="secondary" className="w-full" onClick={addSocial}>
+                {t.socialsAdd}
+              </Button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 rounded-[24px] border border-zinc-200/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl">
+            {!activeSocial ? (
+              <div className="rounded-2xl border border-zinc-200/60 bg-white/55 p-4 text-sm text-zinc-600">
+                {t.socialsSelectHint}
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(activeSocial.enabled)}
+                    onChange={(e) => updateActiveSocial({ enabled: e.target.checked })}
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                  {t.socialsEnabledLabel}
+                </label>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">{t.socialsPlatformLabel}</label>
+                    <select
+                      value={activeSocial.platform}
+                      onChange={(e) => updateActiveSocial({ platform: e.target.value })}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {SOCIAL_PLATFORM_OPTIONS.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {t.socialsPlatformLabels?.[option.id] || option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-700">{t.socialsLabelLabel}</label>
+                    <input
+                      value={activeSocial.label}
+                      onChange={(e) => updateActiveSocial({ label: e.target.value })}
+                      placeholder={t.socialsLabelPlaceholder}
+                      className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.socialsUrlLabel}</label>
+                  <input
+                    value={activeSocial.url}
+                    onChange={(e) => updateActiveSocial({ url: e.target.value })}
+                    placeholder={t.socialsUrlPlaceholder}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                  <div className="mt-2 text-xs text-zinc-500">{t.socialsUrlHint}</div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700">{t.socialsIconUrlLabel}</label>
+                  <input
+                    value={activeSocial.iconSrc}
+                    onChange={(e) => updateActiveSocial({ iconSrc: e.target.value })}
+                    placeholder={t.socialsIconUrlPlaceholder}
+                    className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                  />
+                  <div className="mt-2 text-xs text-zinc-500">{t.socialsIconUrlHint}</div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold text-zinc-700">{t.preview}</div>
+                  <div className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+                    <Footer t={t} socialConfig={normalizeSocialConfig({ socials: [activeSocial] })} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Footer t={t} socialConfig={socialConfig} />
+    </div>
+  );
+}
 // Page: AdminProfit
-function AdminProfit({ products = [], sales, orders, t, language, onBack }) {
+function AdminProfit({ products = [], sales, orders, t, language, socialConfig, onBack }) {
   const [profitPeriod, setProfitPeriod] = useState("week");
   const [profitDate, setProfitDate] = useState(() => {
     const d = new Date();
@@ -6295,13 +7220,13 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
         </div>
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
 
 // Page: AdminOrders
-function AdminOrders({ orders, setOrders, t, language, onBack }) {
+function AdminOrders({ orders, setOrders, t, language, socialConfig, onBack }) {
   const ordersList = Array.isArray(orders) ? orders : [];
   const openOrders = ordersList.filter((o) =>
     isOpenOrderStatus(normalizeOrderStatus(o?.status))
@@ -6828,7 +7753,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, H
         )}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }
@@ -7049,6 +7974,9 @@ export default function App() {
     "admin_products",
     "admin_product_preview",
     "admin_policies",
+    "admin_socials",
+    "admin_faq",
+    "admin_blog",
     "admin_users",
   ]);
 
@@ -7245,6 +8173,9 @@ export default function App() {
             sales,
             checkoutConfig,
             policiesConfig,
+            socialConfig,
+            faqConfig,
+            blogConfig,
             newsletterEmails,
             reviewsByProduct,
             activityLog,
@@ -7667,6 +8598,75 @@ export default function App() {
     }
   }, [policiesConfig]);
 
+  const [socialConfig, setSocialConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultSocialConfig();
+    try {
+      const raw = window.localStorage.getItem(SOCIALS_STORAGE_KEY);
+      if (!raw) return buildDefaultSocialConfig();
+      return normalizeSocialConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultSocialConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        SOCIALS_STORAGE_KEY,
+        JSON.stringify(normalizeSocialConfig(socialConfig))
+      );
+    } catch {
+      // ignore
+    }
+  }, [socialConfig]);
+
+  const [faqConfig, setFaqConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultFaqConfig();
+    try {
+      const raw = window.localStorage.getItem(FAQ_STORAGE_KEY);
+      if (!raw) return buildDefaultFaqConfig();
+      return normalizeFaqConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultFaqConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        FAQ_STORAGE_KEY,
+        JSON.stringify(normalizeFaqConfig(faqConfig))
+      );
+    } catch {
+      // ignore
+    }
+  }, [faqConfig]);
+
+  const [blogConfig, setBlogConfig] = useState(() => {
+    if (typeof window === "undefined") return buildDefaultBlogConfig();
+    try {
+      const raw = window.localStorage.getItem(BLOG_STORAGE_KEY);
+      if (!raw) return buildDefaultBlogConfig();
+      return normalizeBlogConfig(JSON.parse(raw));
+    } catch {
+      return buildDefaultBlogConfig();
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        BLOG_STORAGE_KEY,
+        JSON.stringify(normalizeBlogConfig(blogConfig))
+      );
+    } catch {
+      // ignore
+    }
+  }, [blogConfig]);
+
   const [checkoutDraft, setCheckoutDraft] = useState(() => buildDefaultCheckoutDraft());
 
   const [inventory, setInventory] = useState(() => {
@@ -7840,6 +8840,9 @@ export default function App() {
     inventory: false,
     checkout: false,
     policies: false,
+    socials: false,
+    faq: false,
+    blog: false,
     orders: false,
   });
 
@@ -7878,6 +8881,21 @@ export default function App() {
     setPoliciesConfig(next);
   }, []);
 
+  const setSocialConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.socials = true;
+    setSocialConfig(next);
+  }, []);
+
+  const setFaqConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.faq = true;
+    setFaqConfig(next);
+  }, []);
+
+  const setBlogConfigAdmin = useCallback((next) => {
+    adminDirtyRef.current.blog = true;
+    setBlogConfig(next);
+  }, []);
+
   const setOrdersAdmin = useCallback((next) => {
     adminDirtyRef.current.orders = true;
     setOrders(next);
@@ -7903,6 +8921,15 @@ export default function App() {
     }
     if ("policiesConfig" in st && st.policiesConfig && typeof st.policiesConfig === "object") {
       setPoliciesConfig(normalizePoliciesConfig(st.policiesConfig));
+    }
+    if ("socialConfig" in st && st.socialConfig && typeof st.socialConfig === "object") {
+      setSocialConfig(normalizeSocialConfig(st.socialConfig));
+    }
+    if ("faqConfig" in st && st.faqConfig && typeof st.faqConfig === "object") {
+      setFaqConfig(normalizeFaqConfig(st.faqConfig));
+    }
+    if ("blogConfig" in st && st.blogConfig && typeof st.blogConfig === "object") {
+      setBlogConfig(normalizeBlogConfig(st.blogConfig));
     }
     if ("reviewsByProduct" in st && st.reviewsByProduct && typeof st.reviewsByProduct === "object") {
       setReviewsByProduct(st.reviewsByProduct);
@@ -8089,6 +9116,15 @@ export default function App() {
         if ("policiesConfig" in toSend) {
           labels.push(saveT.adminSaveSectionPolicies);
         }
+        if ("socialConfig" in toSend) {
+          labels.push(saveT.adminSaveSectionSocials);
+        }
+        if ("faqConfig" in toSend) {
+          labels.push(saveT.adminSaveSectionFaq);
+        }
+        if ("blogConfig" in toSend) {
+          labels.push(saveT.adminSaveSectionBlog);
+        }
         if ("orders" in toSend) {
           labels.push(saveT.adminSaveSectionOrders);
         }
@@ -8119,6 +9155,9 @@ export default function App() {
           if ("inventory" in toSend || "productCosts" in toSend) adminDirtyRef.current.inventory = false;
           if ("checkoutConfig" in toSend) adminDirtyRef.current.checkout = false;
           if ("policiesConfig" in toSend) adminDirtyRef.current.policies = false;
+          if ("socialConfig" in toSend) adminDirtyRef.current.socials = false;
+          if ("faqConfig" in toSend) adminDirtyRef.current.faq = false;
+          if ("blogConfig" in toSend) adminDirtyRef.current.blog = false;
           if ("orders" in toSend) adminDirtyRef.current.orders = false;
 
           pushToast(successMsg, "success");
@@ -8169,6 +9208,27 @@ export default function App() {
     if (!adminDirtyRef.current.policies) return;
     scheduleAdminPatch({ policiesConfig });
   }, [policiesConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_socials") return;
+    if (!adminDirtyRef.current.socials) return;
+    scheduleAdminPatch({ socialConfig });
+  }, [socialConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_faq") return;
+    if (!adminDirtyRef.current.faq) return;
+    scheduleAdminPatch({ faqConfig });
+  }, [faqConfig, isAdminAuthed, route, scheduleAdminPatch]);
+
+  useEffect(() => {
+    if (!isAdminAuthed) return;
+    if (route !== "admin_blog") return;
+    if (!adminDirtyRef.current.blog) return;
+    scheduleAdminPatch({ blogConfig });
+  }, [blogConfig, isAdminAuthed, route, scheduleAdminPatch]);
 
   useEffect(() => {
     if (!isAdminAuthed) return;
@@ -8640,6 +9700,7 @@ export default function App() {
             t={t}
             language={language}
             heroConfig={heroConfig}
+            socialConfig={socialConfig}
             onGoCatalog={() => navigate("catalog")}
             onOpenProduct={openProduct}
           />
@@ -8657,6 +9718,7 @@ export default function App() {
             onOpenProduct={openProduct}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8674,11 +9736,12 @@ export default function App() {
             reviews={reviewsByProduct?.[String(selected.id)]}
             onAddReview={addProductReview}
             notify={pushToast}
-            onBack={() => navigate(r === "admin_product_preview" ? "admin" : "catalog")}
+            onBack={() => navigate(r === "admin_product_preview" ? "admin_products" : "catalog")}
             onAddToCart={addToCart}
             onGoCheckout={r === "admin_product_preview" ? undefined : () => navigate("checkout")}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8692,6 +9755,7 @@ export default function App() {
             onBack={() => navigate("catalog")}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8706,6 +9770,7 @@ export default function App() {
             onToggleFavorite={toggleFavorite}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8720,6 +9785,7 @@ export default function App() {
             onGoReview={() => navigate("checkout_review")}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8742,6 +9808,7 @@ export default function App() {
             notify={pushToast}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8752,6 +9819,7 @@ export default function App() {
             onGoHome={() => navigate("home")}
             t={t}
             language={language}
+            socialConfig={socialConfig}
           />
         ) : null}
 
@@ -8766,21 +9834,24 @@ export default function App() {
             serverPublicOk={serverPublicOk}
             onLookupOrderStatus={lookupOrderStatusByNumber}
             onSendCancelRequest={sendOrderCancelRequest}
+            socialConfig={socialConfig}
           />
         ) : null}
 
         {/* Route: blog */}
-        {r === "blog" ? <Blog t={t} language={language} /> : null}
+        {r === "blog" ? (
+          <Blog blogConfig={blogConfig} t={t} language={language} socialConfig={socialConfig} />
+        ) : null}
 
         {/* Route: about */}
-        {r === "about" ? <About t={t} language={language} /> : null}
+        {r === "about" ? <About t={t} language={language} socialConfig={socialConfig} /> : null}
 
         {/* Route: faq */}
-        {r === "faq" ? <Faq t={t} language={language} /> : null}
+        {r === "faq" ? <Faq faqConfig={faqConfig} t={t} language={language} socialConfig={socialConfig} /> : null}
 
         {/* Route: policies */}
         {r === "policies" ? (
-          <Policies policiesConfig={policiesConfig} t={t} language={language} />
+          <Policies policiesConfig={policiesConfig} t={t} language={language} socialConfig={socialConfig} />
         ) : null}
 
         {/* Route: admin login */}
@@ -8849,12 +9920,16 @@ export default function App() {
               onGoInventory={() => navigate("admin_inventory")}
               onGoCheckout={() => navigate("admin_checkout")}
               onGoPolicies={() => navigate("admin_policies")}
+              onGoSocials={() => navigate("admin_socials")}
+              onGoFaq={() => navigate("admin_faq")}
+              onGoBlog={() => navigate("admin_blog")}
               onGoProducts={() => navigate("admin_products")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
               onLogoutAdmin={logoutAdmin}
               onGoHomepage={() => navigate("admin_homepage")}
               currentAdminUser={currentAdminUser}
+              socialConfig={socialConfig}
               apiBaseUrl={API_BASE_URL}
               adminToken={adminToken}
               t={t}
@@ -8902,12 +9977,16 @@ export default function App() {
               onGoInventory={() => navigate("admin_inventory")}
               onGoCheckout={() => navigate("admin_checkout")}
               onGoPolicies={() => navigate("admin_policies")}
+              onGoSocials={() => navigate("admin_socials")}
+              onGoFaq={() => navigate("admin_faq")}
+              onGoBlog={() => navigate("admin_blog")}
               onGoProducts={() => navigate("admin")}
               onGoProfit={() => navigate("admin_profit")}
               onGoAdminUsers={() => navigate("admin_users")}
               onLogoutAdmin={logoutAdmin}
               onGoHomepage={() => navigate("admin_homepage")}
               currentAdminUser={currentAdminUser}
+              socialConfig={socialConfig}
               apiBaseUrl={API_BASE_URL}
               adminToken={adminToken}
               t={t}
@@ -8935,6 +10014,7 @@ export default function App() {
               setProductCosts={setProductCostsAdmin}
               t={t}
               language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (
@@ -8955,6 +10035,7 @@ export default function App() {
               checkoutConfig={checkoutConfig}
               setCheckoutConfig={setCheckoutConfigAdmin}
               t={t}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (
@@ -8975,6 +10056,71 @@ export default function App() {
               policiesConfig={policiesConfig}
               setPoliciesConfig={setPoliciesConfigAdmin}
               t={t}
+              socialConfig={socialConfig}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin socials */}
+        {r === "admin_socials" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminSocials
+              socialConfig={socialConfig}
+              setSocialConfig={setSocialConfigAdmin}
+              t={t}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin Blog */}
+        {r === "admin_blog" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminBlog
+              blogConfig={blogConfig}
+              setBlogConfig={setBlogConfigAdmin}
+              t={t}
+              language={language}
+              socialConfig={socialConfig}
+              onBack={() => navigate("admin")}
+            />
+          ) : (
+            <AdminLogin
+              t={t}
+              language={language}
+              hasAdmins={hasAdmins}
+              onLogin={loginAdmin}
+              onGoHome={() => navigate("home")}
+            />
+          )
+        ) : null}
+
+        {/* Route: admin FAQ */}
+        {r === "admin_faq" ? (
+          !ADMIN_AUTH_ENABLED || isAdminAuthed ? (
+            <AdminFaq
+              faqConfig={faqConfig}
+              setFaqConfig={setFaqConfigAdmin}
+              t={t}
+              language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (
@@ -8998,6 +10144,7 @@ export default function App() {
               adminToken={adminToken}
               t={t}
               language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (
@@ -9019,6 +10166,7 @@ export default function App() {
               setOrders={setOrdersAdmin}
               t={t}
               language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (
@@ -9041,6 +10189,7 @@ export default function App() {
               orders={orders}
               t={t}
               language={language}
+              socialConfig={socialConfig}
               onBack={() => navigate("admin")}
             />
           ) : (

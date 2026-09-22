@@ -36,18 +36,25 @@ export default function TopBar({ route, setRoute, cartCount, t, language, setLan
             <img src="/gbficon.png" alt="Grow by Faith®" className="h-[72px] w-[72px] object-contain md:h-[88px] md:w-[88px]" />
           </div>
           <div className="leading-tight">
-            <div
-              className="text-[22px] font-normal leading-none text-[#7a6f69] md:text-[26px]"
-              style={{ fontFamily: "var(--gbf-brand-font)" }}
+            <button
+              type="button"
+              onClick={() => go("home")}
+              className="block rounded-lg text-left transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#355E3B]/30"
+              aria-label={t.navHome}
             >
-              Grow by Faith
               <span
-                className="ml-0.5 align-super font-sans text-[0.55em] font-semibold leading-none text-zinc-500"
-                aria-hidden="true"
+                className="block text-[22px] font-normal leading-none text-[#7a6f69] md:text-[26px]"
+                style={{ fontFamily: "var(--gbf-brand-font)" }}
               >
-                ®
+                Grow by Faith
+                <span
+                  className="ml-0.5 align-super font-sans text-[0.55em] font-semibold leading-none text-zinc-500"
+                  aria-hidden="true"
+                >
+                  ®
+                </span>
               </span>
-            </div>
+            </button>
             <div className="mt-1 text-xs text-zinc-500">{t.tagline}</div>
           </div>
         </div>

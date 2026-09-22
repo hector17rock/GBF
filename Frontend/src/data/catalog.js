@@ -92,6 +92,11 @@ export const FONTS = [
     label: { es: "Minimal", en: "Minimal" },
     className: "font-mono",
   },
+  {
+    id: "cursive",
+    label: { es: "Cursiva", en: "Cursive" },
+    className: "gbf-font-script",
+  },
 ];
 
 export const COLORS = [

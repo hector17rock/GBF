@@ -12,7 +12,7 @@ export const translations = {
     navValues: "Valores",
     navFaq: "FAQ",
     navPolicies: "Políticas",
-    navOrderStatus: "Estatus de Orden",
+    navOrderStatus: "Estado de la orden",
     navWishlist: "Favoritos",
     navAdmin: "Admin",
 
@@ -32,7 +32,7 @@ export const translations = {
     productDetailGoCheckoutShort: "Pagar",
     productDetailDeliveryReturnsTitle: "Entrega y devoluciones",
     productDetailDeliveryReturnsBody:
-      "Envíos y devoluciones (demo). Luego puedes conectar un proveedor real y políticas oficiales.",
+      "Consulta la información de envío, devoluciones y políticas antes de completar tu compra.",
 
     explore: "Explorar",
     cart: "Carrito",
@@ -86,7 +86,7 @@ export const translations = {
     toastCopied: "Copiado",
 
     newsletterTitle: "Devocional semanal",
-    newsletterSubtitle: "Recibe un devocional semanal en tu email.",
+    newsletterSubtitle: "Recibe un devocional semanal en tu correo electrónico.",
     newsletterPlaceholder: "tuemail@ejemplo.com",
     newsletterCta: "Suscribirme",
     newsletterInvalid: "Escribe un email válido.",
@@ -104,7 +104,7 @@ export const translations = {
     lowStockLeft: (n) => `Quedan ${n} disponibles`,
 
     recentlyViewedTitle: "Vistos recientemente",
-    recentlyViewedSubtitle: "Vuelve rápido a lo que estabas mirando.",
+    recentlyViewedSubtitle: "Vuelve rápido a los productos que estabas viendo.",
 
     relatedTitle: "También te puede gustar",
     relatedSubtitle: "Productos similares en la misma categoría.",
@@ -135,6 +135,10 @@ export const translations = {
     step2Desc: "Nombre, frase, tipografía, color y versículo.",
     step3Title: "Envía tu pedido",
     step3Desc: "Carrito + checkout con tarjeta.",
+    homeAdLabel: "Publicidad",
+    homeAdTitle: "Espacio publicitario",
+    homeAdBody: "Este espacio quedó reservado para Google Ads o campañas patrocinadas.",
+    homeAdSetupHint: "Listo para Google Ads",
 
     mottoTitle: "Lema",
     mottoQuote: "\"Productos con propósito, fe que transforma.\"",
@@ -155,13 +159,17 @@ export const translations = {
 
     personalizationTitle: "Personalización",
     personalizationSubtitle:
-      "Ajusta texto, tipografía y color. Esto es el corazón del MVP.",
+      "Ajusta texto, tipografía y color para personalizar tu producto.",
 
     labelText: "Texto",
     textPlaceholder: "Ej: Hogar de la familia Rodríguez",
     textRecommendation: "Recomendación: 20–35 caracteres.",
 
     labelVerse: "Versículo",
+    verseSelectionHint: "Escoge libro, capítulo y versículo.",
+    labelVerseBook: "Libro",
+    labelVerseChapter: "Capítulo",
+    labelVerseNumber: "Versículo",
     labelFont: "Tipografía",
     labelColor: "Color",
 
@@ -179,8 +187,7 @@ export const translations = {
     toastProductDeleted: (name) => `Producto eliminado: ${name}`,
     productFallbackName: "Producto",
     toastChangesSaved: "Cambios guardados",
-    mvpNote:
-      "Este MVP es solo frontend: luego integraremos pago con tarjeta (Stripe) y órdenes reales.",
+    mvpNote: "",
 
     cartTitle: "Carrito",
     cartSubtitle: "Revisa tu pedido antes del checkout.",
@@ -189,7 +196,7 @@ export const translations = {
     remove: "Eliminar",
     qty: "Cant.",
     total: "Total",
-    estimatedTotal: "Este total es estimado para el MVP.",
+    estimatedTotal: "Este total es estimado.",
     goToCheckout: "Ir a checkout",
 
     taxPrState: "IVU estatal (PR)",
@@ -207,7 +214,7 @@ export const translations = {
       "El IVU y el envío se calculan automáticamente.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pago con PayPal (funcional). Tarjeta (Stripe) próximamente.",
+    checkoutSubtitle: "Pago con PayPal disponible. La opción con tarjeta no está disponible por el momento.",
     yourDetails: "Tus datos",
     namePlaceholder: "Nombre",
     phonePlaceholder: "Teléfono",
@@ -219,7 +226,7 @@ export const translations = {
 
     checkoutPaymentTitle: "Pago",
     checkoutPaymentSubtitle:
-      "PayPal disponible. Tarjeta (Stripe) próximamente.",
+      "PayPal disponible. La opción con tarjeta no está disponible por el momento.",
     paymentMethod: "Método de pago",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
@@ -246,7 +253,7 @@ export const translations = {
     cardTypeAmex: "American Express",
     cardTypeDiscover: "Discover",
 
-    cardDisclaimer: "Demo frontend — no se procesa el pago todavía.",
+    cardDisclaimer: "La opción con tarjeta no está disponible por el momento.",
     cardNameLabel: "Nombre en la tarjeta",
     cardNamePlaceholder: "Nombre y apellido",
     cardNumberLabel: "Número de tarjeta",
@@ -273,7 +280,7 @@ export const translations = {
     checkoutOrderSubmittedToast: "Orden sometida",
     cardRequired: "Completa todos los campos de tarjeta.",
     cardNotReady:
-      "El pago con tarjeta estará disponible cuando se conecte el backend con Stripe.",
+      "La opción con tarjeta no está disponible por el momento.",
     checkoutCompleteHint:
       "Para completar tu orden, revisa los detalles y presiona “Someter orden”.",
 
@@ -297,7 +304,7 @@ export const translations = {
     sendWhatsApp: "Continuar con PayPal",
     backToCart: "Volver al carrito",
     nextStep:
-      "Siguiente paso (luego): integrar pagos y órdenes reales.",
+      "Revisa los detalles antes de continuar.",
     finish: "Finalizar",
 
     waGreeting: "Hola, quiero hacer un pedido:",
@@ -313,10 +320,31 @@ export const translations = {
     blogTitle: "Blog",
     blogSubtitle:
       "Contenido de lectura corta para enganchar y nutrir a la audiencia.",
+    blogPublicEmpty: "Aún no hay entradas publicadas en el blog.",
+    blogReadLess: "Leer menos",
+    adminBlogTitle: "Blog",
+    adminBlogSubtitle: "Añade, edita o elimina entradas del blog publicadas en la página.",
+    blogListTitle: "Entradas del blog",
+    blogListSubtitle: "Administra cada entrada del blog.",
+    blogEmpty: "Aún no hay entradas del blog configuradas.",
+    blogUntitled: "Sin título",
+    blogAdd: "Añadir entrada",
+    blogSelectHint: "Selecciona una entrada del blog para editarla.",
+    blogEnabledLabel: "Mostrar en el blog público",
+    blogPostTitleLabel: "Título",
+    blogPostTitlePlaceholder: "Ej: Cómo empezar un diario de oración",
+    blogExcerptLabel: "Extracto",
+    blogExcerptPlaceholder: "Resumen corto que aparece en la tarjeta.",
+    blogContentLabel: "Contenido",
+    blogContentPlaceholder: "Escribe aquí el contenido completo del blog.",
+    blogAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
+    blogConfirmDelete: (name) => `¿Eliminar la entrada del blog "${name}"?`,
+    blogEs: "Español",
+    blogEn: "Inglés",
     read: "Leer",
     blogPosts: [
       {
-        title: "Cómo empezar un journal de oración",
+        title: "Cómo empezar un diario de oración",
         excerpt: "Una estructura simple de 10 minutos al día para crecer en fe y constancia.",
       },
       {
@@ -364,6 +392,24 @@ export const translations = {
 
     faqTitle: "FAQ",
     faqSubtitle: "Envío, personalización, tiempos y pagos.",
+    faqPublicEmpty: "Aún no hay preguntas frecuentes publicadas.",
+    adminFaqTitle: "FAQ",
+    adminFaqSubtitle: "Añade, edita o elimina preguntas frecuentes.",
+    faqListTitle: "Preguntas",
+    faqListSubtitle: "Administra cada pregunta y respuesta.",
+    faqEmpty: "No hay preguntas frecuentes configuradas todavía.",
+    faqUntitled: "Sin título",
+    faqAdd: "Añadir FAQ",
+    faqSelectHint: "Selecciona una pregunta para editarla.",
+    faqEnabledLabel: "Mostrar en FAQ público",
+    faqQuestionLabel: "Pregunta",
+    faqQuestionPlaceholder: "Ej: ¿Cuánto tarda el envío?",
+    faqAnswerLabel: "Respuesta",
+    faqAnswerPlaceholder: "Escribe la respuesta para el cliente.",
+    faqAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
+    faqConfirmDelete: (name) => `¿Eliminar el FAQ "${name}"?`,
+    faqEs: "Español",
+    faqEn: "Inglés",
     faqItems: [
       {
         q: "¿Cuánto tarda el envío?",
@@ -375,15 +421,15 @@ export const translations = {
       },
       {
         q: "¿Puedo cambiar o cancelar una orden?",
-        a: "Si la orden aún no está enviada, puedes solicitar cancelación desde “Estatus de Orden”. Si ya está enviada, te ayudamos con el próximo paso.",
+        a: "Si la orden aún no está enviada, puedes solicitar la cancelación desde “Estado de la orden”. Si ya está enviada, te ayudamos con el próximo paso.",
       },
       {
         q: "¿Qué métodos de pago aceptan?",
-        a: "Aceptamos tarjeta y PayPal (en este MVP es una demo visual; luego se integra pago real).",
+        a: "Actualmente puedes completar tu pedido con PayPal. La opción con tarjeta no está disponible por el momento.",
       },
       {
         q: "¿Qué pasa si un producto no tiene stock?",
-        a: "Si quedan pocas unidades, verás un badge de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
+        a: "Si quedan pocas unidades, verás una etiqueta de ‘bajo inventario’. Si se agota, te sugerimos alternativas similares.",
       },
     ],
 
@@ -395,14 +441,14 @@ export const translations = {
     adminTimeLabel: "Hora:",
     adminStatProducts: "Productos",
     adminStatProductsBody: "Artículos activos en catálogo.",
-    adminStatMode: "Usuario de Administrador",
+    adminStatMode: "Administradores",
     adminStatModeBody:
       "Crea o elimina usuarios y contraseñas de administrador (requiere iniciar sesión).",
 
-    adminManageAccess: "Acceso admin",
-    adminLoginTitle: "Acceso Admin",
+    adminManageAccess: "Acceso de administrador",
+    adminLoginTitle: "Acceso de administrador",
     adminLoginSubtitle: "Inicia sesión para entrar al panel de administración.",
-    adminSetupTitle: "Configurar Admin",
+    adminSetupTitle: "Configurar administrador",
     adminSetupSubtitle:
       "Crea el primer usuario administrador para proteger el panel.",
 
@@ -416,7 +462,7 @@ export const translations = {
     adminAuthConfirmPasswordPlaceholder: "Repite la contraseña",
 
     adminLoginButton: "Entrar",
-    adminSetupCreateButton: "Crear admin",
+    adminSetupCreateButton: "Crear administrador",
     adminLogout: "Cerrar sesión",
     adminAuthBackHome: "Volver al inicio",
 
@@ -425,52 +471,52 @@ export const translations = {
     adminAuthPasswordMismatch: "Las contraseñas no coinciden.",
     adminAuthInvalid: "Usuario o contraseña incorrectos.",
     adminAuthNotConfigured:
-      "No hay admins configurados en el servidor. Contacta al administrador.",
+      "No hay administradores configurados en el servidor. Contacta al administrador.",
     adminAuthServerOffline:
       "No se pudo conectar con el servidor. Verifica que el Backend esté encendido.",
     adminAuthDisclaimer:
-      "Acceso admin verificado por el servidor.",
+      "Acceso de administrador verificado por el servidor.",
 
-    adminTransferTitle: "Sincronizar admins",
+    adminTransferTitle: "Sincronizar administradores",
     adminTransferSubtitle:
-      "Genera un código en tu computadora y pégalo en el celular para usar los mismos admins.",
+      "Genera un código en tu computadora y pégalo en el celular para usar los mismos administradores.",
     adminTransferGenerate: "Generar código",
     adminTransferCopy: "Copiar",
-    adminTransferEmpty: "No hay admins para exportar.",
+    adminTransferEmpty: "No hay administradores para exportar.",
     adminTransferCopied: "Código copiado.",
     adminTransferCopyHint: "Copia el código manualmente (selecciona y copia).",
 
-    adminTransferImportTitle: "Importar acceso admin",
+    adminTransferImportTitle: "Importar acceso de administrador",
     adminTransferImportSubtitle:
-      "Pega el código desde tu otra computadora/celular para sincronizar admins en este dispositivo.",
+      "Pega el código desde tu otra computadora/celular para sincronizar administradores en este dispositivo.",
     adminTransferImportPlaceholder: "Pega el código aquí…",
     adminTransferImportButton: "Importar",
     adminTransferImportEmpty: "Pega el código para importar.",
-    adminTransferImportSuccess: "Admins importados. Ahora puedes iniciar sesión.",
-    adminTransferImportError: "Código inválido o sin admins.",
+    adminTransferImportSuccess: "Administradores importados. Ahora puedes iniciar sesión.",
+    adminTransferImportError: "Código inválido o sin administradores.",
 
-    adminAuthTipsTitle: "Tips",
+    adminAuthTipsTitle: "Consejos",
     adminAuthTip1: "Usa una contraseña única (no la reutilices).",
     adminAuthTip2:
-      "Si borras el storage del navegador, tendrás que configurar el admin de nuevo.",
-    adminAuthTip3: "Esto es frontend-only; luego conectaremos un backend real.",
+      "Si borras el almacenamiento del navegador, tendrás que configurar el administrador de nuevo.",
+    adminAuthTip3: "Guarda tus credenciales en un lugar seguro y verifica que el servidor esté encendido.",
 
     adminUsersTitle: "Administradores",
     adminUsersSubtitle:
       "Crea o elimina usuarios con acceso al panel de administración.",
-    adminUsersCreateTitle: "Crear nuevo admin",
-    adminUsersCreateButton: "Crear usuario",
+    adminUsersCreateTitle: "Crear nuevo administrador",
+    adminUsersCreateButton: "Crear administrador",
     adminUsersCreateError: "Ese usuario ya existe o hubo un error.",
     adminUsersDeleteError: "No se pudo eliminar.",
-    adminUserCreatedToast: (username) => `Usuario de administrador creado: ${username}`,
-    adminUserCreateFailedToast: "No se pudo crear el usuario de administrador.",
-    adminUserDeletedToast: (username) => `Usuario de administrador eliminado: ${username}`,
-    adminUserDeleteFailedToast: "No se pudo eliminar el usuario de administrador.",
+    adminUserCreatedToast: (username) => `Administrador creado: ${username}`,
+    adminUserCreateFailedToast: "No se pudo crear el administrador.",
+    adminUserDeletedToast: (username) => `Administrador eliminado: ${username}`,
+    adminUserDeleteFailedToast: "No se pudo eliminar el administrador.",
     adminUsersNameRequired: "Completa el nombre.",
     adminUsersUpdateError: "No se pudo actualizar.",
-    adminUsersListTitle: "Usuarios admin",
-    adminUsersEmpty: "Aún no hay usuarios admin.",
-    adminUsersCannotDeleteLast: "No puedes eliminar el último admin.",
+    adminUsersListTitle: "Usuarios administradores",
+    adminUsersEmpty: "Aún no hay administradores.",
+    adminUsersCannotDeleteLast: "No puedes eliminar al último administrador.",
     adminUsersCredentialHint: "Acceso central (servidor).",
     adminSaveOfflineToast: "No se pudieron guardar los cambios (servidor desconectado).",
     adminSaveSectionHomepage: "Página principal",
@@ -478,6 +524,9 @@ export const translations = {
     adminSaveSectionInventory: "Inventario",
     adminSaveSectionCheckout: "Checkout",
     adminSaveSectionPolicies: "Políticas",
+    adminSaveSectionSocials: "Redes sociales",
+    adminSaveSectionFaq: "FAQ",
+    adminSaveSectionBlog: "Blog",
     adminSaveSectionOrders: "Órdenes",
     adminSaveSuccessToast: (labels) =>
       Array.isArray(labels) && labels.length
@@ -501,7 +550,7 @@ export const translations = {
 
     profitTitle: "Ganancias / Pérdidas",
     profitSubtitle:
-      "Análisis por día, semana o mes basado en ventas registradas (demo frontend).",
+      "Análisis por día, semana o mes basado en ventas registradas.",
     profitPeriodLabel: "Periodo",
     profitDay: "Día",
     profitWeek: "Semana",
@@ -543,8 +592,41 @@ export const translations = {
     policiesAutosaveHint: "Se guarda automáticamente en este navegador (localStorage).",
     policiesConfirmDeleteCategory: (name) => `¿Eliminar la categoría "${name}"?`,
 
+    socialsTitle: "Redes Sociales",
+    adminSocialsTitle: "Redes Sociales",
+    adminSocialsSubtitle:
+      "Administra los logos y enlaces de redes sociales que aparecen en el footer.",
+    socialsListTitle: "Redes",
+    socialsListSubtitle: "Añade, edita o elimina cada red social.",
+    socialsEmpty: "No hay redes sociales configuradas todavía.",
+    socialsUntitled: "Sin título",
+    socialsAdd: "Añadir red social",
+    socialsSelectHint: "Selecciona una red social para editarla.",
+    socialsEnabledLabel: "Mostrar en el footer",
+    socialsPlatformLabel: "Plataforma",
+    socialsLabelLabel: "Nombre visible",
+    socialsLabelPlaceholder: "Ej: Instagram",
+    socialsUrlLabel: "Enlace de la cuenta",
+    socialsUrlPlaceholder: "Ej: https://instagram.com/growbyfaith",
+    socialsUrlHint: "Si escribes el enlace sin https://, la página lo completa automáticamente.",
+    socialsIconUrlLabel: "Logo / icono",
+    socialsIconUrlPlaceholder: "Ej: /Instagram_icon.png o https://...",
+    socialsIconUrlHint:
+      "Opcional. Instagram y TikTok usan sus logos actuales automáticamente.",
+    socialsConfirmDelete: (name) => `¿Eliminar la red social "${name}"?`,
+    socialsPlatformLabels: {
+      instagram: "Instagram",
+      tiktok: "TikTok",
+      facebook: "Facebook",
+      youtube: "YouTube",
+      x: "X / Twitter",
+      whatsapp: "WhatsApp",
+      website: "Sitio web",
+      custom: "Personalizada",
+    },
+
     profitNoSales: "No hay ventas registradas en este período.",
-    profitTopProducts: "Productos top",
+    profitTopProducts: "Productos destacados",
 
     profitReportPdfButton: "Reporte (PDF)",
     profitReportPeriodValueDay: "Día",
@@ -591,10 +673,10 @@ export const translations = {
     ordersPaymentPayPal: "PayPal",
     ordersPaymentWhatsApp: "PayPal",
 
-    ordersTrackingNumberLabel: "Tracking #",
+    ordersTrackingNumberLabel: "Número de seguimiento",
     ordersTrackingNumberPlaceholder: "Ej: 9400 1000 0000 0000 0000 00",
     ordersEtaLabel: "Tiempo estimado",
-    ordersEtaPlaceholder: "Ej: 3-5 días",
+    ordersEtaPlaceholder: "Ej: 3–5 días",
 
     orderConfirmationTitle: "Confirmación de orden",
     orderConfirmationSubtitle:
@@ -609,18 +691,18 @@ export const translations = {
     orderConfirmationThanksTitle: "¡Gracias por tu orden!",
     orderConfirmationNextStepsTitle: "Próximos pasos",
     orderConfirmationNextStep1: "Guarda tu número de orden por si necesitas ayuda.",
-    orderConfirmationNextStep2: "Prepararemos tu pedido y te enviaremos el tracking cuando esté listo.",
+    orderConfirmationNextStep2: "Prepararemos tu pedido y te enviaremos el número de seguimiento cuando esté listo.",
     orderConfirmationNextStep3: "Si deseas hacer cambios, escríbenos con tu número de orden.",
 
-    orderStatusTitle: "Estatus de Orden",
-    orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estatus en tiempo real.",
+    orderStatusTitle: "Estado de la orden",
+    orderStatusSubtitle: "Ingresa tu número de confirmación para ver el estado en tiempo real.",
     orderStatusOrderNumberLabel: "Número de confirmación",
     orderStatusOrderNumberPlaceholder: "Ej: GBF-000123",
     orderStatusLookup: "Buscar",
     orderStatusNotFound: "No encontramos una orden con ese número.",
-    orderStatusCurrentStatus: "Estatus actual",
+    orderStatusCurrentStatus: "Estado actual",
     orderStatusUpdatedAt: "Actualizado",
-    orderStatusTracking: "Tracking",
+    orderStatusTracking: "Número de seguimiento",
     orderStatusEta: "Tiempo estimado",
 
     orderTrackingTitle: "Seguimiento",
@@ -636,30 +718,30 @@ export const translations = {
     orderStatusCancelModalClose: "Cerrar",
     orderStatusCancelRequestSent: "Solicitud enviada.",
 
-    ordersStatusPreparing: "Preparar orden",
-    ordersStatusPaused: "Pausar orden",
+    ordersStatusPreparing: "Preparando orden",
+    ordersStatusPaused: "Orden en pausa",
     ordersStatusShipped: "Orden enviada",
     ordersStatusDelivered: "Orden entregada",
     ordersCancelReasonLabel: "Causa de cancelación",
-    ordersCancelReasonPlaceholder: "Ej: Cliente solicitó cancelación / producto sin stock",
-    ordersUpdateStatusLabel: "Actualizar estatus",
+    ordersCancelReasonPlaceholder: "Ej: El cliente solicitó cancelación / producto sin inventario",
+    ordersUpdateStatusLabel: "Actualizar estado",
     ordersApplyStatus: "Aplicar",
-    ordersStatusTrackingRequired: "Para marcar como 'Orden enviada' debes escribir el tracking.",
+    ordersStatusTrackingRequired: "Para marcar como 'Orden enviada' debes escribir el número de seguimiento.",
     ordersStatusCancelReasonRequired: "Para cancelar la orden debes escribir la causa de cancelación.",
 
-    heroAdminTitle: "Promoción del Home",
+    heroAdminTitle: "Promoción de la página principal",
     heroAdminSubtitle:
-      "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin programador.",
+      "Edita el recuadro principal del inicio para promociones o para actualizar contenido sin necesidad de un programador.",
 
-    adminHomepageTitle: "Página Principal",
+    adminHomepageTitle: "Página principal",
     adminHomepageSubtitle:
-      "Personaliza el cuadro principal del Home y los iconos con sus textos.",
+      "Personaliza el recuadro principal del inicio y los iconos con sus textos.",
 
-    heroAdminEnabled: "Activar cuadro del Home",
+    heroAdminEnabled: "Activar recuadro principal",
     heroAdminReset: "Restablecer",
     heroAdminEs: "Español (ES)",
     heroAdminEn: "Inglés (EN)",
-    heroAdminPill: "Etiqueta (pill)",
+    heroAdminPill: "Etiqueta",
     heroAdminTitleOne: "Título línea 1",
     heroAdminTitleTwo: "Título línea 2",
     heroAdminText: "Texto",
@@ -713,7 +795,7 @@ export const translations = {
     productCategoryLabel: "Categoría",
     productPriceLabel: "Precio",
     productPricePlaceholderExample: "Ej: 35",
-    productImageLabel: "Imagen",
+    productImageLabel: "URL de la imagen",
     productImagePlaceholder: "https://...",
     productShortLabel: "Descripción corta",
     productShortPlaceholder: "Ej: Vaso premium con mensaje de fe.",
@@ -762,7 +844,7 @@ export const translations = {
     productDetailGoCheckoutShort: "Checkout",
     productDetailDeliveryReturnsTitle: "Delivery & returns",
     productDetailDeliveryReturnsBody:
-      "Shipping and returns (demo). You can later connect real carriers and official policies.",
+      "Review shipping, returns, and store policies before completing your purchase.",
 
     explore: "Explore",
     cart: "Cart",
@@ -816,7 +898,7 @@ export const translations = {
     toastCopied: "Copied",
 
     newsletterTitle: "Weekly devotional",
-    newsletterSubtitle: "Get a weekly devotional in your email.",
+    newsletterSubtitle: "Get a weekly devotional in your inbox.",
     newsletterPlaceholder: "you@example.com",
     newsletterCta: "Sign up",
     newsletterInvalid: "Please enter a valid email.",
@@ -834,7 +916,7 @@ export const translations = {
     lowStockLeft: (n) => `Only ${n} left`,
 
     recentlyViewedTitle: "Recently viewed",
-    recentlyViewedSubtitle: "Quickly get back to products you checked out.",
+    recentlyViewedSubtitle: "Quickly get back to products you were viewing.",
 
     relatedTitle: "You may also like",
     relatedSubtitle: "Similar products in the same category.",
@@ -865,6 +947,10 @@ export const translations = {
     step2Desc: "Name, phrase, typography, color, and verse.",
     step3Title: "Place your order",
     step3Desc: "Cart + card checkout.",
+    homeAdLabel: "Advertising",
+    homeAdTitle: "Ad space",
+    homeAdBody: "This area is reserved for Google Ads or sponsored campaigns.",
+    homeAdSetupHint: "Ready for Google Ads",
 
     mottoTitle: "Motto",
     mottoQuote: "\"Products with purpose, faith that transforms.\"",
@@ -885,13 +971,17 @@ export const translations = {
 
     personalizationTitle: "Customization",
     personalizationSubtitle:
-      "Adjust text, typography, and color. This is the heart of the MVP.",
+      "Adjust text, typography, and color to personalize your product.",
 
     labelText: "Text",
     textPlaceholder: "e.g. The Rodriguez family home",
     textRecommendation: "Recommendation: 20–35 characters.",
 
     labelVerse: "Verse",
+    verseSelectionHint: "Choose the book, chapter, and verse.",
+    labelVerseBook: "Book",
+    labelVerseChapter: "Chapter",
+    labelVerseNumber: "Verse",
     labelFont: "Typography",
     labelColor: "Color",
 
@@ -909,8 +999,7 @@ export const translations = {
     toastProductDeleted: (name) => `Product deleted: ${name}`,
     productFallbackName: "Product",
     toastChangesSaved: "Changes saved",
-    mvpNote:
-      "This MVP is frontend-only: later we'll integrate card payments (Stripe) and real orders.",
+    mvpNote: "",
 
     cartTitle: "Cart",
     cartSubtitle: "Review your order before checkout.",
@@ -919,7 +1008,7 @@ export const translations = {
     remove: "Remove",
     qty: "Qty",
     total: "Total",
-    estimatedTotal: "This total is estimated for the MVP.",
+    estimatedTotal: "This total is estimated.",
     goToCheckout: "Go to checkout",
 
     taxPrState: "PR state tax",
@@ -937,7 +1026,7 @@ export const translations = {
       "Tax and shipping are calculated automatically.",
 
     checkoutTitle: "Checkout",
-    checkoutSubtitle: "Pay with PayPal. Card (Stripe) coming soon.",
+    checkoutSubtitle: "PayPal is available. Card payments are not available right now.",
     yourDetails: "Your details",
     namePlaceholder: "Name",
     phonePlaceholder: "Phone",
@@ -945,11 +1034,11 @@ export const translations = {
     notesPlaceholder: "Notes (e.g. gift, date, etc.)",
     giftNoteLabel: "Gift note (optional)",
     giftNotePlaceholder: "Write a short message for the card or packaging...",
-    giftNoteHint: "Tip: 1–2 lines reads best.",
+    giftNoteHint: "Tip: 1–2 lines read best.",
 
     checkoutPaymentTitle: "Payment",
     checkoutPaymentSubtitle:
-      "PayPal is available. Card (Stripe) coming soon.",
+      "PayPal is available. Card payments are not available right now.",
     paymentMethod: "Payment method",
     payByPayPal: "PayPal",
     payByWhatsApp: "PayPal",
@@ -976,7 +1065,7 @@ export const translations = {
     cardTypeAmex: "American Express",
     cardTypeDiscover: "Discover",
 
-    cardDisclaimer: "Frontend demo — no payment is processed yet.",
+    cardDisclaimer: "Card payments are not available right now.",
     cardNameLabel: "Name on card",
     cardNamePlaceholder: "Full name",
     cardNumberLabel: "Card number",
@@ -1003,7 +1092,7 @@ export const translations = {
     checkoutOrderSubmittedToast: "Order submitted",
     cardRequired: "Complete all card fields.",
     cardNotReady:
-      "Card payments will be available once the backend is connected to Stripe.",
+      "Card payments are not available right now.",
     checkoutCompleteHint:
       "To complete your order, review the details and press “Submit order”.",
 
@@ -1026,7 +1115,7 @@ export const translations = {
 
     sendWhatsApp: "Continue with PayPal",
     backToCart: "Back to cart",
-    nextStep: "Next step (later): integrate payments and real orders.",
+    nextStep: "Review the details before continuing.",
     finish: "Finish",
 
     waGreeting: "Hi, I'd like to place an order:",
@@ -1041,6 +1130,27 @@ export const translations = {
 
     blogTitle: "Blog",
     blogSubtitle: "Short reads to attract and nurture your audience.",
+    blogPublicEmpty: "No blog posts have been published yet.",
+    blogReadLess: "Read less",
+    adminBlogTitle: "Blog",
+    adminBlogSubtitle: "Add, edit, or remove blog posts published on the site.",
+    blogListTitle: "Blog posts",
+    blogListSubtitle: "Manage each blog post.",
+    blogEmpty: "No blog posts have been configured yet.",
+    blogUntitled: "Untitled",
+    blogAdd: "Add blog",
+    blogSelectHint: "Select a blog post to edit it.",
+    blogEnabledLabel: "Show in the public blog",
+    blogPostTitleLabel: "Title",
+    blogPostTitlePlaceholder: "e.g. How to start a prayer journal",
+    blogExcerptLabel: "Excerpt",
+    blogExcerptPlaceholder: "Short summary shown on the card.",
+    blogContentLabel: "Content",
+    blogContentPlaceholder: "Write the full blog content here.",
+    blogAutosaveHint: "Autosaved in this browser (localStorage).",
+    blogConfirmDelete: (name) => `Delete the blog post "${name}"?`,
+    blogEs: "Spanish",
+    blogEn: "English",
     read: "Read",
     blogPosts: [
       {
@@ -1092,6 +1202,24 @@ export const translations = {
 
     faqTitle: "FAQ",
     faqSubtitle: "Shipping, customization, timing, and payments.",
+    faqPublicEmpty: "No FAQ items have been published yet.",
+    adminFaqTitle: "FAQ",
+    adminFaqSubtitle: "Add, edit, or remove frequently asked questions.",
+    faqListTitle: "Questions",
+    faqListSubtitle: "Manage each question and answer.",
+    faqEmpty: "No FAQ items have been configured yet.",
+    faqUntitled: "Untitled",
+    faqAdd: "Add FAQ",
+    faqSelectHint: "Select a question to edit it.",
+    faqEnabledLabel: "Show in the public FAQ",
+    faqQuestionLabel: "Question",
+    faqQuestionPlaceholder: "e.g. How long does shipping take?",
+    faqAnswerLabel: "Answer",
+    faqAnswerPlaceholder: "Write the answer for the customer.",
+    faqAutosaveHint: "Autosaved in this browser (localStorage).",
+    faqConfirmDelete: (name) => `Delete the FAQ item "${name}"?`,
+    faqEs: "Spanish",
+    faqEn: "English",
     faqItems: [
       {
         q: "How long does shipping take?",
@@ -1103,11 +1231,11 @@ export const translations = {
       },
       {
         q: "Can I change or cancel an order?",
-        a: "If the order hasn't shipped yet, you can request cancellation from “Order Status”. If it has shipped, we’ll help with next steps.",
+        a: "If the order hasn't shipped yet, you can request a cancellation from “Order Status”. If it has shipped, we’ll help with the next steps.",
       },
       {
         q: "What payment methods do you accept?",
-        a: "We accept card and PayPal (this MVP is a visual demo; real payments will be integrated later).",
+        a: "You can currently complete your order with PayPal. Card payments are not available right now.",
       },
       {
         q: "What if an item is out of stock?",
@@ -1123,7 +1251,7 @@ export const translations = {
     adminTimeLabel: "Time:",
     adminStatProducts: "Products",
     adminStatProductsBody: "Active items in the catalog.",
-    adminStatMode: "Admin user",
+    adminStatMode: "Admin users",
     adminStatModeBody:
       "Create or remove admin usernames and passwords (login required).",
 
@@ -1179,8 +1307,8 @@ export const translations = {
     adminAuthTipsTitle: "Tips",
     adminAuthTip1: "Use a unique password (do not reuse it).",
     adminAuthTip2:
-      "If you clear browser storage, you'll need to set up admin again.",
-    adminAuthTip3: "This is frontend-only; we'll connect a real backend later.",
+      "If you clear browser storage, you'll need to set up the admin account again.",
+    adminAuthTip3: "Keep your credentials in a safe place and make sure the server is running.",
 
     adminUsersTitle: "Administrators",
     adminUsersSubtitle: "Create or remove users with access to the admin panel.",
@@ -1204,6 +1332,9 @@ export const translations = {
     adminSaveSectionInventory: "Inventory",
     adminSaveSectionCheckout: "Checkout",
     adminSaveSectionPolicies: "Policies",
+    adminSaveSectionSocials: "Social media",
+    adminSaveSectionFaq: "FAQ",
+    adminSaveSectionBlog: "Blog",
     adminSaveSectionOrders: "Orders",
     adminSaveSuccessToast: (labels) =>
       Array.isArray(labels) && labels.length
@@ -1227,7 +1358,7 @@ export const translations = {
 
     profitTitle: "Profit / Loss",
     profitSubtitle:
-      "Analyze by day, week, or month based on recorded sales (frontend demo).",
+      "Analyze by day, week, or month based on recorded sales.",
     profitPeriodLabel: "Period",
     profitDay: "Day",
     profitWeek: "Week",
@@ -1268,6 +1399,39 @@ export const translations = {
       "Write your policy here. You can use line breaks, bullets, etc.",
     policiesAutosaveHint: "Autosaved in this browser (localStorage).",
     policiesConfirmDeleteCategory: (name) => `Delete category "${name}"?`,
+
+    socialsTitle: "Social Media",
+    adminSocialsTitle: "Social Media",
+    adminSocialsSubtitle:
+      "Manage the social media logos and links shown in the footer.",
+    socialsListTitle: "Social networks",
+    socialsListSubtitle: "Add, edit, or remove each social account.",
+    socialsEmpty: "No social media accounts have been configured yet.",
+    socialsUntitled: "Untitled",
+    socialsAdd: "Add social network",
+    socialsSelectHint: "Select a social account to edit it.",
+    socialsEnabledLabel: "Show in footer",
+    socialsPlatformLabel: "Platform",
+    socialsLabelLabel: "Visible name",
+    socialsLabelPlaceholder: "e.g. Instagram",
+    socialsUrlLabel: "Account link",
+    socialsUrlPlaceholder: "e.g. https://instagram.com/growbyfaith",
+    socialsUrlHint: "If you enter the link without https://, the page adds it automatically.",
+    socialsIconUrlLabel: "Logo / icon",
+    socialsIconUrlPlaceholder: "e.g. /Instagram_icon.png or https://...",
+    socialsIconUrlHint:
+      "Optional. Instagram and TikTok use their current logos automatically.",
+    socialsConfirmDelete: (name) => `Delete social network "${name}"?`,
+    socialsPlatformLabels: {
+      instagram: "Instagram",
+      tiktok: "TikTok",
+      facebook: "Facebook",
+      youtube: "YouTube",
+      x: "X / Twitter",
+      whatsapp: "WhatsApp",
+      website: "Website",
+      custom: "Custom",
+    },
 
     profitNoSales: "No sales recorded for this period.",
     profitTopProducts: "Top products",
@@ -1338,7 +1502,7 @@ export const translations = {
     orderConfirmationNextStep2: "We'll prepare your order and share tracking once it's ready.",
     orderConfirmationNextStep3: "If you need changes, message us with your order number.",
 
-    orderStatusTitle: "Order status",
+    orderStatusTitle: "Order Status",
     orderStatusSubtitle: "Enter your confirmation number to see real-time status.",
     orderStatusOrderNumberLabel: "Confirmation number",
     orderStatusOrderNumberPlaceholder: "e.g. GBF-000123",
@@ -1363,7 +1527,7 @@ export const translations = {
     orderStatusCancelRequestSent: "Request sent.",
 
     ordersStatusPreparing: "Preparing order",
-    ordersStatusPaused: "Order paused",
+    ordersStatusPaused: "Order on hold",
     ordersStatusShipped: "Order shipped",
     ordersStatusDelivered: "Order delivered",
     ordersCancelReasonLabel: "Cancellation reason",
@@ -1379,13 +1543,13 @@ export const translations = {
 
     adminHomepageTitle: "Homepage",
     adminHomepageSubtitle:
-      "Customize the main Home hero and the icons with their text.",
+      "Customize the main homepage hero and each icon with its text.",
 
     heroAdminEnabled: "Enable homepage hero",
     heroAdminReset: "Reset",
     heroAdminEs: "Spanish (ES)",
     heroAdminEn: "English (EN)",
-    heroAdminPill: "Badge (pill)",
+    heroAdminPill: "Badge",
     heroAdminTitleOne: "Title line 1",
     heroAdminTitleTwo: "Title line 2",
     heroAdminText: "Text",

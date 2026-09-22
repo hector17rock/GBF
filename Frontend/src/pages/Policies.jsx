@@ -3,7 +3,7 @@ import Footer from "../components/Footer";
 import SectionTitle from "../components/SectionTitle";
 import { normalizePoliciesConfig } from "../utils/policies";
 
-export default function Policies({ policiesConfig, t }) {
+export default function Policies({ policiesConfig, t, socialConfig }) {
   const normalized = useMemo(() => normalizePoliciesConfig(policiesConfig), [policiesConfig]);
 
   const published = useMemo(() => {
@@ -66,7 +66,7 @@ export default function Policies({ policiesConfig, t }) {
         )}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }

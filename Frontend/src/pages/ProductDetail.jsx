@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { COLORS, FONTS, VERSES } from "../data/catalog";
+import { COLORS, FONTS } from "../data/catalog";
+import {
+  BIBLE_BOOKS,
+  DEFAULT_BIBLE_SELECTION,
+  formatBibleReference,
+  getBibleChapterOptions,
+  getBibleVerseOptions,
+} from "../data/bible";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
@@ -22,9 +29,12 @@ export default function ProductDetail({
   onGoCheckout,
   t,
   language,
+  socialConfig,
 }) {
   const [text, setText] = useState("");
-  const [verse, setVerse] = useState(VERSES[1]);
+  const [selectedBookId, setSelectedBookId] = useState(DEFAULT_BIBLE_SELECTION.bookId);
+  const [selectedChapter, setSelectedChapter] = useState(DEFAULT_BIBLE_SELECTION.chapter);
+  const [selectedVerse, setSelectedVerse] = useState(DEFAULT_BIBLE_SELECTION.verse);
   const [font, setFont] = useState(FONTS[0].id);
   const [color, setColor] = useState(COLORS[0].id);
 
@@ -80,6 +90,26 @@ export default function ProductDetail({
   }
 
   const fontClass = FONTS.find((f) => f.id === font)?.className ?? "font-sans";
+  const chapterOptions = useMemo(
+    () => getBibleChapterOptions(selectedBookId),
+    [selectedBookId]
+  );
+  const verseOptions = useMemo(
+    () => getBibleVerseOptions(selectedBookId, selectedChapter),
+    [selectedBookId, selectedChapter]
+  );
+  const verseReference = useMemo(
+    () =>
+      formatBibleReference(
+        {
+          bookId: selectedBookId,
+          chapter: selectedChapter,
+          verse: selectedVerse,
+        },
+        language
+      ),
+    [selectedBookId, selectedChapter, selectedVerse, language]
+  );
 
   const colorClass =
     color === "gold"
@@ -91,10 +121,28 @@ export default function ProductDetail({
       : color === "rose"
       ? "text-rose-600"
       : "text-zinc-900";
+  const isInkPreview = color === "ink";
+  const previewTextPlateClass = isInkPreview
+    ? "border-white/35 bg-white/16"
+    : "border-black/10 bg-black/28";
+  const previewTextStyle = {
+    letterSpacing: "0.02em",
+    textShadow:
+      isInkPreview
+        ? "0 0 1px rgba(255,255,255,0.92), 0 0 10px rgba(255,255,255,0.72), 0 8px 20px rgba(0,0,0,0.55)"
+        : "0 2px 5px rgba(0,0,0,0.72), 0 0 1px rgba(0,0,0,0.88), 0 10px 24px rgba(0,0,0,0.42)",
+  };
+  const previewVerseStyle = {
+    letterSpacing: "0.01em",
+    textShadow:
+      isInkPreview
+        ? "0 0 1px rgba(255,255,255,0.85), 0 0 8px rgba(255,255,255,0.65), 0 5px 14px rgba(0,0,0,0.5)"
+        : "0 1px 4px rgba(0,0,0,0.72), 0 0 1px rgba(0,0,0,0.82), 0 4px 14px rgba(0,0,0,0.35)",
+  };
 
   const personalization = {
     text: text.trim(),
-    verse,
+    verse: verseReference,
     font,
     color,
   };
@@ -249,7 +297,7 @@ export default function ProductDetail({
                   <div className="h-[420px] w-full bg-zinc-100 md:h-[520px]" />
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-black/6 to-transparent" />
 
                 {/* Preview overlay */}
                 {active?.kind === "preview" ? (
@@ -260,22 +308,21 @@ export default function ProductDetail({
                       </div>
 
                       <div
-                        className={`mx-auto mt-4 max-w-[520px] text-balance font-extrabold ${previewTextSizeClass} ${previewTextLeadingClass} ${fontClass} ${colorClass} opacity-90`}
-                        style={{
-                          mixBlendMode: "multiply",
-                          textShadow:
-                            "0 1px 0 rgba(255,255,255,0.55), 0 -1px 0 rgba(0,0,0,0.22), 0 10px 22px rgba(0,0,0,0.25)",
-                          letterSpacing: "0.02em",
-                        }}
+                        className={`mx-auto mt-4 inline-flex max-w-[560px] flex-col items-center rounded-[32px] border px-5 py-4 shadow-[0_18px_40px_rgba(0,0,0,0.34)] backdrop-blur-[3px] ${previewTextPlateClass}`}
                       >
-                        {previewText}
-                      </div>
+                        <div
+                          className={`max-w-[520px] text-balance font-extrabold ${previewTextSizeClass} ${previewTextLeadingClass} ${fontClass} ${colorClass}`}
+                          style={previewTextStyle}
+                        >
+                          {previewText}
+                        </div>
 
-                      <div
-                        className={`mx-auto mt-2 max-w-[520px] text-pretty text-sm font-semibold ${fontClass} ${colorClass} opacity-60`}
-                        style={{ mixBlendMode: "multiply", textShadow: "0 1px 10px rgba(0,0,0,0.25)" }}
-                      >
-                        {personalization.verse}
+                        <div
+                          className={`mt-2 max-w-[520px] text-pretty text-sm font-semibold ${fontClass} ${colorClass} opacity-95`}
+                          style={previewVerseStyle}
+                        >
+                          {personalization.verse}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -363,7 +410,7 @@ export default function ProductDetail({
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-zinc-700">{t.labelFont}</label>
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
                   {FONTS.map((f) => {
                     const selected = font === f.id;
                     return (
@@ -374,7 +421,7 @@ export default function ProductDetail({
                           ensurePreviewActive();
                           setFont(f.id);
                         }}
-                        className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
+                        className={`${f.className} rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
                           selected
                             ? "border-zinc-900 bg-zinc-900 text-white"
                             : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
@@ -416,20 +463,69 @@ export default function ProductDetail({
 
               <div>
                 <label className="text-xs font-semibold text-zinc-700">{t.labelVerse}</label>
-                <select
-                  value={verse}
-                  onChange={(e) => {
-                    ensurePreviewActive();
-                    setVerse(e.target.value);
-                  }}
-                  className="mt-2 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
-                >
-                  {VERSES.map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1 text-xs text-zinc-500">{t.verseSelectionHint}</div>
+                <div className="mt-2 grid gap-2 md:grid-cols-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-600">{t.labelVerseBook}</label>
+                    <select
+                      value={selectedBookId}
+                      onChange={(e) => {
+                        ensurePreviewActive();
+                        setSelectedBookId(e.target.value);
+                        setSelectedChapter(1);
+                        setSelectedVerse(1);
+                      }}
+                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {BIBLE_BOOKS.map((book) => (
+                        <option key={book.id} value={book.id}>
+                          {l10n(book.name, language)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-600">
+                      {t.labelVerseChapter}
+                    </label>
+                    <select
+                      value={selectedChapter}
+                      onChange={(e) => {
+                        ensurePreviewActive();
+                        setSelectedChapter(Number(e.target.value) || 1);
+                        setSelectedVerse(1);
+                      }}
+                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {chapterOptions.map((chapterNumber) => (
+                        <option key={chapterNumber} value={chapterNumber}>
+                          {chapterNumber}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-600">
+                      {t.labelVerseNumber}
+                    </label>
+                    <select
+                      value={selectedVerse}
+                      onChange={(e) => {
+                        ensurePreviewActive();
+                        setSelectedVerse(Number(e.target.value) || 1);
+                      }}
+                      className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm outline-none focus:border-zinc-400"
+                    >
+                      {verseOptions.map((verseNumber) => (
+                        <option key={verseNumber} value={verseNumber}>
+                          {verseNumber}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="grid gap-2">
@@ -565,7 +661,9 @@ export default function ProductDetail({
                 </details>
               </div>
 
-              <div className="text-xs leading-5 text-zinc-500">{t.mvpNote}</div>
+              {t.mvpNote ? (
+                <div className="text-xs leading-5 text-zinc-500">{t.mvpNote}</div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -597,7 +695,7 @@ export default function ProductDetail({
         ) : null}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }

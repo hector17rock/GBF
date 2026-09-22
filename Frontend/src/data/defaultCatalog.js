@@ -62,7 +62,7 @@ export function buildDefaultProducts() {
       category: "Journals",
       name: { es: "Libreta Journal (A5)", en: "Journal notebook (A5)" },
       price: 26,
-      short: { es: "Journaling y devocional diario.", en: "Journaling and daily devotional." },
+      short: { es: "Ideal para escribir y tener tu devocional diario.", en: "Ideal for journaling and daily devotions." },
       description: {
         es: "Una libreta para escribir, orar y reflexionar. Perfecta para rutinas de fe, metas y gratitud.",
         en: "A notebook to write, pray, and reflect. Perfect for faith routines, goals, and gratitude.",

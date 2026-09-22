@@ -14,6 +14,7 @@ export default function Catalog({
   onOpenProduct,
   t,
   language,
+  socialConfig,
 }) {
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
@@ -70,7 +71,7 @@ export default function Catalog({
         ))}
       </div>
 
-      <Footer t={t} />
+      <Footer t={t} socialConfig={socialConfig} />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @font-face {
@@ -18,12 +19,19 @@
   --gbf-stone: #ddd6ca;
   --gbf-moss-green: #4b734e;
   --gbf-brand-font: "White Star", "Allura", cursive;
+  --gbf-script-font: "Dancing Script", "Snell Roundhand", "Segoe Script", cursive;
 }
 
 html,
 body {
   background: var(--gbf-warm-ivory);
   color: var(--gbf-charcoal);
+}
+
+.gbf-font-script {
+  font-family: var(--gbf-script-font);
+  font-style: normal;
+  font-weight: 400;
 }
 
 /* ============================
