@@ -2,7 +2,7 @@
   <img src="Frontend/public/gbficon.png" alt="Grow by Faith logo" width="120" />
 </p>
 <p align="center">
-  <img src="Frontend/public/gbf-wordmark.svg" alt="Grow by Faith" width="420" />
+  <img src="Frontend/public/gbf-wordmark.png" alt="Grow by Faith" width="420" />
 </p>
 
 <p align="center">
